@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('last_name');
+            $table->string('middle_name');
             $table->string('user_identification')->unique();
             $table->string('photo');
             $table->string('phone');
@@ -26,9 +27,9 @@ return new class extends Migration
             $table->timestamp('emergency_contact');
             $table->string('emergency_phone');
             $table->string('emergency_direction');
-            $table->string('user_type');
+            $table->enum('user_type', ['root', 'admin', 'employee', 'instructor', 'student']);
             $table->string('password');
-            $table->string('credit');
+            $table->decimal('credit', 8, 2);
             $table->rememberToken();
             $table->timestamps();
 
