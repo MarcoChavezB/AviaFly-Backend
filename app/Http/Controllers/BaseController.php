@@ -4,82 +4,38 @@ namespace App\Http\Controllers;
 
 use App\Models\Base;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class BaseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+
+    public function create(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'location' => 'required|string',
+        ]);
+
+        if($validator->fails()){
+            return response()->json(["errors" => $validator->errors()], 400);
+        }
+
+        $base = new Base();
+        $base->name = $request->name;
+        $base->location = $request->location;
+        $base->save();
+
+        return response()->json($base, 201);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function getBases()
     {
-        //
-    }
+        $bases = Base::get(['id', 'name']);
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        if($bases->isEmpty()){
+            return response()->json(["message" => "No bases found"], 404);
+        }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Base  $base
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Base $base)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Base  $base
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Base $base)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Base  $base
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Base $base)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Base  $base
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Base $base)
-    {
-        //
+        return response()->json($bases, 200);
     }
 }
