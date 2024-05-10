@@ -8,34 +8,41 @@ use Illuminate\Support\Facades\Validator;
 
 class BaseController extends Controller
 {
-
     public function create(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string',
-            'location' => 'required|string',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string',
+                'location' => 'required|string',
+            ]);
 
-        if($validator->fails()){
-            return response()->json(["errors" => $validator->errors()], 400);
+            if($validator->fails()){
+                return response()->json(["errors" => $validator->errors()], 400);
+            }
+
+            $base = new Base();
+            $base->name = $request->name;
+            $base->location = $request->location;
+            $base->save();
+
+            return response()->json($base, 201);
+        }catch(\Exception $e){
+            return response()->json(["message" => "Internal Server Error"], 500);
         }
-
-        $base = new Base();
-        $base->name = $request->name;
-        $base->location = $request->location;
-        $base->save();
-
-        return response()->json($base, 201);
     }
 
     public function getBases()
     {
-        $bases = Base::get(['id', 'name']);
+        try {
+            $bases = Base::get(['id', 'name']);
 
-        if($bases->isEmpty()){
-            return response()->json(["message" => "No bases found"], 404);
+            if($bases->isEmpty()){
+                return response()->json(["errors" => ["No hay bases creadas"]], 404);
+            }
+
+            return response()->json($bases, 200);
+        }catch (\Exception $e) {
+            return response()->json(["message" => "Internal Server Error"], 500);
         }
-
-        return response()->json($bases, 200);
     }
 }
