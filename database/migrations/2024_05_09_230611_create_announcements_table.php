@@ -21,11 +21,11 @@ return new class extends Migration
             $table->enum('directed_to_group', ['admin', 'employee', 'instructor', 'student']);
             $table->timestamps();
 
-            $table->unsignedBigInteger('directed_to_person');
-            $table->foreign('directed_to_person')->references('id')->on('users');
+            $table->unsignedBigInteger('id_directed_to_person');
+            $table->foreign('id_directed_to_person')->references('id')->on('users');
 
-            $table->unsignedBigInteger('directed_to_base');
-            $table->foreign('directed_to_base')->references('id')->on('bases');
+            $table->unsignedBigInteger('id_directed_to_base');
+            $table->foreign('id_directed_to_base')->references('id')->on('bases');
         });
     }
 

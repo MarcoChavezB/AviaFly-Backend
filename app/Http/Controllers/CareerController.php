@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\careers;
+use App\Models\Career;
 use Illuminate\Http\Request;
 
-class CareersController extends Controller
+class CareerController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -41,10 +41,10 @@ class CareersController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\careers  $careers
+     * @param  \App\Models\Career  $career
      * @return \Illuminate\Http\Response
      */
-    public function show(careers $careers)
+    public function show(Career $career)
     {
         //
     }
@@ -52,10 +52,10 @@ class CareersController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\careers  $careers
+     * @param  \App\Models\Career  $career
      * @return \Illuminate\Http\Response
      */
-    public function edit(careers $careers)
+    public function edit(Career $career)
     {
         //
     }
@@ -64,10 +64,10 @@ class CareersController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\careers  $careers
+     * @param  \App\Models\Career  $career
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, careers $careers)
+    public function update(Request $request, Career $career)
     {
         //
     }
@@ -75,10 +75,10 @@ class CareersController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\careers  $careers
+     * @param  \App\Models\Career  $career
      * @return \Illuminate\Http\Response
      */
-    public function destroy(careers $careers)
+    public function destroy(Career $career)
     {
         //
     }

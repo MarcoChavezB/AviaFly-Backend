@@ -35,6 +35,7 @@ class User extends Authenticatable
         'credit',
         'id_created_by',
         'id_base',
+        'id_carrier'
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -63,5 +64,10 @@ class User extends Authenticatable
     public function users()
     {
         return $this->hasMany(User::class, 'id_created_by');
+    }
+
+    public function careers()
+    {
+        return $this->hasMany(Career::class, 'id_carrier');
     }
 }

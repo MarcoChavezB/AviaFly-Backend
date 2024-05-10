@@ -13,8 +13,15 @@ class Announcement extends Model
         'content',
         'file',
         'directed_to_group',
-        'directed_to_person',
-        'directed_to_base',
-
+        'id_directed_to_person',
+        'id_directed_to_base',
     ];
+
+    public function person(){
+        return $this->belongsTo(User::class, 'id_directed_to_person');
+    }
+
+    public function base(){
+        return $this->belongsTo(Base::class, 'id_directed_to_base');   
+    }
 }
