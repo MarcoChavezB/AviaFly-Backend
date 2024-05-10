@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Base;
 
 class InstructorController extends Controller
 {
@@ -60,11 +61,9 @@ class InstructorController extends Controller
             $instructor->password = bcrypt($instructor->curp);
             $instructor->save();
 
-            if($instructor->id_base == 1){
-                $instructor->user_identification = 'ET' . $instructor->id;
-            } else if($instructor->id_base == 2){
-                $instructor->user_identification = 'EQ' . $instructor->id;
-            }
+            $base = Base::find($request->base);
+            $instructor->user_identification = 'I' . $base->name[0] . $instructor->id;
+
             $instructor->save();
 
             return response()->json($instructor->user_identification, 201);
