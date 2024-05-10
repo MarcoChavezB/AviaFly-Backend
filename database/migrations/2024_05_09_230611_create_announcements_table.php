@@ -26,10 +26,6 @@ return new class extends Migration
 
             $table->unsignedBigInteger('directed_to_base');
             $table->foreign('directed_to_base')->references('id')->on('bases');
-
-
-            $table->unsignedBigInteger('id_carrier')->nullable();
-            $table->foreign('id_carrier')->references('id')->on('careers');
         });
     }
 
