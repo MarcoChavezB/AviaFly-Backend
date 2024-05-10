@@ -19,11 +19,11 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('middle_name');
             $table->string('user_identification')->unique();
-            $table->string('photo');
             $table->string('phone');
             $table->string('cellphone');
             $table->string('curp');
             $table->string('email');
+            $table->string('company_email');
             $table->timestamp('emergency_contact');
             $table->string('emergency_phone');
             $table->string('emergency_direction');
