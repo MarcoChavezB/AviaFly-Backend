@@ -18,22 +18,22 @@ return new class extends Migration
             $table->string('name');
             $table->string('last_name');
             $table->string('middle_name');
-            $table->string('user_identification')->unique();
-            $table->string('photo');
+            $table->string('user_identification')->nullable();
             $table->string('phone');
             $table->string('cellphone');
-            $table->string('curp');
-            $table->string('email');
-            $table->timestamp('emergency_contact');
-            $table->string('emergency_phone');
-            $table->string('emergency_direction');
+            $table->string('curp')->unique();
+            $table->string('email')->unique();
+            $table->string('company_email')->nullable()->unique();
+            $table->timestamp('emergency_contact')->nullable();
+            $table->string('emergency_phone')->nullable();
+            $table->string('emergency_direction')->nullable();
             $table->enum('user_type', ['root', 'admin', 'employee', 'instructor', 'student']);
             $table->string('password');
-            $table->decimal('credit', 8, 2);
+            $table->decimal('credit', 8, 2)->nullable();
             $table->rememberToken();
             $table->timestamps();
 
-            $table->unsignedBigInteger('id_created_by');
+            $table->unsignedBigInteger('id_created_by')->nullable();
             $table->foreign('id_created_by')->references('id')->on('users');
 
             $table->unsignedBigInteger('id_base');
@@ -42,7 +42,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_carrier')->nullable();
             $table->foreign('id_carrier')->references('id')->on('careers');
 
-            $table->unsignedBigInteger('id_history_flight');
+            $table->unsignedBigInteger('id_history_flight')->nullable();
             $table->foreign('id_history_flight')->references('id')->on('flight_history');
         });
     }
