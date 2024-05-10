@@ -13,18 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('courses', function (Blueprint $table) {
+        Schema::create('flight_history', function (Blueprint $table) {
             $table->id();
-            $table->date('start_date');
-            $table->date('finish_date');
+            $table->decimal('simulator_hours');
+            $table->decimal('monomotor_hours');
+            $table->decimal('multimotor_hours');
             $table->timestamps();
-
-            $table->unsignedBigInteger('id_subject');
-            $table->foreign('id_subject')->references('id')->on('subjects');
-
-            $table->unsignedBigInteger('id_teacher');
-            $table->foreign('id_teacher')->references('id')->on('users');
-
         });
     }
 
@@ -35,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('courses');
+        Schema::dropIfExists('flight_histories');
     }
 };
