@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
