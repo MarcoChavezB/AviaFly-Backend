@@ -24,7 +24,6 @@ return new class extends Migration
 
             $table->unsignedBigInteger('id_customer');
             $table->foreign('id_customer')->references('id')->on('users');  
-
         });
     }
 
