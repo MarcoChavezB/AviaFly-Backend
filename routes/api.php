@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\CareerController;
 use App\Http\Controllers\InstructorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\BaseController;
+use App\Http\Controllers\StudentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +41,7 @@ Route::prefix('/user')->group(function () {
 
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
+    Route::post('/create', [StudentController::class, 'create']);
 });
 
 Route::prefix('/base')->group(function () {
@@ -48,4 +51,8 @@ Route::prefix('/base')->group(function () {
 
 Route::prefix('/instructor')->group(function () {
     Route::post('/create', [InstructorController::class, 'create']);
+});
+
+Route::prefix('/career')->group(function () {
+    Route::post('/create', [CareerController::class, 'create']);
 });
