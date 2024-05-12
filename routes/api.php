@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\BaseController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,12 +24,22 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::any('/unauthorized', function () {
+    return response()->json([
+        'message' => 'Unauthorized'
+    ], 401);
+})->name('unauthorized');
+
+
 Route::prefix('/user')->group(function () {
 
-    Route::post('login');
+    Route::post('login', [UserController::class, 'login']);
 
 
     Route::middleware('auth:sanctum')->group(function () {
+
+        Route::post('logout', [UserController::class, 'logout']);
+
 
         Route::get('/authenticatetoken', function () {
             return response()->json([
