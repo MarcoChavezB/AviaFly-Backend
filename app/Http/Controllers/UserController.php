@@ -23,12 +23,12 @@ class UserController extends Controller
         $user = User::where('user_identification', $request->user_identification)->first();
 
         if(!$user){
-            return response()->json(["message" => "Usuario no encontrado"], 404);
+            return response()->json(["errors" => ["Usuario no encontrado"]], 404);
         }
 
         if(!$user || !Hash::check($request->password, $user->password)){
             return response()->json([
-                'message' => 'Contraseña incorrecta'
+                'errors' => ['Contraseña incorrecta']
             ], 401);
         }
 
