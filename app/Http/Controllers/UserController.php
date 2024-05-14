@@ -35,13 +35,13 @@ class UserController extends Controller
 
         $token = $user->createToken('access_token')->plainTextToken;
 
-        $cookie = cookie('jwt', $token, 60 * 24); // 1 day
-
-        return response()->json([
+        $response = response()->json([
             'message' => 'Se ha logeado correctamente',
             'data' => $user,
             'jwt' => $token,
-        ])->withCookie($cookie);
+        ]);
+
+        return $response;
     }
 
     public function logout(Request $request){
@@ -53,10 +53,8 @@ class UserController extends Controller
 
         $user->currentAccessToken()->delete();
 
-        // Borra la cookie
-        $cookie = Cookie::forget('jwt');
 
-        return response()->json(['message' => 'Se ha cerrado sesión correctamente'])->withCookie($cookie);
+        return response()->json(['message' => 'Se ha cerrado sesión correctamente']);
     }
 
 }
