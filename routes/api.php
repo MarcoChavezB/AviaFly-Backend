@@ -74,3 +74,7 @@ Route::prefix('/career')->group(function () {
     Route::post('/create', [CareerController::class, 'create']);
     Route::get('/get', [CareerController::class, 'getCareers']);
 });
+
+Route::prefix('/employes')->group(function () {
+    Route::get('/get', [UserController::class, 'getEmployes']);
+});

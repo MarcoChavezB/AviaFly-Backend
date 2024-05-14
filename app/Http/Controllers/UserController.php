@@ -58,5 +58,11 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Se ha cerrado sesión correctamente'])->withCookie($cookie);
     }
-
+    
+    function getEmployes(){
+        $employes = User::whereIn('user_type', ['root', 'admin', 'employee'])->get();
+        return response()->json([
+            "employes" => $employes
+        ]);
+    }
 }
