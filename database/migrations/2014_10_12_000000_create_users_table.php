@@ -38,9 +38,6 @@ return new class extends Migration
             $table->unsignedBigInteger('id_base');
             $table->foreign('id_base')->references('id')->on('bases');
 
-            $table->unsignedBigInteger('id_carrier')->nullable();
-            $table->foreign('id_carrier')->references('id')->on('careers');
-
             $table->unsignedBigInteger('id_history_flight')->nullable();
             $table->foreign('id_history_flight')->references('id')->on('flight_history');
         });
