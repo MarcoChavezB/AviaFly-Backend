@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\InstructorController;
 use Illuminate\Http\Request;
@@ -34,22 +35,21 @@ Route::any('/unauthorized', function () {
 Route::prefix('/user')->group(function () {
 
     Route::post('login', [UserController::class, 'login']);
-
-
     Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('logout', [UserController::class, 'logout']);
-
 
         Route::get('/authenticatetoken', function () {
             return response()->json([
                 'status' => true
             ]);
         });
-
     });
 });
 
+Route::prefix('/analitics')->group(function () {
+    Route::get('/get/principal', [AnalyticController::class, 'getCardData']);
+});
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
     Route::post('/create', [StudentController::class, 'create']);
