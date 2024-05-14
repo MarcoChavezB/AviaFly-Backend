@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\analitics;
+use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\InstructorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -22,21 +24,19 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::prefix('/user')->group(function () {
-
     Route::post('login');
-
-
     Route::middleware('auth:sanctum')->group(function () {
-
         Route::get('/authenticatetoken', function () {
             return response()->json([
                 'status' => true
             ]);
         });
-
     });
 });
 
+Route::prefix('/analitics')->group(function () {
+    Route::get('/get/principal', [AnalyticController::class, 'getCardData']);
+});
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
 });

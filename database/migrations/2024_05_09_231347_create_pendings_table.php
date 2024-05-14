@@ -17,6 +17,9 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('description');
+            $table->date('date_to_complete');
+            $table->boolean('is_urgent');
+            $table->enum('status', ['completed', 'uncompleted']);
             $table->timestamps();
 
             $table->unsignedBigInteger('id_created_by');

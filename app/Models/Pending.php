@@ -11,6 +11,9 @@ class Pending extends Model
     protected $fillable = [
         'title',
         'description',
+        'status',
+        'date_to_complete',
+        'is_urgent',
         'id_created_by',
         'id_assigned_to'
     ];
