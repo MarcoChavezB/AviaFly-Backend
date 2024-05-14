@@ -14,4 +14,12 @@ class Enrollment extends Model
         'id_user',
         'id_career'
     ];
+    
+        function user(){
+        return $this->hasMany(User::class, 'is_user');
+    }
+    
+    function carrier(){
+        return $this->hasMany(Career::class, 'id:carrier');
+    }
 }
