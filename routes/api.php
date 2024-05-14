@@ -1,12 +1,13 @@
 <?php
 
-use App\Http\Controllers\analitics;
-use App\Http\Controllers\AnalyticController;
+use App\Http\Controllers\CareerController;
 use App\Http\Controllers\InstructorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\BaseController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,9 +24,23 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::any('/unauthorized', function () {
+    return response()->json([
+        'message' => 'Unauthorized'
+    ], 401);
+})->name('unauthorized');
+
+
 Route::prefix('/user')->group(function () {
-    Route::post('login');
+
+    Route::post('login', [UserController::class, 'login']);
+
+
     Route::middleware('auth:sanctum')->group(function () {
+
+        Route::post('logout', [UserController::class, 'logout']);
+
+
         Route::get('/authenticatetoken', function () {
             return response()->json([
                 'status' => true
@@ -39,6 +54,7 @@ Route::prefix('/analitics')->group(function () {
 });
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
+    Route::post('/create', [StudentController::class, 'create']);
 });
 
 Route::prefix('/base')->group(function () {
@@ -48,4 +64,8 @@ Route::prefix('/base')->group(function () {
 
 Route::prefix('/instructor')->group(function () {
     Route::post('/create', [InstructorController::class, 'create']);
+});
+
+Route::prefix('/career')->group(function () {
+    Route::post('/create', [CareerController::class, 'create']);
 });
