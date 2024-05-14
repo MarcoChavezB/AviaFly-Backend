@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -34,15 +35,16 @@ class UserController extends Controller
 
         $token = $user->createToken('access_token')->plainTextToken;
 
+        $cookie = cookie('jwt', $token, 60 * 24); // 1 day
+
         return response()->json([
             'message' => 'Se ha logeado correctamente',
             'data' => $user,
             'jwt' => $token,
-        ]);
+        ])->withCookie($cookie);
     }
 
-    public function logout(){
-
+    public function logout(Request $request){
         $user = Auth::user();
 
         if (!$user) {
@@ -51,7 +53,10 @@ class UserController extends Controller
 
         $user->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Se ha cerrado sesión correctamente']);
+        // Borra la cookie
+        $cookie = Cookie::forget('jwt');
 
+        return response()->json(['message' => 'Se ha cerrado sesión correctamente'])->withCookie($cookie);
     }
+
 }

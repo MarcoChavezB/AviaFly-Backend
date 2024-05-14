@@ -81,7 +81,7 @@ class StudentController extends Controller
 
             return response()->json($student, 201);
         }catch(\Exception $e){
-            return response()->json(["error" => "Internal Server Error"], 500);
+            return response()->json(["error" => $e -> getMessage()], 500);
         }
     }
 }
