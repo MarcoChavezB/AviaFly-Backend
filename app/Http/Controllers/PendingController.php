@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class PendingController extends Controller
 {
-    public function index(int $id){
+    function index(int $id){
         $personalPendings = Pending::where('id_assigned_to', $id)
                                     ->where('status', 'uncompleted')
                                     ->get();

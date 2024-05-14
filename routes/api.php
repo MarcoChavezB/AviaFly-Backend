@@ -54,7 +54,7 @@ Route::prefix('/analitics')->group(function () {
 });
 
 Route::prefix('/pendings')->group(function () {
-    Route::get('/get/all/pendings/{id}', [PendingController::class, 'index'])->where('id', '[0,9]+');
+    Route::get('/get/all/{id}', [PendingController::class, 'index']);
 });
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
