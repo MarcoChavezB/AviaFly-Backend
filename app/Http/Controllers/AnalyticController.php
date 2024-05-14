@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\Enrollment;
 use App\Models\Pending;
 use App\Models\User;
 use Illuminate\Support\Facades\Date;
@@ -26,5 +27,15 @@ class AnalyticController extends Controller
         ]);
 
     }
-
+    
+    function getEnrollmentsYear(){
+        $date = Enrollment::select('date')
+                            ->selectRaw('count(*) as value')
+                            ->groupBy('date')
+                            ->get();
+                            
+        return response()->json(
+        ['data' => $date], 200
+        );
+    }
 }

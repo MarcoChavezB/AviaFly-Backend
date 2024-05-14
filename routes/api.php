@@ -49,6 +49,7 @@ Route::prefix('/user')->group(function () {
 
 Route::prefix('/analitics')->group(function () {
     Route::get('/get/principal', [AnalyticController::class, 'getCardData']);
+    Route::get('/get/enrollments/year', [AnalyticController::class, 'getEnrollmentsYear']);
 });
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
