@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Base;
+use App\Models\Enrollment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -59,7 +60,6 @@ class StudentController extends Controller
             }
 
             $student = new User();
-            $student->created_at = $request->register_date;
             $student->name = $request->name;
             $student->last_names = $request->last_names;
             $student->curp = $request->curp;
@@ -67,7 +67,6 @@ class StudentController extends Controller
             $student->cellphone = $request->cellphone;
             $student->email = $request->email;
             $student->id_base = $request->base;
-            $student->id_carrier = $request->career;
             $student->emergency_contact = $request->emergency_contact;
             $student->emergency_phone = $request->emergency_phone;
             $student->emergency_direction = $request->emergency_direction;
@@ -75,13 +74,19 @@ class StudentController extends Controller
             $student->password = bcrypt($student->curp);
             $student->save();
 
+            $enrollment = new Enrollment();
+            $enrollment->date = $request->register_date;
+            $enrollment->student_id = $student->id;
+            $enrollment->career_id = $request->career;
+            $enrollment->save();
+
             $base = Base::find($request->base);
             $student->user_identification = 'A' . $base->name[0] . $student->id;
             $student->save();
 
             return response()->json($student, 201);
         }catch(\Exception $e){
-            return response()->json(["error" => "Internal Server Error"], 500);
+            return response()->json(["error" => $e->getMessage()], 500);
         }
     }
 }

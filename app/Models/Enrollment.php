@@ -8,15 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Enrollment extends Model
 {
     use HasFactory;
-    
-    protected $filleable = [
+
+    protected $fillable = [
         'date',
         'id_user',
-        'id_carrier'
+        'id_career'
     ];
     
-    
-    function user(){
+        function user(){
         return $this->hasMany(User::class, 'is_user');
     }
     

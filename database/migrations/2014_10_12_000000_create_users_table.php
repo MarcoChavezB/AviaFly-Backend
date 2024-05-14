@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('curp')->unique();
             $table->string('email')->unique();
             $table->string('company_email')->nullable()->unique();
-            $table->timestamp('emergency_contact')->nullable();
+            $table->string('emergency_contact')->nullable();
             $table->string('emergency_phone')->nullable();
             $table->string('emergency_direction')->nullable();
             $table->enum('user_type', ['root', 'admin', 'employee', 'instructor', 'student']);
