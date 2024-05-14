@@ -67,7 +67,6 @@ class StudentController extends Controller
             $student->cellphone = $request->cellphone;
             $student->email = $request->email;
             $student->id_base = $request->base;
-            $student->id_carrier = $request->career;
             $student->emergency_contact = $request->emergency_contact;
             $student->emergency_phone = $request->emergency_phone;
             $student->emergency_direction = $request->emergency_direction;
@@ -87,7 +86,7 @@ class StudentController extends Controller
 
             return response()->json($student, 201);
         }catch(\Exception $e){
-            return response()->json(["error" => "Internal Server Error"], 500);
+            return response()->json(["error" => $e->getMessage()], 500);
         }
     }
 }
