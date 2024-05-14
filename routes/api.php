@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\BaseController;
+use App\Http\Controllers\PendingController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 
@@ -50,6 +51,10 @@ Route::prefix('/user')->group(function () {
 Route::prefix('/analitics')->group(function () {
     Route::get('/get/principal', [AnalyticController::class, 'getCardData']);
     Route::get('/get/enrollments/year', [AnalyticController::class, 'getEnrollmentsYear']);
+});
+
+Route::prefix('/pendings')->group(function () {
+    Route::get('/get/all/pendings/{id}', [PendingController::class, 'index'])->where('id', '[0,9]+');
 });
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
