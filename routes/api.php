@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\CareerController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\SubjectController;
 use Illuminate\Http\Request;
@@ -94,5 +95,9 @@ Route::prefix('/subject')->group(function () {
 
 Route::prefix('/employes')->group(function () {
     Route::get('/get', [UserController::class, 'getEmployes']);
+});
+
+Route::prefix('/contact')->group(function () {
+    Route::post('/create', [ContactController::class, 'create']);
 });
 
