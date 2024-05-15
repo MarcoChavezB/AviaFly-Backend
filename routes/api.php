@@ -62,7 +62,7 @@ Route::prefix('/analitics')->group(function () {
 Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {
     Route::get('/get/all', [PendingController::class, 'index']);
     Route::post('/create', [PendingController::class, 'create']);
-    Route::put('/update', [PendingController::class, 'update']);
+    Route::post('/update', [PendingController::class, 'update']);
 });
 
 Route::prefix('/student')->group(function () {
