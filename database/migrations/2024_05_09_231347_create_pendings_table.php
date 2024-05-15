@@ -19,13 +19,13 @@ return new class extends Migration
             $table->string('description');
             $table->date('date_to_complete');
             $table->boolean('is_urgent');
-            $table->enum('status', ['completed', 'uncompleted']);
+            $table->boolean('status')->default(0);
             $table->timestamps();
 
             $table->unsignedBigInteger('id_created_by');
             $table->foreign('id_created_by')->references('id')->on('users');
 
-            $table->unsignedBigInteger('id_assigned_to');
+            $table->unsignedBigInteger('id_assigned_to')->nullable();
             $table->foreign('id_assigned_to')->references('id')->on('users');
         });
     }

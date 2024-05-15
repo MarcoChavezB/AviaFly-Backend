@@ -89,3 +89,8 @@ Route::prefix('/subject')->group(function () {
     Route::post('/create', [SubjectController::class, 'create']);
     Route::get('/get', [SubjectController::class, 'getSubjects']);
 });
+
+Route::prefix('/employes')->group(function () {
+    Route::get('/get', [UserController::class, 'getEmployes']);
+});
+

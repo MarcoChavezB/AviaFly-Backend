@@ -53,8 +53,13 @@ class UserController extends Controller
 
         $user->currentAccessToken()->delete();
 
-
         return response()->json(['message' => 'Se ha cerrado sesión correctamente']);
     }
-
+    
+    function getEmployes(){
+        $employes = User::whereIn('user_type', ['root', 'admin', 'employee'])->get();
+        return response()->json([
+            "employes" => $employes
+        ]);
+    }
 }
