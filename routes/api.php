@@ -56,6 +56,7 @@ Route::prefix('/analitics')->group(function () {
 
 Route::prefix('/pendings')->group(function () {
     Route::get('/get/all/{id}', [PendingController::class, 'index']);
+    Route::post('/create', [PendingController::class, 'create']);
 });
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
