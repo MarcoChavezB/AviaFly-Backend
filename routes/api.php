@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\InstructorController;
+use App\Http\Controllers\SubjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
@@ -33,18 +34,24 @@ Route::any('/unauthorized', function () {
 })->name('unauthorized');
 
 
-Route::prefix('/user')->group(function () {
+Route::prefix('/avia')->group(function () {
 
     Route::post('login', [UserController::class, 'login']);
 
     Route::middleware('auth:sanctum')->group(function () {
 
-        Route::post('logout', [UserController::class, 'logout']);
 
         Route::get('/authenticatetoken', function () {
             return response()->json([
                 'status' => true
             ]);
+        });
+
+
+        Route::post('logout', [UserController::class, 'logout']);
+
+        Route::prefix('/instructor')->group(function () {
+            Route::get('/get/periods', [InstructorController::class, 'getPeriods']);
         });
     });
 });
@@ -60,6 +67,7 @@ Route::prefix('/pendings')->group(function () {
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
     Route::post('/create', [StudentController::class, 'create']);
+    Route::get('/get', [StudentController::class, 'getStudents']);
 });
 
 Route::prefix('/base')->group(function () {
@@ -69,9 +77,15 @@ Route::prefix('/base')->group(function () {
 
 Route::prefix('/instructor')->group(function () {
     Route::post('/create', [InstructorController::class, 'create']);
+    Route::get('/get', [InstructorController::class, 'getInstructors']);
 });
 
 Route::prefix('/career')->group(function () {
     Route::post('/create', [CareerController::class, 'create']);
     Route::get('/get', [CareerController::class, 'getCareers']);
+});
+
+Route::prefix('/subject')->group(function () {
+    Route::post('/create', [SubjectController::class, 'create']);
+    Route::get('/get', [SubjectController::class, 'getSubjects']);
 });

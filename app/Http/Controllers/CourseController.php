@@ -44,8 +44,9 @@ class CourseController extends Controller
          foreach ($request->students as $student) {
              $course_student = new CourseStudent();
              $course_student->id_course = $course->id;
-              $course_student->id_student = $student;
-              $course_student->save();
+             $course_student->id_student = $student;
+             $course_student->calification = 0;
+             $course_student->save();
          }
 
          return response()->json($course, 201);
