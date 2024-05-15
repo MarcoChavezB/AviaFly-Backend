@@ -53,7 +53,6 @@ class UserController extends Controller
 
         $user->currentAccessToken()->delete();
 
-
         return response()->json(['message' => 'Se ha cerrado sesión correctamente']);
     }
     
