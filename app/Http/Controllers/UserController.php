@@ -35,11 +35,13 @@ class UserController extends Controller
 
         $token = $user->createToken('access_token')->plainTextToken;
 
+        $cookie = cookie('jwt', $token, 60*24);
+
         $response = response()->json([
             'message' => 'Se ha logeado correctamente',
             'data' => $user,
             'jwt' => $token,
-        ]);
+        ])->withCookie($cookie);
 
         return $response;
     }
@@ -53,9 +55,11 @@ class UserController extends Controller
 
         $user->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Se ha cerrado sesión correctamente']);
+        $cookie = Cookie::forget('jwt');
+
+        return response()->json(['message' => 'Se ha cerrado sesión correctamente'])->withCookie($cookie);
     }
-    
+
     function getEmployes(){
         $employes = User::whereIn('user_type', ['root', 'admin', 'employee'])->get();
         return response()->json([

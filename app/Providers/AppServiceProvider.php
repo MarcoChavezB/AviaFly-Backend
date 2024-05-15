@@ -24,8 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        /*Sanctum::getAccessTokenFromRequestUsing(function($request) {
+        Sanctum::getAccessTokenFromRequestUsing(function($request) {
             return $request->cookie('jwt');
-        });*/
+        });
     }
 }
