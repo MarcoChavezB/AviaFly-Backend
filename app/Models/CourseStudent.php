@@ -11,7 +11,8 @@ class CourseStudent extends Model
     protected $fillable = [
         'calification',
         'id_course',
-        'id_student'
+        'id_student',
+        'calification',
     ];
 
     public function course()

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -70,5 +71,27 @@ class InstructorController extends Controller
         }catch(\Exception $e){
             return response()->json(["error" => "Internal Server Error"], 500);
         }
+    }
+
+    public function getInstructors()
+    {
+        $instructors = User::where('user_type', 'instructor')->get(['id', 'name', 'user_identification']);
+
+        if($instructors->isEmpty()){
+            return response()->json(["errors" => ["No hay instructores registrados"]], 404);
+        }
+
+        return response()->json($instructors);
+    }
+
+    public function getPeriods(){
+
+        $courses = Course::where('id_teacher', auth()->user()->id)->get(['id', 'start_date', 'finish_date']);
+
+        if($courses->isEmpty()){
+            return response()->json(["errors" => ["No tienes cursos registrados"]], 404);
+        }
+
+        return response()->json($courses);
     }
 }

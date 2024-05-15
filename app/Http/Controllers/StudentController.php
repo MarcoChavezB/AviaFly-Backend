@@ -89,4 +89,18 @@ class StudentController extends Controller
             return response()->json(["error" => $e->getMessage()], 500);
         }
     }
+
+    public function getStudents(){
+        try {
+            $students = User::where('user_type', 'student')->get(['id', 'name', 'last_names', 'email', 'user_identification']);
+
+            if($students->isEmpty()){
+                return response()->json(["errors" => ["No hay estudiantes creados"]], 404);
+            }
+
+            return response()->json($students, 200);
+        }catch (\Exception $e) {
+            return response()->json(["message" => "Internal Server Error"], 500);
+        }
+    }
 }
