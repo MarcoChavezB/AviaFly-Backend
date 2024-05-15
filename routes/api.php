@@ -39,8 +39,6 @@ Route::prefix('/avia')->group(function () {
     Route::post('login', [UserController::class, 'login']);
 
     Route::middleware('auth:sanctum')->group(function () {
-
-
         Route::get('/authenticatetoken', function () {
             return response()->json([
                 'status' => true
@@ -61,10 +59,12 @@ Route::prefix('/analitics')->group(function () {
     Route::get('/get/enrollments/year', [AnalyticController::class, 'getEnrollmentsYear']);
 });
 
-Route::prefix('/pendings')->group(function () {
-    Route::get('/get/all/{id}', [PendingController::class, 'index']);
+Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {
+    Route::get('/get/all', [PendingController::class, 'index']);
     Route::post('/create', [PendingController::class, 'create']);
+    Route::put('/update', [PendingController::class, 'update']);
 });
+
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
     Route::post('/create', [StudentController::class, 'create']);

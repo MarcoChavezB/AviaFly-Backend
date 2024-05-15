@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Validator;
 
 class PendingController extends Controller
 {
-    function index(int $id)
-    {
+    function index(){
+        $id = auth()->user()->id;
         $userBaseId = User::find($id)->id_base;
 
         $personalPendings = Pending::where('id_created_by', $id)
@@ -71,11 +71,12 @@ class PendingController extends Controller
         ]);
     }
 
-    function create(Request $request)
-    {
-        $user = User::find('id', $request->user()->id);
-
-        if ($user->id_base != $request->id_base) {
+    function create(Request $request){
+        $id = auth()->user()->id;
+        $user = User::find($id);
+        $assignetTo = User::find($request->id_assigned_to);
+        
+        if ($user->id_base != $assignetTo->id_base) {
             return response()->json([
                 "msg" => "No puedes crear una tarea para otra base"
             ], 401);
@@ -86,7 +87,6 @@ class PendingController extends Controller
             'status' => 'required|boolean',
             'date_to_complete' => 'required|date_format:Y-m-d',
             'is_urgent' => 'required|boolean',
-            'id_created_by' => 'required|exists:users,id',
             'id_assigned_to' => 'required|exists:users,id',
         ], [
             'title.required' => 'El título es obligatorio.',
@@ -100,7 +100,6 @@ class PendingController extends Controller
             'date_to_complete.date_format' => 'La fecha de completación debe tener el formato YYYY-MM-DD.',
             'is_urgent.required' => 'La urgencia es obligatoria.',
             'is_urgent.boolean' => 'La urgencia debe ser verdadera o falsa.',
-            'id_created_by.required' => 'El ID del creador es obligatorio.',
             'id_created_by.exists' => 'El ID del creador no existe en la tabla de usuarios.',
             'id_assigned_to.required' => 'El ID del asignado es obligatorio.',
             'id_assigned_to.exists' => 'El ID del asignado no existe en la tabla de usuarios.',
@@ -118,12 +117,25 @@ class PendingController extends Controller
         $pending->status = $request->status;
         $pending->date_to_complete = $request->date_to_complete;
         $pending->is_urgent = $request->is_urgent;
-        $pending->id_created_by = $request->user()->id;
+        $pending->id_created_by = $id;
         $pending->id_assigned_to = $request->id_assigned_to;
         $pending->save();
         
         return response()->json([
             "msg" => "Se creo la tarea correctamente"
         ], 201);
+    }
+    
+    function destroy(int $id){
+        $pendingToDestroy = Pending::find($id);
+        if(!$pendingToDestroy){
+            return response()->json([
+                "msg" => "no se encontro la tarea"
+            ], 404);
+        }
+        $pendingToDestroy->delete();
+        return response()->json([
+            "msg" => "se elimino la tarea"
+        ], 200);
     }
 }
