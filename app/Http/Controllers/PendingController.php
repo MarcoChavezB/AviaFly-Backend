@@ -131,6 +131,23 @@ class PendingController extends Controller
     function destroy(int $id)
     {
         $pendingToDestroy = Pending::find($id);
+        
+        // validacion de base
+        $assignetTo = User::find($pendingToDestroy->id_assigned_to);
+        if(auth()->user()->id != $assignetTo->id_base){
+            return response()->json([
+                "msg" => "no puedes eliminar esta tarea"
+            ]);
+        }
+        
+        // validacion de urgencia
+        if((auth()->user()->id != $pendingToDestroy->id_created_by && $pendingToDestroy->id_assigned_to != auth()->user()->id) && $pendingToDestroy->is_urgent != 1){
+            return response()->json([
+                "msg" => "no puedes eliminar esta tarea"
+            ]);
+        }
+        
+        
         if (!$pendingToDestroy) {
             return response()->json([
                 "msg" => "no se encontro la tarea"
@@ -142,8 +159,9 @@ class PendingController extends Controller
         ], 200);
     }
 
-    function update(Request $request)
-    {
+
+// validada por base y siendo propia
+    function update(Request $request){
         $validator = Validator::make($request->all(), [
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
@@ -168,6 +186,23 @@ class PendingController extends Controller
             ], 400);
         }
         $pending = Pending::find($request->id);
+        
+        // editanto una tarea que no es suya
+        if(auth()->user()->id != $pending->id_created_by){
+            return response()->json([
+                "msg" => "no puedes editar esta tarea, no es tuya"
+            ]);
+        }
+        
+        // si la tarea no es de su base
+        $assignedTo = User::find($pending->id_assigned_to);
+        if(auth()->user()->id != $assignedTo->id_base){
+            return response()->json([
+                "msg" => "no puedes editar esta tarea, no es de tu base"
+            ]);
+        }
+        
+        // no se encontro la tarea
         if(!$pending){
             return response()->json([
                 "msg" => "No se encontro la tarea",
@@ -193,5 +228,7 @@ class PendingController extends Controller
             "msg" => "se actualizo la tarea"
         ], 200);
     }
+    
 }
+
 

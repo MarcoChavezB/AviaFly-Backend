@@ -61,6 +61,7 @@ Route::prefix('/analitics')->group(function () {
 
 Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {
     Route::get('/get/all', [PendingController::class, 'index']);
+    Route::delete('/destroy/{id}', [PendingController::class, 'destroy']);
     Route::post('/create', [PendingController::class, 'create']);
     Route::post('/update', [PendingController::class, 'update']);
 });
