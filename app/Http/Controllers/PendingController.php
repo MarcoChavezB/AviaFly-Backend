@@ -168,6 +168,23 @@ class PendingController extends Controller
             ], 400);
         }
         $pending = Pending::find($request->id);
+        
+        // editanto una tarea que no es suya
+        if(auth()->user()->id != $pending->id_created_by){
+            return response()->json([
+                "msg" => "no puedes editar esta tarea, no es tuya"
+            ]);
+        }
+        
+        // si la tarea no es de su base
+        $assignedTo = User::find($pending->id_assigned_to);
+        if(auth()->user()->id != $assignedTo->id_base){
+            return response()->json([
+                "msg" => "no puedes editar esta tarea, no es de tu base"
+            ]);
+        }
+        
+        // no se encontro la tarea
         if(!$pending){
             return response()->json([
                 "msg" => "No se encontro la tarea",
@@ -193,5 +210,7 @@ class PendingController extends Controller
             "msg" => "se actualizo la tarea"
         ], 200);
     }
+    
 }
+
 
