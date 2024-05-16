@@ -99,5 +99,6 @@ Route::prefix('/employes')->group(function () {
 
 Route::prefix('/contact')->group(function () {
     Route::post('/create', [ContactController::class, 'create']);
+    Route::get('/get', [ContactController::class, 'index']);
 });
 

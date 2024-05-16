@@ -9,9 +9,20 @@ use Illuminate\Support\Facades\Validator;
 class ContactController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->get('search', '');
 
+        $contacts = Contact::where('name', 'like', '%' . $search . '%')
+            ->orWhere('last_names', 'like', '%' . $search . '%')
+            ->orWhere('company', 'like', '%' . $search . '%')
+            ->paginate(15);
+
+        return response()->json([
+            'page' => $contacts->currentPage(),
+            'hasMorePages' => $contacts->hasMorePages(),
+            'contacts' => $contacts->items()
+        ], 200);
     }
 
 
