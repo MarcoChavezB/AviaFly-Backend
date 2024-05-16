@@ -100,5 +100,6 @@ Route::prefix('/employes')->group(function () {
 Route::prefix('/contact')->group(function () {
     Route::post('/create', [ContactController::class, 'create']);
     Route::get('/get', [ContactController::class, 'index']);
+    Route::get('/show/{id}', [ContactController::class, 'show'])->where('id', '[0-9]+');
 });
 

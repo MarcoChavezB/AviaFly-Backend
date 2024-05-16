@@ -64,9 +64,16 @@ class ContactController extends Controller
 
         return response()->json($contact, 201);
     }
-    public function show(Contact $contact)
-    {
 
+    public function show(Int $id)
+    {
+        $contact = Contact::find($id);
+
+        if(!$contact){
+            return response()->json(['message' => 'Contacto no encontrado'], 404);
+        }
+
+        return response()->json($contact, 200);
     }
 
 
