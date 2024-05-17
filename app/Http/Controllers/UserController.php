@@ -41,6 +41,7 @@ class UserController extends Controller
             'message' => 'Se ha logeado correctamente',
             'data' => $user,
             'jwt' => $token,
+            'user_type' => $user->user_type
         ])->withCookie($cookie);
 
         return $response;
@@ -61,9 +62,20 @@ class UserController extends Controller
     }
 
     function getEmployes(){
-        $employes = User::whereIn('user_type', ['root', 'admin', 'employee'])->get();
+        $user_type = Auth::user()->user_type;
+        switch($user_type){
+            case 'root':
+                $users = User::whereIn('user_type', ['admin', 'employee'])->get(['id', 'name']);
+                break;
+            case 'admin':
+                $users = User::whereIn('user_type', 'employee')->get(['id', 'name']);
+                break;
+            case 'employee':
+                $users = User::find(Auth()->user()->id)->get(['id', 'name']);
+                break;
+        }
         return response()->json([
-            "employes" => $employes
+            "employes" => $users
         ]);
     }
 }

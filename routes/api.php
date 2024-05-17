@@ -58,6 +58,7 @@ Route::prefix('/avia')->group(function () {
 Route::prefix('/analitics')->group(function () {
     Route::get('/get/principal', [AnalyticController::class, 'getCardData']);
     Route::get('/get/enrollments/year', [AnalyticController::class, 'getEnrollmentsYear']);
+    Route::get('/get/activity/week', [AnalyticController::class, 'getWeekActivity']);
 });
 
 Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {
@@ -93,8 +94,8 @@ Route::prefix('/subject')->group(function () {
     Route::get('/get', [SubjectController::class, 'getSubjects']);
 });
 
-Route::prefix('/employes')->group(function () {
-    Route::get('/get', [UserController::class, 'getEmployes']);
+Route::prefix('/employes')->middleware('auth:sanctum')->group(function () {
+    Route::get('/get/tasks', [UserController::class, 'getEmployes']);
 });
 
 Route::prefix('/contact')->group(function () {
