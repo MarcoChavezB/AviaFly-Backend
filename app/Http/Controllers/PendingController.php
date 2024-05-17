@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Validator;
 
 class PendingController extends Controller
 {
-    function index()
-    {
+    function index(){
         $id = auth()->user()->id;
         $userBaseId = User::find($id)->id_base;
 
@@ -71,13 +70,11 @@ class PendingController extends Controller
             ],
         ]);
     }
-
-    function create(Request $request)
-    {
+    function create(Request $request){
         $id = auth()->user()->id;
         $user = User::find($id);
         $assignetTo = User::find($request->id_assigned_to);
-
+        
         if ($user->id_base != $assignetTo->id_base) {
             return response()->json([
                 "msg" => "No puedes crear una tarea para otra base"
@@ -86,7 +83,6 @@ class PendingController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'status' => 'required|boolean',
             'date_to_complete' => 'required|date_format:Y-m-d',
             'is_urgent' => 'required|boolean',
             'id_assigned_to' => 'required|exists:users,id',
@@ -96,8 +92,6 @@ class PendingController extends Controller
             'title.max' => 'El título no debe tener más de 255 caracteres.',
             'description.required' => 'La descripción es obligatoria.',
             'description.string' => 'La descripción debe ser una cadena de caracteres.',
-            'status.required' => 'El estado es obligatorio.',
-            'status.boolean' => 'El estado debe ser verdadero o falso.',
             'date_to_complete.required' => 'La fecha de completación es obligatoria.',
             'date_to_complete.date_format' => 'La fecha de completación debe tener el formato YYYY-MM-DD.',
             'is_urgent.required' => 'La urgencia es obligatoria.',
@@ -116,7 +110,7 @@ class PendingController extends Controller
         $pending = new Pending();
         $pending->title = $request->title;
         $pending->description = $request->description;
-        $pending->status = $request->status;
+        $pending->status = $request->status ?? 0;
         $pending->date_to_complete = $request->date_to_complete;
         $pending->is_urgent = $request->is_urgent;
         $pending->id_created_by = $id;
@@ -127,9 +121,7 @@ class PendingController extends Controller
             "msg" => "Se creo la tarea correctamente"
         ], 201);
     }
-
-    function destroy(int $id)
-    {
+    function destroy(int $id) {
         $pendingToDestroy = Pending::find($id);
         
         // validacion de base
@@ -158,9 +150,6 @@ class PendingController extends Controller
             "msg" => "se elimino la tarea"
         ], 200);
     }
-
-
-// validada por base y siendo propia
     function update(Request $request){
         $validator = Validator::make($request->all(), [
             'title' => 'sometimes|string|max:255',
@@ -228,7 +217,6 @@ class PendingController extends Controller
             "msg" => "se actualizo la tarea"
         ], 200);
     }
-    
 }
 
 

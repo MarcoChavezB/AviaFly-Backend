@@ -30,8 +30,7 @@ class AnalyticController extends Controller
         ]);
     }
 
-    function getEnrollmentsYear()
-    {
+    function getEnrollmentsYear(){
         $enrollmentsByMonth = Enrollment::select(DB::raw('MONTH(date) as month'), DB::raw('COUNT(*) as enrollments'))
             ->groupBy(DB::raw('MONTH(date)'))
             ->get();
@@ -45,4 +44,7 @@ class AnalyticController extends Controller
         }
         return response()->json($formattedResponse);
     }
+    
+    function getWeekActivity (){
+    }    
 }

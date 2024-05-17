@@ -16,4 +16,4 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-database/seeders/SeedIgnore
+database/seeders/RootUser.php
