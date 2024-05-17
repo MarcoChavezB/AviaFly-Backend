@@ -23,7 +23,6 @@ return new class extends Migration
 
             $table->unsignedBigInteger('id_teacher');
             $table->foreign('id_teacher')->references('id')->on('users');
-
         });
     }
 
