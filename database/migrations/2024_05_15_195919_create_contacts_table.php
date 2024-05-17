@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('cellphone');
             $table->string('company')->nullable();
             $table->string('giro')->nullable();
-            $table->string('curp')->nullable();
+            $table->string('rfc')->nullable();
             $table->string('street')->nullable();
             $table->string('outside_number')->nullable();
             $table->string('inside_number')->nullable();

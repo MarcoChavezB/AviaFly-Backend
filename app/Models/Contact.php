@@ -18,7 +18,7 @@ class Contact extends Model
         'cellphone',
         'company',
         'giro',
-        'curp',
+        'rfc',
         'street',
         'outside_number',
         'inside_number',
