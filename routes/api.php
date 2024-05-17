@@ -101,5 +101,7 @@ Route::prefix('/contact')->group(function () {
     Route::post('/create', [ContactController::class, 'create']);
     Route::get('/get', [ContactController::class, 'index']);
     Route::get('/show/{id}', [ContactController::class, 'show'])->where('id', '[0-9]+');
+    Route::delete('/destroy/{id}', [ContactController::class, 'destroy'])->where('id', '[0-9]+');
+    Route::put('/update/{id}', [ContactController::class, 'update'])->where('id', '[0-9]+');
 });
 
