@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\CareerController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\SubjectController;
 use Illuminate\Http\Request;
@@ -95,5 +96,13 @@ Route::prefix('/subject')->group(function () {
 
 Route::prefix('/employes')->middleware('auth:sanctum')->group(function () {
     Route::get('/get/tasks', [UserController::class, 'getEmployes']);
+});
+
+Route::prefix('/contact')->group(function () {
+    Route::post('/create', [ContactController::class, 'create']);
+    Route::get('/get', [ContactController::class, 'index']);
+    Route::get('/show/{id}', [ContactController::class, 'show'])->where('id', '[0-9]+');
+    Route::delete('/destroy/{id}', [ContactController::class, 'destroy'])->where('id', '[0-9]+');
+    Route::put('/update/{id}', [ContactController::class, 'update'])->where('id', '[0-9]+');
 });
 

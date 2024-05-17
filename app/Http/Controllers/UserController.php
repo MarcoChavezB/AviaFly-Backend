@@ -47,7 +47,7 @@ class UserController extends Controller
         return $response;
     }
 
-    public function logout(Request $request){
+    public function logout(){
         $user = Auth::user();
 
         if (!$user) {
