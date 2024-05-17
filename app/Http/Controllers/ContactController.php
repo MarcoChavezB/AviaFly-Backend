@@ -30,6 +30,18 @@ class ContactController extends Controller
     }
 
 
+    public function index2(Request $request)
+    {
+        $contacts = Contact::all();
+
+        if($contacts->isEmpty()){
+            return response()->json(['message' => 'No se encontraron contactos'], 404);
+        }
+
+        return response()->json(['contacts' => $contacts], 200);
+    }
+
+
     public function create(Request $request)
     {
         $validator = Validator::make($request->all(),[
