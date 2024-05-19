@@ -10,6 +10,9 @@ class Career extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name'
+        'name',
+        'monthly_payments',
+        'registration_fee',
+        'monthly_fee',
     ];
 }

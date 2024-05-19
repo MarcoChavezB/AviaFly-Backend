@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('teacher_subject_turns', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_teacher');
-            $table->foreign('id_teacher')->references('id')->on('teachers');
+            $table->foreign('id_teacher')->references('id')->on('employees');
 
             $table->unsignedBigInteger('id_subject');
             $table->foreign('id_subject')->references('id')->on('subjects');

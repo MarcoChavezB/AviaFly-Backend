@@ -13,24 +13,9 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'name',
-        'last_name',
-        'middle_name',
         'user_identification',
-        'photo',
-        'phone',
-        'cellphone',
-        'curp',
-        'email',
-        'company_email',
-        'emergency_contact',
-        'emergency_phone',
-        'emergency_direction',
         'user_type',
         'password',
-        'credit',
-        'id_created_by',
-        'id_base',
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -50,14 +35,4 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-
-    public function bases()
-    {
-        return $this->hasMany(Base::class, 'id_base');
-    }
-
-    public function users()
-    {
-        return $this->hasMany(User::class, 'id_created_by');
-    }
 }
