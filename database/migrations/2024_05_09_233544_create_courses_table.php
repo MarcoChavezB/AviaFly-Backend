@@ -15,8 +15,7 @@ return new class extends Migration
     {
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
-            $table->date('start_date');
-            $table->date('finish_date');
+            $table->string('duracion');
             $table->timestamps();
 
             $table->unsignedBigInteger('id_subject');
@@ -24,7 +23,6 @@ return new class extends Migration
 
             $table->unsignedBigInteger('id_teacher');
             $table->foreign('id_teacher')->references('id')->on('users');
-
         });
     }
 
