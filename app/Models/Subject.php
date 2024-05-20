@@ -11,4 +11,9 @@ class Subject extends Model
     protected $fillable = [
         'name',
     ];
+
+    public function careers()
+    {
+        return $this->belongsToMany(Career::class, 'career_subjects', 'id_subject', 'id_career');
+    }
 }

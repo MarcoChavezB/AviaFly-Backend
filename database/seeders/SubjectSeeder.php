@@ -16,12 +16,14 @@ class SubjectSeeder extends Seeder
     public function run()
     {
         $subjects = [
-            'Matemáticas',
-            'Física',
-            'Química',
-            'Biología',
-            'Historia',
-            'Geografía',
+            'Servicio a Bordo',
+            'Meteorología',
+            'Mercancias Peligrosas',
+            'Procedimientos de Emerg.',
+            'Aerodinamica',
+            'Reglametación Aérea',
+            'Factores Humanos y CRM',
+            'Geografía turística',
         ];
 
         foreach ($subjects as $subject) {

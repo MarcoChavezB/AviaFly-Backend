@@ -15,4 +15,9 @@ class Career extends Model
         'registration_fee',
         'monthly_fee',
     ];
+
+    public function subjects()
+    {
+        return $this->belongsToMany(Subject::class, 'career_subjects', 'id_career', 'id_subject');
+    }
 }

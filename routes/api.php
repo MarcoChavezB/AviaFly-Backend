@@ -72,6 +72,7 @@ Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
     Route::post('/create', [StudentController::class, 'create']);
     Route::get('/get', [StudentController::class, 'getStudents']);
+    Route::get('/get/subjects/{id}', [StudentController::class, 'getStudentSubjects'])->where('id', '[0-9]+');
 });
 
 Route::prefix('/base')->group(function () {
@@ -87,6 +88,7 @@ Route::prefix('/instructor')->group(function () {
 Route::prefix('/career')->group(function () {
     Route::post('/create', [CareerController::class, 'create']);
     Route::get('/get', [CareerController::class, 'getCareers']);
+    Route::get('/get-with-subjects', [CareerController::class, 'getCareersWithSubjects']);
 });
 
 Route::prefix('/subject')->group(function () {
