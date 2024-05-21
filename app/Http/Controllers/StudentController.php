@@ -205,14 +205,3 @@ class StudentController extends Controller
     }
 }
 
-
-
-
-/*
-
-    -id
-    - name
-    - last_names
-    - carrier
-    - start_date
-*/
