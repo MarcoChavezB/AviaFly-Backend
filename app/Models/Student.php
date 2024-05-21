@@ -25,4 +25,9 @@ class Student extends Model
         'id_base',
         'id_history_flight',
     ];
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class, 'student_id');
+    }
 }

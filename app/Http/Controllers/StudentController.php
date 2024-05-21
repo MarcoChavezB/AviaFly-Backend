@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Base;
+use App\Models\Employee;
 use App\Models\Enrollment;
 use App\Models\User;
+use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class StudentController extends Controller
@@ -103,4 +106,44 @@ class StudentController extends Controller
             return response()->json(["message" => "Internal Server Error"], 500);
         }
     }
+
+    public function indexSimulator()
+    {
+        $client = Auth::user();
+        $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
+
+        // Obtener los estudiantes con sus inscripciones y carreras asociadas
+        $students = Student::where('id_base', $id_base)
+                           ->with('enrollments.career')
+                           ->get();
+
+        
+        $data = $students->map(function ($student) {
+            $enrollment = $student->enrollments->first();
+            $career = $enrollment ? $enrollment->career->name : null;
+            $start_date = $enrollment ? $enrollment->date : null; 
+
+            return [
+                'id' => $student->id,
+                'name' => $student->name,
+                'last_names' => $student->last_names,
+                'carrier' => $career,
+                'start_date' => $start_date
+            ];
+        });
+
+        return response()->json($data);
+    }
 }
+
+
+
+
+/*
+
+    -id
+    - name
+    - last_names
+    - carrier
+    - start_date
+*/

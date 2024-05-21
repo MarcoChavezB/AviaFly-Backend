@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
+
 class UserController extends Controller
 {
+    
     public function login(Request $request){
         $validator = Validator::make($request->all(), [
             'user_identification' => 'required|string',
@@ -43,7 +45,7 @@ class UserController extends Controller
             'jwt' => $token,
             'user_type' => $user->user_type
         ])->withCookie($cookie);
-
+        
         return $response;
     }
 

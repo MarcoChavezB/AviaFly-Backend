@@ -107,3 +107,8 @@ Route::prefix('/contact')->group(function () {
     Route::get('/index', [ContactController::class, 'index2']);
 });
 
+
+Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
+    Route::get('/simulator/index', [StudentController::class, 'indexSimulator']);
+});
+
