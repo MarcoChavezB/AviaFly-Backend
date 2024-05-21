@@ -183,21 +183,19 @@ class StudentController extends Controller
         $client = Auth::user();
         $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
 
+        // Obtener los estudiantes con sus carreras asociadas
         $students = Student::where('id_base', $id_base)
-            ->with('enrollments.career')
-            ->get();
+                           ->with('career')
+                           ->get();
 
+        // Estructura de datos resultante
         $data = $students->map(function ($student) {
-            $enrollment = $student->enrollments->first();
-            $career = $enrollment ? $enrollment->career->name : null;
-            $start_date = $enrollment ? $enrollment->date : null;
-
             return [
                 'id' => $student->id,
                 'name' => $student->name,
                 'last_names' => $student->last_names,
-                'carrier' => $career,
-                'start_date' => $start_date
+                'carrier' => $student->career ? $student->career->name : null,
+                'start_date' => $student->start_date
             ];
         });
 
