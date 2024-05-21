@@ -42,4 +42,20 @@ class CareerController extends Controller
         }
     }
 
+
+    public function getCareersWithSubjects()
+    {
+        try {
+            $careers = Career::with('subjects:id,name')->select('id', 'name')->get();
+            if ($careers->isEmpty()) {
+                return response()->json(["errors" => ["No hay carreras creadas"]], 404);
+            }
+            return response()->json($careers, 200);
+        } catch (\Exception $e) {
+            return response()->json(["message" => ["Internal Server Error", $e->getMessage()]], 500);
+        }
+    }
+
+
+
 }

@@ -24,6 +24,8 @@ class Student extends Model
         'id_created_by',
         'id_base',
         'id_history_flight',
+        'id_career',
+        'start_date',
     ];
 
     public function enrollments()

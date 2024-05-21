@@ -20,10 +20,10 @@ return new class extends Migration
             $table->unsignedBigInteger('id_subject');
             $table->unsignedBigInteger('id_turn');
             $table->unsignedBigInteger('id_teacher');
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->integer('final_grade');
-            $table->double('duration');
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+            $table->integer('final_grade')->nullable();
+            $table->double('duration')->nullable();
 
             $table->timestamps();
 

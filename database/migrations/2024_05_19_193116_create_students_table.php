@@ -17,16 +17,20 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('last_names');
-            $table->string('email');
+            $table->string('email')->unique();
             $table->string('phone');
-            $table->string('cellphone');
-            $table->string('curp');
+            $table->string('cellphone')->nullable();
+            $table->string('curp')->unique();
             $table->decimal('credit', 8, 2)->nullable();
-            $table->string('user_identification')->unique();
+            $table->string('user_identification')->unique()->nullable();
             $table->string('emergency_contact');
             $table->string('emergency_phone');
             $table->string('emergency_direction');
+            $table->date('start_date');
             $table->timestamps();
+
+            $table->unsignedBigInteger('id_career');
+            $table->foreign('id_career')->references('id')->on('careers');
 
             $table->unsignedBigInteger('id_created_by')->nullable();
             $table->foreign('id_created_by')->references('id')->on('users');

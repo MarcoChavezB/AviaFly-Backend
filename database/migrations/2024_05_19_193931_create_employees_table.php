@@ -17,12 +17,12 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('last_names');
-            $table->string('email');
+            $table->string('email')->unique();
             $table->string('company_email');
             $table->string('phone');
             $table->string('cellphone');
-            $table->string('curp');
-            $table->string('user_identification')->unique();
+            $table->string('curp')->unique();
+            $table->string('user_identification')->unique()->nullable();
             $table->enum('user_type', ['root', 'admin', 'employee', 'instructor']);
 
             $table->unsignedBigInteger('id_base');
