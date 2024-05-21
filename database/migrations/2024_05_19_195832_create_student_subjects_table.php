@@ -27,7 +27,7 @@ return new class extends Migration
             $table->enum('status', ['pendings', 'approved', 'reproved'])->default('pending');
 
             $table->foreign('id_student')->references('id')->on('students');
-            $table->foreign('')
+
             $table->foreign('id_subject')->references('id')->on('subjects');
             $table->foreign('id_turn')->references('id')->on('turns');
             $table->foreign('id_teacher')->references('id')->on('employees');
@@ -38,10 +38,7 @@ return new class extends Migration
     }
 
 
-        /**
- * reproved
- * approved
- * pending
+    /**
      * Reverse the migrations.
      *
      * @return void
