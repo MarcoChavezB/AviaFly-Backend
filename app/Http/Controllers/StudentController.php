@@ -178,28 +178,25 @@ class StudentController extends Controller
         }
     }
 
-    public function indexSimulator()
-    {
+    public function indexSimulator(){
         $client = Auth::user();
         $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
 
-        $students = Student::where('id_base', $id_base)
-                            ->with('career')
-                            ->get();
+        $data = DB::select("
+SELECT
+    students.id,
+    students.name,
+    students.last_names,
+    careers.name AS career_name,
+    students.start_date,
+    COUNT(CASE WHEN student_subjects.status = 'failed' or student_subjects.status = 'pending'  THEN 1 ELSE NULL END) as can_be
+FROM students
+LEFT JOIN careers ON students.id_career = careers.id
+            LEFT JOIN student_subjects ON students.id = student_subjects.id_student
+WHERE students.id_base = $id_base
+GROUP BY students.id, students.name, students.last_names, careers.name, students.start_date;
+        ");
 
-
-
-
-        $data = $students->map(function ($student) {
-            return [
-                'id' => $student->id,
-                'name' => $student->name,
-                'last_names' => $student->last_names,
-                'carreer' => $student->career ? $student->career->name : null,
-                'start_date' => $student->start_date,
-                'credit' => $student->credit,
-            ];
-        });
 
         return response()->json($data);
     }

@@ -17,6 +17,12 @@ class StudentSubject extends Model
         'start_date',
         'end_date',
         'final_grade',
-        'duration'
+        'duration',
+        'status'
     ];
+
+
+    public function student(){
+        return $this->belongsTo(Student::class, 'id_student');
+    }
 }
