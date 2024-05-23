@@ -7,6 +7,7 @@ use App\Models\Employee;
 
 use App\Models\Student;
 use App\Models\User;
+use App\Models\FlightPayment;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -178,27 +179,94 @@ class StudentController extends Controller
         }
     }
 
-    public function indexSimulator(){
+    public function indexSimulator(string $name = null){
         $client = Auth::user();
         $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
 
         $data = DB::select("
 SELECT
-    students.id,
-    students.name,
-    students.last_names,
-    careers.name AS career_name,
-    students.start_date,
-    COUNT(CASE WHEN student_subjects.status = 'failed' or student_subjects.status = 'pending'  THEN 1 ELSE NULL END) as can_be
-FROM students
-LEFT JOIN careers ON students.id_career = careers.id
-            LEFT JOIN student_subjects ON students.id = student_subjects.id_student
-WHERE students.id_base = $id_base
-GROUP BY students.id, students.name, students.last_names, careers.name, students.start_date;
+  students.id,
+  students.name,
+  students.last_names,
+  careers.name AS career_name,
+  students.start_date,
+  MAX(CASE
+    WHEN student_subjects.status = 'failed' OR student_subjects.status = 'pending' THEN 1
+    ELSE 0
+  END) AS subjects_failed,
+  MAX(CASE
+    WHEN flight_payments.status = 'pending' THEN 1
+    ELSE 0
+  END) AS pendings_payments,
+  MAX(CASE
+    WHEN monthly_payments.status = 'pending' OR monthly_payments.status = 'owed' THEN 1
+    ELSE 0
+  END) AS pendings_months
+FROM
+  students
+  LEFT JOIN careers ON students.id_career = careers.id
+  LEFT JOIN student_subjects ON students.id = student_subjects.id_student
+  LEFT JOIN flight_payments ON students.id = flight_payments.id_student
+  LEFT JOIN flight_history ON flight_payments.id_flight = flight_history.id
+  LEFT JOIN monthly_payments ON monthly_payments.id_student = students.id
+WHERE
+            students.id_base = $id_base
+AND students.name LIKE '%$name%'
+GROUP BY
+  students.id,
+  students.name,
+  students.last_names,
+  careers.name,
+  students.start_date;
+
         ");
 
 
         return response()->json($data);
     }
+
+
+    function getStudentSimulatorByName(string $name){
+        return $this->indexSimulator($name);
+    }
+
+public function getInfoVueloAlumno() {
+    $client = Auth::user();
+    $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
+
+    $students = Student::select(
+            'students.name',
+            'students.last_names',
+            'students.start_date',
+            'careers.name as career_name',
+            DB::raw('COALESCE(AVG(student_subjects.final_grade), 0) AS average')
+        )
+        ->leftJoin('careers', 'students.id_career', '=', 'careers.id')
+        ->leftJoin('student_subjects', 'students.id', '=', 'student_subjects.id_student')
+        ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
+        ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+        ->where('students.id_base', $id_base)
+        ->groupBy('students.id', 'students.name', 'students.last_names', 'students.start_date', 'careers.name')
+        ->get();
+
+    foreach ($students as $student) {
+        $student->hours = DB::table('flight_history')
+            ->join('flight_payments', 'flight_history.id', '=', 'flight_payments.id_flight')
+            ->where('flight_payments.id_student', $student->id)
+            ->select('flight_history.hours', 'flight_history.type_flight', 'flight_history.flight_date')
+            ->get();
+    }
+
+    return response()->json(['students' => $students]);
 }
+
+}
+
+
+// nombre
+// apellidos
+// carrera
+// fecha de inicio
+// promedio de materias
+// horas de vuelo en cada categoria y fecha
 

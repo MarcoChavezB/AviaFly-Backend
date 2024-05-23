@@ -23,7 +23,7 @@ return new class extends Migration
                 $table->foreign('id_flight')->references('id')->on('flight_history');
 
                 $table->decimal('total', 8, 2);
-                $table->enum('status', ['pending', 'paid', 'canceled']);
+                $table->enum('status', ['pending', 'paid', 'canceled', 'owed']);
                 $table->enum('paymentMethod', ['cash', 'card', 'installments']);
                 $table->integer('dueWeek')->nullable();
                 $table->decimal('installmentValue', 8, 2)->nullable();

@@ -111,6 +111,8 @@ Route::prefix('/contact')->group(function () {
 
 
 Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
-    Route::get('/simulator/index', [StudentController::class, 'indexSimulator']);
+    Route::get('/flight/index', [StudentController::class, 'indexSimulator']);
+    Route::get('/flight/index/{name}', [StudentController::class, 'getStudentSimulatorByName']);
+    Route::get('/flight/report', [StudentController::class, 'getInfoVueloAlumno']);
 });
 
