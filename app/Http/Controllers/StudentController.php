@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Base;
 use App\Models\Enrollment;
 use App\Models\Student;
+use App\Models\StudentSubject;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -113,7 +114,8 @@ class StudentController extends Controller
             $startDate = Carbon::parse($request->register_date);
 
             for ($i = 0; $i < $career->monthly_payments; $i++) {
-                $paymentDate = $startDate->addMonths($i);
+                $paymentDate = clone $startDate;
+                $paymentDate->addMonths($i + 1);
 
                 DB::table('monthly_payments')->insert([
                     'id_student' => $student->id,
@@ -131,25 +133,46 @@ class StudentController extends Controller
 
             return response()->json($student, 201);
         }catch(\Exception $e){
-            return response()->json(["error" => $e->getMessage()], 500);
+            return response()->json(["error" => "Internal Server Error"], 500);
         }
     }
 
     public function getStudents(){
         try {
-            $students = User::where('user_type', 'student')->get(['id', 'name', 'last_names', 'email', 'user_identification']);
 
-            if($students->isEmpty()){
-                return response()->json(["errors" => ["No hay estudiantes creados"]], 404);
+            //$user = auth()->user(); //Sacar el id de la base del usuario logueado
+
+            $base = Base::where('id', 1)
+                ->first(['id','name']); //Torreón
+
+            if(!$base){
+                return response()->json(["errors" => ["No hay bases creadas o no se encontro la base del usuario auth"]], 404);
             }
 
-            return response()->json($students, 200);
+            if($base->name == 'Torreón'){
+                $students = Student::all(['id', 'name', 'last_names', 'user_identification']);
+
+                if($students->isEmpty()){
+                    return response()->json(["errors" => ["No hay estudiantes creados"]], 404);
+                }
+
+                return response()->json(['students' => $students], 200);
+            }else {
+                $students = Student::where('id_base', $base->id)->
+                get(['id', 'name', 'last_names', 'user_identification']);
+
+                if($students->isEmpty()){
+                    return response()->json(["errors" => ["No hay estudiantes creados"]], 400);
+                }
+
+                return response()->json(['students' => $students], 200);
+            }
         }catch (\Exception $e) {
-            return response()->json(["message" => "Internal Server Error"], 500);
+            return response()->json(["message" => $e->getMessage()], 500);
         }
     }
 
-    public function getStudentSubjects($id){
+    public function show($id){
         try{
             $student = Student::find($id);
 
@@ -157,16 +180,71 @@ class StudentController extends Controller
                 return response()->json(["error" => "Estudiante no encontrado"], 404);
             }
 
+            $career = DB::table('careers')
+                ->where('id', $student->id_career)
+                ->first(['name']);
+
             $subjects = DB::table('student_subjects')
                 ->where('student_subjects.id_student', $id)
                 ->join('subjects', 'student_subjects.id_subject', '=', 'subjects.id')
                 ->join('employees', 'student_subjects.id_teacher', '=', 'employees.id')
-                ->select('subjects.name as subject_name', 'subjects.id as subject_id', 'student_subjects.final_grade as grade', 'employees.name as teacher_name', 'employees.id as teacher_id')
+                ->select('subjects.name as subject_name', 'subjects.id as subject_id', 'student_subjects.final_grade as grade',
+                    DB::raw('CONCAT(employees.name, " ", employees.last_names) as teacher_full_name'),
+                    'employees.id as teacher_id', 'employees.user_identification as teacher_identification', 'student_subjects.updated_at as last_update',
+                    'student_subjects.start_date as start_date', 'student_subjects.end_date as end_date', 'student_subjects.duration as duration')
                 ->get();
 
-            return response()->json($subjects, 200);
+            $student->career_name = $career->name;
+            $student->makeHidden(['id_created_by', 'id_history_flight', 'created_at', 'updated_at']); //8714936204
+
+            return response()->json(['student' => $student, 'student_subjects' => $subjects], 200);
         }catch(\Exception $e){
             return response()->json(["error" => $e->getMessage()], 500);
+        }
+    }
+
+    //Abajo de 85 es reprobado
+
+    public function updateGrade(Request $request){
+        try{
+            $validator = Validator::make($request->all(), [
+                'id_student' => 'required|exists:students,id',
+                'id_subject' => 'required|exists:subjects,id',
+                'final_grade' => 'sometimes|numeric|min:0|max:100',
+                'start_date' => 'sometimes|date',
+                'end_date' => 'sometimes|date',
+                'duration' => 'sometimes|numeric|min:0',
+            ],
+            [
+                'student_id.required' => 'El id del estudiante es requerido',
+                'student_id.exists' => 'El id del estudiante no existe',
+                'subject_id.required' => 'El id de la materia es requerido',
+                'subject_id.exists' => 'El id de la materia no existe',
+                'final_grade.numeric' => 'La calificación no es válida',
+                'final_grade.min' => 'La calificación no puede ser menor a 0',
+                'final_grade.max' => 'La calificación no puede ser mayor a 100',
+                'start_date.date' => 'La fecha de inicio no es válida',
+                'end_date.date' => 'La fecha de fin no es válida',
+                'duration.numeric' => 'La duración no es válida',
+            ]);
+
+            if($validator->fails()){
+                return response()->json(["errors" => $validator->errors()], 400);
+            }
+
+            $studentSubject = StudentSubject::where('id_student', $request->id_student)
+                ->where('id_subject', $request->id_subject)
+                ->first();
+
+            if(!$studentSubject){
+                return response()->json(["errors" => ["El estudiante no está inscrito en la materia", $request->all()]], 404);
+            }
+
+            $studentSubject->update($request->all());
+
+            return response()->json(["message" => "Calificación actualizada"], 200);
+        }catch(\Exception $e){
+            return response()->json(["error" => "Internal Server Error"], 500);
         }
     }
 }
