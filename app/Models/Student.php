@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Career;
 
 class Student extends Model
 {
@@ -27,4 +28,10 @@ class Student extends Model
         'id_career',
         'start_date',
     ];
+
+    public function career()
+    {
+        return $this->belongsTo(Career::class, 'id_career');
+    }
+
 }

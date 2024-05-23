@@ -8,4 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class flightHistory extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'hours',
+        'type_flight',
+        'flight_date',
+        'create_at',
+        'update_at'
+    ];
 }

@@ -24,18 +24,17 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->integer('final_grade')->nullable();
             $table->double('duration')->nullable();
-
-            $table->timestamps();
+            $table->enum('status', ['pending', 'approved', 'failed'])->default('pending');
 
             $table->foreign('id_student')->references('id')->on('students');
             $table->foreign('id_subject')->references('id')->on('subjects');
             $table->foreign('id_turn')->references('id')->on('turns');
             $table->foreign('id_teacher')->references('id')->on('employees');
 
-
-
+            $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.
