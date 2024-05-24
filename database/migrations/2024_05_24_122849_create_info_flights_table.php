@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->enum('flight_type', ['simulator', 'monomotor', 'multimotor'])->nullable();
             $table->decimal('price', 10, 2)->nullable();
+            $table->decimal('min_credit_hours_required', 10, 2)->nullable();
             $table->timestamps();
         });
     }

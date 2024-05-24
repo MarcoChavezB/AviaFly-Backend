@@ -477,12 +477,17 @@ GROUP BY
     
     function hasCredit(int $id, int $hours, string $flight_type){
         $student = Student::find($id);
+        $minHoursRequired = $this->getMinCreditHoursRequired($flight_type);
         $restantCredit = $student->credit - $hours * $this->getPriceFly($flight_type);
-        $optimCredit = $this->getPriceFly($flight_type) * 2;
+        $optimCredit = $this->getPriceFly($flight_type) * $minHoursRequired;
         if($restantCredit < $optimCredit || $restantCredit < 0 ){
-            return false;
+            return response()->json([false], 400);
         }
-        return true;
+        return response()->json([true], 200);
+    }
+    
+    function getMinCreditHoursRequired(string $name){
+        return InfoFlight::where('flight_type', $name)->value('min_credit_hours_required');
     }
     
     function getPriceFly(string $name){
