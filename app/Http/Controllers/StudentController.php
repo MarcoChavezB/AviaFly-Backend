@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class StudentController extends Controller
@@ -230,25 +231,32 @@ GROUP BY
         return $this->indexSimulator($name);
     }
 
-public function getInfoVueloAlumno() {
+
+ public function getInfoVueloAlumno(int $id) {
+    if($id == null){
+        return response()->json(["error" => "No se ha proporcionado un id"], 400);
+    }
+    
     $client = Auth::user();
     $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
 
+    // Obtener información de los estudiantes
     $students = Student::select(
-            'students.name',
-            'students.last_names',
-            'students.start_date',
-            'careers.name as career_name',
-            DB::raw('COALESCE(AVG(student_subjects.final_grade), 0) AS average')
-        )
-        ->leftJoin('careers', 'students.id_career', '=', 'careers.id')
-        ->leftJoin('student_subjects', 'students.id', '=', 'student_subjects.id_student')
-        ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
-        ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
-        ->where('students.id_base', $id_base)
-        ->groupBy('students.id', 'students.name', 'students.last_names', 'students.start_date', 'careers.name')
-        ->get();
+        'students.id',
+        'students.name',
+        'students.last_names',
+        'students.start_date',
+        'careers.name as career_name',
+        DB::raw('COALESCE(AVG(student_subjects.final_grade), 0) AS average')
+    )
+    ->leftJoin('careers', 'students.id_career', '=', 'careers.id')
+    ->leftJoin('student_subjects', 'students.id', '=', 'student_subjects.id_student')
+    ->where('students.id_base', $id_base)
+    ->where('students.id', $id)
+    ->groupBy('students.id', 'students.name', 'students.last_names', 'students.start_date', 'careers.name')
+    ->get();
 
+    // Obtener las horas de vuelo
     foreach ($students as $student) {
         $student->hours = DB::table('flight_history')
             ->join('flight_payments', 'flight_history.id', '=', 'flight_payments.id_flight')
@@ -257,9 +265,73 @@ public function getInfoVueloAlumno() {
             ->get();
     }
 
-    return response()->json(['students' => $students]);
+    // Obtener las horas totales
+    $totalHours = DB::table('students')
+        ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
+        ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+        ->where('students.id', $id)
+        ->select(DB::raw('SUM(flight_history.hours) AS total_hours'))
+        ->groupBy('students.id', 'students.name')
+        ->first();
+
+    // Obtener las horas por categoría de vuelo
+    $flightCategoryHours = DB::table('students')
+        ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
+        ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+        ->where('students.id', $id)
+        ->select(
+            DB::raw('SUM(CASE WHEN flight_history.type_flight = "simulator" THEN flight_history.hours ELSE 0 END) AS simulator_hours'),
+            DB::raw('SUM(CASE WHEN flight_history.type_flight = "monomotor" THEN flight_history.hours ELSE 0 END) AS monomotor_hours'),
+            DB::raw('SUM(CASE WHEN flight_history.type_flight = "multimotor" THEN flight_history.hours ELSE 0 END) AS multimotor_hours')
+        )
+        ->groupBy('students.name')
+        ->first();
+
+    return response()->json([
+        'students' => $students,
+        'total_hours' => $totalHours,
+        'flight_category_hours' => $flightCategoryHours
+    ], 200);
 }
 
+
+    function storeHours(Request $request){
+        $data = $request->all();
+
+        $validator = Validator::make(
+            $data,
+            [
+                'id_student' => 'required|exists:students,id',
+                'hours' => 'required|numeric',
+                'type_flight' => 'required|string',
+                'flight_date' => 'required|date',
+            ],
+            [
+                'id_student.required' => 'El id del estudiante es requerido',
+                'id_student.exists' => 'El id del estudiante no existe',
+                'hours.required' => 'Las horas de vuelo son requeridas',
+                'hours.numeric' => 'Las horas de vuelo no son válidas',
+                'type_flight.required' => 'El tipo de vuelo es requerido',
+                'type_flight.string' => 'El tipo de vuelo no es válido',
+                'flight_date.required' => 'La fecha de vuelo es requerida',
+                'flight_date.date' => 'La fecha de vuelo no es válida',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json(["errors" => $validator->errors()], 400);
+        }
+
+        $flightPayment = FlightPayment::where('id_student', $data['id_student'])
+            ->where('status', 'pending')->where('status', 'owed')
+            ->first();
+
+        if ($flightPayment) {
+            return response()->json(["errors" => ["Hay pagos pendientes de vuelo para el estudiante"]], 400);
+        }
+
+
+    }
 }
 
 
