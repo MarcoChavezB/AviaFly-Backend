@@ -22,11 +22,14 @@ return new class extends Migration
                 $table->unsignedBigInteger('id_flight');
                 $table->foreign('id_flight')->references('id')->on('flight_history');
 
+                $table->unsignedBigInteger('id_instructor');
+                $table->foreign('id_instructor')->references('id')->on('employees');
+
                 $table->decimal('total', 8, 2);
                 $table->enum('status', ['pending', 'paid', 'canceled', 'owed']);
-                $table->enum('paymentMethod', ['cash', 'card', 'installments']);
-                $table->integer('dueWeek')->nullable();
-                $table->decimal('installmentValue', 8, 2)->nullable();
+                $table->enum('payment_method', ['cash', 'card', 'installments', 'check', 'transfer']);
+                $table->integer('due_week')->nullable();
+                $table->decimal('installment_value', 8, 2)->nullable();
             $table->timestamps();
         });
     }

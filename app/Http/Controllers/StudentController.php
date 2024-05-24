@@ -303,13 +303,14 @@ public function getInfoVueloAlumno(int $id) {
     if($id == null){
         return response()->json(["error" => "No se ha proporcionado un id"], 400);
     }
-    
+
     $client = Auth::user();
     $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
 
     // Obtener información de los estudiantes
     $students = Student::select(
         'students.id',
+        'students.credit',
         'students.name',
         'students.last_names',
         'students.start_date',
@@ -320,7 +321,7 @@ public function getInfoVueloAlumno(int $id) {
     ->leftJoin('student_subjects', 'students.id', '=', 'student_subjects.id_student')
     ->where('students.id_base', $id_base)
     ->where('students.id', $id)
-    ->groupBy('students.id', 'students.name', 'students.last_names', 'students.start_date', 'careers.name')
+    ->groupBy('students.id', 'students.name', 'students.last_names','students.credit', 'students.start_date', 'careers.name')
     ->get();
 
     // Obtener las horas de vuelo
@@ -354,10 +355,65 @@ public function getInfoVueloAlumno(int $id) {
         ->groupBy('students.name')
         ->first();
 
+    $isDebt = $this->is_debt($id);
+
     return response()->json([
         'students' => $students,
         'total_hours' => $totalHours,
-        'flight_category_hours' => $flightCategoryHours
+        'flight_category_hours' => $flightCategoryHours,
+        'is_debt' => $isDebt
     ], 200);
+    }
+
+
+    function is_debt(int $id) {
+        $value = DB::select("
+            SELECT
+              MAX(CASE WHEN student_subjects.status = 'failed' OR student_subjects.status = 'pending' THEN 1 ELSE 0 END) AS subjects_failed,
+              MAX(CASE WHEN flight_payments.status = 'pending' THEN 1 ELSE 0 END) AS pendings_payments,
+              MAX(CASE WHEN monthly_payments.status = 'pending' OR monthly_payments.status = 'owed' THEN 1 ELSE 0 END) AS pendings_months
+            FROM
+             students
+              LEFT JOIN careers ON students.id_career = careers.id
+              LEFT JOIN student_subjects ON students.id = student_subjects.id_student
+              LEFT JOIN flight_payments ON students.id = flight_payments.id_student
+              LEFT JOIN flight_history ON flight_payments.id_flight = flight_history.id
+              LEFT JOIN monthly_payments ON monthly_payments.id_student = students.id
+                WHERE students.id_base = 1 and students.id = $id
+            GROUP BY students.id, students.name, students.last_names, careers.name, students.start_date;
+            ");
+
+        if($value[0]->pendings_payments == 1 || $value[0]->pendings_months == 1 || $value[0]->subjects_failed == 1){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function storeFlight(){
+        $client = Auth::user();
+        $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
+
+
+    }
 }
-}
+
+/*
+ * id de usuario
+ * id de instructor
+ * tipo de vuelo a agendar
+ * fecha de vuelo
+ * horas de vuelo
+ * total cash
+ * metodo de pago {
+ *      efectivo
+ *      card
+ *      transferencia
+ *      pending{
+ *
+ *      }
+ * }
+ *
+ *
+ *
+*/
