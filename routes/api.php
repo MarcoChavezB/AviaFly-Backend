@@ -5,6 +5,7 @@ use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\TurnController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
@@ -70,9 +71,10 @@ Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
-    Route::post('/create', [StudentController::class, 'create']);
-    Route::get('/get', [StudentController::class, 'getStudents']);
-    Route::get('/get/subjects/{id}', [StudentController::class, 'getStudentSubjects'])->where('id', '[0-9]+');
+    Route::post('/create', [StudentController::class, 'create']); // Esto puede hacerlo: root, admin
+    Route::get('/get', [StudentController::class, 'getStudents']); // Esto puede hacerlo: root, admin
+    Route::get('/show/{id}', [StudentController::class, 'show'])->where('id', '[0-9]+');
+    Route::put('/update/grade', [StudentController::class, 'updateGrade']);
 });
 
 Route::prefix('/base')->group(function () {
@@ -109,6 +111,9 @@ Route::prefix('/contact')->group(function () {
     Route::get('/index', [ContactController::class, 'index2']);
 });
 
+Route::prefix('/turn')->group(function () {
+    Route::get('/get', [TurnController::class, 'index']);
+});
 
 Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/index', [StudentController::class, 'indexSimulator']);
