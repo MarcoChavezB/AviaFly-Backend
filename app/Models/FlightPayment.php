@@ -14,6 +14,7 @@ class FlightPayment extends Model
         'id_student',
         'id_flight',
         'id_instructor',
+        'id_employee',
         'total',
         'status',
         'payment_method',

@@ -7,6 +7,7 @@ use Faker\Factory as Faker;
 use App\Models\Base;
 use App\Models\Career;
 use App\Models\Employee;
+use App\Models\InfoFlight;
 use App\Models\Subject;
 use App\Models\TeacherSubjectTurn;
 use App\Models\Turn;
@@ -260,5 +261,6 @@ class DatabaseSeeder extends Seeder
             'id_subject' => 8,
             'id_turn' => 1,
         ]);
+
     }
 }
