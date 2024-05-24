@@ -13,6 +13,7 @@ use App\Http\Controllers\BaseController;
 use App\Http\Controllers\PendingController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\EmployeeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -119,6 +120,7 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/index', [StudentController::class, 'indexSimulator']);
     Route::get('/flight/index/{name}', [StudentController::class, 'getStudentSimulatorByName']);
     Route::get('/flight/report/{id}', [StudentController::class, 'getInfoVueloAlumno']);
+    Route::get('/flight/employees/bystudent/{id}', [StudentController::class, 'getEmployeesByStudent']);
     Route::post('/flight/store', [StudentController::class, 'storeFlight']);
 });
 

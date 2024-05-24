@@ -185,15 +185,12 @@ class StudentController extends Controller
     {
         try {
             $student = Student::find($id);
-
             if (!$student) {
                 return response()->json(["error" => "Estudiante no encontrado"], 404);
             }
-
             $career = DB::table('careers')
                 ->where('id', $student->id_career)
                 ->first(['name']);
-
             $subjects = DB::table('student_subjects')
                 ->where('student_subjects.id_student', $id)
                 ->join('subjects', 'student_subjects.id_subject', '=', 'subjects.id')
@@ -445,7 +442,6 @@ GROUP BY
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
         }
-        
         $empleado = Employee::find($request->id_instructor);
         if($empleado->user_type != 'instructor'){
             return response()->json(["error" => "El empleado no es un instructor"], 400);
@@ -473,6 +469,18 @@ GROUP BY
 
         $message = $request->flight_payment_status == 'pending' ? 'Vuelo agendado, pendiente de pago' : 'Se agendo el vuelo';
         return response()->json(["message" => $message], 201);
+    }
+    
+    
+    function getEmployeesByStudent(int $id){
+        $employees = DB::select("
+        select 
+            employees.name as instructor
+        FROM students
+        LEFT JOIN student_subjects ON students.id = student_subjects.id_student
+        LEFT JOIN employees ON student_subjects.id_teacher = employees.id
+        WHERE students.id = $id and employees.user_type = 'instructor'");
+        return response()->json(["message" => $employees], 200);
     }
     
     function hasCredit(int $id, int $hours, string $flight_type){
