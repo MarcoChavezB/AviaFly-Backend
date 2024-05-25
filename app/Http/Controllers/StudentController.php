@@ -416,7 +416,7 @@ GROUP BY
             'id_student' => 'required|numeric',
             'id_instructor' => 'required|numeric',
             'flight_type' => 'required|string',
-            'flight_date' => 'required|date',
+            'flight_date' => 'required|string',
             'flight_payment_status' => 'required|string',
             'hours' => 'required|numeric',
             'total' => 'required|numeric',
@@ -443,20 +443,21 @@ GROUP BY
             return response()->json(["errors" => $validator->errors()], 400);
         }
         $empleado = Employee::find($request->id_instructor);
-        if($empleado->user_type != 'instructor'){
+        if ($empleado->user_type != 'instructor') {
             return response()->json(["error" => "El empleado no es un instructor"], 400);
         }
-        
+
         $student = Student::find($request->id_student);
         $hoursCredit = $this->getPriceFly($request->flight_type) * $request->hours;
-        if($student->credit < $hoursCredit){
+        if ($student->credit < $hoursCredit) {
             return response()->json(["error" => "El estudiante no tiene suficientes créditos"], 400);
         }
-       
+
         DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $request->id_student,
             Auth::user()->id,
             $request->id_instructor,
+            
             $request->flight_type,
             $request->flight_date,
             $request->flight_payment_status,
@@ -470,35 +471,40 @@ GROUP BY
         $message = $request->flight_payment_status == 'pending' ? 'Vuelo agendado, pendiente de pago' : 'Se agendo el vuelo';
         return response()->json(["message" => $message], 201);
     }
-    
-    
-    function getEmployeesByStudent(int $id){
+
+
+    function getEmployeesByStudent(int $id)
+    {
         $employees = DB::select("
-        select 
+        select
+            employees.id,
             employees.name as instructor
         FROM students
         LEFT JOIN student_subjects ON students.id = student_subjects.id_student
         LEFT JOIN employees ON student_subjects.id_teacher = employees.id
         WHERE students.id = $id and employees.user_type = 'instructor'");
-        return response()->json(["message" => $employees], 200);
+        return response()->json($employees, 200);
     }
-    
-    function hasCredit(int $id, int $hours, string $flight_type){
+
+    function hasCredit(int $id, int $hours, string $flight_type)
+    {
         $student = Student::find($id);
         $minHoursRequired = $this->getMinCreditHoursRequired($flight_type);
         $restantCredit = $student->credit - $hours * $this->getPriceFly($flight_type);
         $optimCredit = $this->getPriceFly($flight_type) * $minHoursRequired;
-        if($restantCredit < $optimCredit || $restantCredit < 0 ){
+        if ($restantCredit < $optimCredit || $restantCredit < 0) {
             return response()->json([false], 400);
         }
         return response()->json([true], 200);
     }
-    
-    function getMinCreditHoursRequired(string $name){
+
+    function getMinCreditHoursRequired(string $name)
+    {
         return InfoFlight::where('flight_type', $name)->value('min_credit_hours_required');
     }
-    
-    function getPriceFly(string $name){
+
+    function getPriceFly(string $name)
+    {
         return InfoFlight::where('flight_type', $name)->value('price');
     }
 }

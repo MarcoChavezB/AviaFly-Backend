@@ -14,6 +14,7 @@ use App\Http\Controllers\PendingController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\InfoFlightController;
 
 /*
 |--------------------------------------------------------------------------
@@ -122,5 +123,9 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/report/{id}', [StudentController::class, 'getInfoVueloAlumno']);
     Route::get('/flight/employees/bystudent/{id}', [StudentController::class, 'getEmployeesByStudent']);
     Route::post('/flight/store', [StudentController::class, 'storeFlight']);
+});
+
+Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
+    Route::get('/get', [InfoFlightController::class, 'index']);
 });
 

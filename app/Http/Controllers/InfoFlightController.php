@@ -14,7 +14,7 @@ class InfoFlightController extends Controller
      */
     public function index()
     {
-        //
+        return InfoFlight::all();
     }
 
     /**
