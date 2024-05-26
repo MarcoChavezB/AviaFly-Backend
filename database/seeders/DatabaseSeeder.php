@@ -3,7 +3,16 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Faker\Factory as Faker;
+use App\Models\Base;
+use App\Models\Career;
+use App\Models\Employee;
+use App\Models\InfoFlight;
+use App\Models\Subject;
+use App\Models\TeacherSubjectTurn;
+use App\Models\Turn;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,11 +23,244 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
+        $bases = [
+            'Torreón',
+            'Querétaro',
+        ];
 
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        foreach ($bases as $base) {
+            Base::create(['name' => $base, 'location' => $base]);
+        }
+        
+        Career::create([
+            'name' => 'Sobrecargo',
+            'monthly_payments' => 5,
+            'registration_fee' => 4640,
+            'monthly_fee' => 5975,
+        ]);
+        
+        $subjects = [
+            'Servicio a Bordo',
+            'Meteorología',
+            'Mercancias Peligrosas',
+            'Procedimientos de Emerg.',
+            'Aerodinamica',
+            'Reglametación Aérea',
+            'Factores Humanos y CRM',
+            'Geografía turística',
+        ];
+
+        foreach ($subjects as $subject) {
+            Subject::create([
+                'name' => $subject,
+            ]);
+        }
+        
+        Turn::create([
+            'name' => 'Matutino',
+        ]);
+
+        Turn::create([
+            'name' => 'Vespertino',
+        ]);
+        
+                DB::table('career_subjects')->insert([
+            'id_career' => 1,
+            'id_subject' => 1,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 1,
+            'id_subject' => 2,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 1,
+            'id_subject' => 3,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 1,
+            'id_subject' => 4,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 1,
+            'id_subject' => 5,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 1,
+            'id_subject' => 6,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 1,
+            'id_subject' => 7,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 1,
+            'id_subject' => 8,
+        ]);
+        
+        $faker = Faker::create();
+
+        Employee::create([
+            'name' => $faker->firstName,
+            'last_names' => $faker->lastName . ' ' . $faker->lastName,
+            'email' => $faker->unique()->safeEmail,
+            'company_email' => $faker->unique()->companyEmail,
+            'phone' => $faker->phoneNumber,
+            'cellphone' => $faker->phoneNumber,
+            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
+            'user_identification' => $faker->unique()->userName,
+            'user_type' => 'instructor',
+            'id_base' => 1,
+        ]);
+
+        Employee::create([
+            'name' => $faker->firstName,
+            'last_names' => $faker->lastName . ' ' . $faker->lastName,
+            'email' => $faker->unique()->safeEmail,
+            'company_email' => $faker->unique()->companyEmail,
+            'phone' => $faker->phoneNumber,
+            'cellphone' => $faker->phoneNumber,
+            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
+            'user_identification' => $faker->unique()->userName,
+            'user_type' => 'instructor',
+            'id_base' => 1,
+        ]);
+
+
+        Employee::create([
+            'name' => $faker->firstName,
+            'last_names' => $faker->lastName . ' ' . $faker->lastName,
+            'email' => $faker->unique()->safeEmail,
+            'company_email' => $faker->unique()->companyEmail,
+            'phone' => $faker->phoneNumber,
+            'cellphone' => $faker->phoneNumber,
+            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
+            'user_identification' => $faker->unique()->userName,
+            'user_type' => 'instructor',
+            'id_base' => 1,
+        ]);
+
+        Employee::create([
+            'name' => $faker->firstName,
+            'last_names' => $faker->lastName . ' ' . $faker->lastName,
+            'email' => $faker->unique()->safeEmail,
+            'company_email' => $faker->unique()->companyEmail,
+            'phone' => $faker->phoneNumber,
+            'cellphone' => $faker->phoneNumber,
+            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
+            'user_identification' => $faker->unique()->userName,
+            'user_type' => 'instructor',
+            'id_base' => 1,
+        ]);
+
+
+        Employee::create([
+            'name' => $faker->firstName,
+            'last_names' => $faker->lastName . ' ' . $faker->lastName,
+            'email' => $faker->unique()->safeEmail,
+            'company_email' => $faker->unique()->companyEmail,
+            'phone' => $faker->phoneNumber,
+            'cellphone' => $faker->phoneNumber,
+            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
+            'user_identification' => $faker->unique()->userName,
+            'user_type' => 'instructor',
+            'id_base' => 1,
+        ]);
+
+
+        Employee::create([
+            'name' => $faker->firstName,
+            'last_names' => $faker->lastName . ' ' . $faker->lastName,
+            'email' => $faker->unique()->safeEmail,
+            'company_email' => $faker->unique()->companyEmail,
+            'phone' => $faker->phoneNumber,
+            'cellphone' => $faker->phoneNumber,
+            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
+            'user_identification' => $faker->unique()->userName,
+            'user_type' => 'instructor',
+            'id_base' => 1,
+        ]);
+
+
+        Employee::create([
+            'name' => $faker->firstName,
+            'last_names' => $faker->lastName . ' ' . $faker->lastName,
+            'email' => $faker->unique()->safeEmail,
+            'company_email' => $faker->unique()->companyEmail,
+            'phone' => $faker->phoneNumber,
+            'cellphone' => $faker->phoneNumber,
+            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
+            'user_identification' => $faker->unique()->userName,
+            'user_type' => 'instructor',
+            'id_base' => 1,
+        ]);
+
+        Employee::create([
+            'name' => $faker->firstName,
+            'last_names' => $faker->lastName . ' ' . $faker->lastName,
+            'email' => $faker->unique()->safeEmail,
+            'company_email' => $faker->unique()->companyEmail,
+            'phone' => $faker->phoneNumber,
+            'cellphone' => $faker->phoneNumber,
+            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
+            'user_identification' => $faker->unique()->userName,
+            'user_type' => 'instructor',
+            'id_base' => 1,
+        ]);
+        
+                TeacherSubjectTurn::create([
+            'id_teacher' => 8,
+            'id_subject' => 1,
+            'id_turn' => 1,
+        ]);
+
+        TeacherSubjectTurn::create([
+            'id_teacher' => 7,
+            'id_subject' => 2,
+            'id_turn' => 1,
+        ]);
+
+        TeacherSubjectTurn::create([
+            'id_teacher' => 6,
+            'id_subject' => 3,
+            'id_turn' => 1,
+        ]);
+
+        TeacherSubjectTurn::create([
+            'id_teacher' => 5,
+            'id_subject' => 4,
+            'id_turn' => 1,
+        ]);
+
+        TeacherSubjectTurn::create([
+            'id_teacher' => 4,
+            'id_subject' => 5,
+            'id_turn' => 1,
+        ]);
+
+        TeacherSubjectTurn::create([
+            'id_teacher' => 3,
+            'id_subject' => 6,
+            'id_turn' => 1,
+        ]);
+
+        TeacherSubjectTurn::create([
+            'id_teacher' => 2,
+            'id_subject' => 7,
+            'id_turn' => 1,
+        ]);
+
+        TeacherSubjectTurn::create([
+            'id_teacher' => 1,
+            'id_subject' => 8,
+            'id_turn' => 1,
+        ]);
+
     }
 }

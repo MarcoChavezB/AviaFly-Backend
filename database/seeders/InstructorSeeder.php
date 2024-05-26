@@ -113,7 +113,6 @@ class InstructorSeeder extends Seeder
             'id_base' => 1,
         ]);
 
-
         Employee::create([
             'name' => $faker->firstName,
             'last_names' => $faker->lastName . ' ' . $faker->lastName,

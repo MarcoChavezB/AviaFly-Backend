@@ -13,11 +13,13 @@ class FlightPayment extends Model
     [
         'id_student',
         'id_flight',
+        'id_instructor',
+        'id_employee',
         'total',
         'status',
-        'paymentMethod',
+        'payment_method',
         'dueWeek',
-        'intallmentValue',
+        'intallment_value',
         'created_at',
         'updated_at'
     ];
@@ -30,6 +32,10 @@ class FlightPayment extends Model
     public function flight()
     {
         return $this->belongsTo(Flight::class, 'id_flight');
+    }
+
+    public function id_instructor(){
+        return $this->belongsTo(Employee::class, 'id_instructor')
     }
 
 }
