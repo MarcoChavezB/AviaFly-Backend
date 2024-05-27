@@ -286,5 +286,22 @@ class DatabaseSeeder extends Seeder
             'duration' => 4,
         ]);
 
+        InfoFlight::create([
+            "flight_type" => "simulador",
+            "price" => 800,
+            "min_credit_hours_required" => 12,
+        ]);
+
+        InfoFlight::create([
+            "flight_type" => "monomotor",
+            "price" => 3000,
+            "min_credit_hours_required" => 20,
+        ]);
+
+        InfoFlight::create([
+            "flight_type" => "multimotor",
+            "price" => 11000,
+            "min_credit_hours_required" => 40,
+        ]);
     }
 }

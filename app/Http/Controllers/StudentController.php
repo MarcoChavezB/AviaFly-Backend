@@ -76,7 +76,7 @@ class StudentController extends Controller
             $student = new Student();
             $student->name = $request->name;
             $student->last_names = $request->last_names;
-            $student->curp = strtoupper($request->curp);
+            $student->curp = $request->curp;
             $student->phone = $request->phone;
             $student->cellphone = $request->cellphone;
             $student->email = $request->email;
@@ -153,11 +153,10 @@ class StudentController extends Controller
     {
         try {
 
-            $user = Auth::user();
-            $base_id = Employee::where('user_identification', $user->user_identification)->first()->id_base;
+            //$user = auth()->user(); //Sacar el id de la base del usuario logueado
 
-            $base = Base::where('id', $base_id)
-                ->first(['id','name']);
+            $base = Base::where('id', 1)
+                ->first(['id', 'name']); //Torreón
 
             if (!$base) {
                 return response()->json(["errors" => ["No hay bases creadas o no se encontro la base del usuario auth"]], 404);
@@ -214,7 +213,7 @@ class StudentController extends Controller
                 ->get();
 
             $student->career_name = $career->name;
-            $student->makeHidden(['id_created_by', 'id_history_flight', 'created_at', 'updated_at']);
+            $student->makeHidden(['id_created_by', 'id_history_flight', 'created_at', 'updated_at']); //8714936204
 
             return response()->json(['student' => $student, 'student_subjects' => $subjects], 200);
         } catch (\Exception $e) {
@@ -263,8 +262,6 @@ class StudentController extends Controller
             }
 
             $studentSubject->update($request->all());
-            $studentSubject->status = $studentSubject->final_grade >= 85 ? 'approved' : 'failed';
-            $studentSubject->save();
 
             return response()->json(["message" => "Calificación actualizada"], 200);
         } catch (\Exception $e) {
@@ -272,56 +269,48 @@ class StudentController extends Controller
         }
     }
 
+
+ /*
+    Validada por bases
+ */
     public function indexSimulator(string $name = null)
     {
         $client = Auth::user();
         $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
 
         $data = DB::select("
-SELECT
-  students.id,
-  students.name,
-  students.last_names,
-  careers.name AS career_name,
-  students.start_date,
-  MAX(CASE
-    WHEN student_subjects.status = 'failed' OR student_subjects.status = 'pending' THEN 1
-    ELSE 0
-  END) AS subjects_failed,
-  MAX(CASE
-    WHEN flight_payments.status = 'pending' THEN 1
-    ELSE 0
-  END) AS pendings_payments,
-  MAX(CASE
-    WHEN monthly_payments.status = 'pending' OR monthly_payments.status = 'owed' THEN 1
-    ELSE 0
-  END) AS pendings_months
-FROM
-  students
-  LEFT JOIN careers ON students.id_career = careers.id
-  LEFT JOIN student_subjects ON students.id = student_subjects.id_student
-  LEFT JOIN flight_payments ON students.id = flight_payments.id_student
-  LEFT JOIN flight_history ON flight_payments.id_flight = flight_history.id
-  LEFT JOIN monthly_payments ON monthly_payments.id_student = students.id
-WHERE
-            students.id_base = $id_base
-AND students.name LIKE '%$name%'
-GROUP BY
-  students.id,
-  students.name,
-  students.last_names,
-  careers.name,
-  students.start_date;
-        ");
+                SELECT
+                students.id, students.name, students.last_names, careers.name AS career_name, students.start_date,
+                    MAX(CASE WHEN student_subjects.status = 'failed' OR student_subjects.status = 'pending' THEN 1 ELSE 0 END) AS subjects_failed,
+                    MAX(CASE WHEN flight_payments.status = 'pending' THEN 1 ELSE 0 END) AS pendings_payments,
+                    MAX(CASE WHEN monthly_payments.status = 'pending' OR monthly_payments.status = 'owed' THEN 1 ELSE 0 END) AS pendings_months
+                FROM students
+                LEFT JOIN careers ON students.id_career = careers.id
+                LEFT JOIN student_subjects ON students.id = student_subjects.id_student
+                LEFT JOIN flight_payments ON students.id = flight_payments.id_student
+                LEFT JOIN flight_history ON flight_payments.id_flight = flight_history.id
+                LEFT JOIN monthly_payments ON monthly_payments.id_student = students.id
+                WHERE
+                students.id_base = $id_base
+                AND students.name LIKE '%$name%'
+                AND careers.name = 'Piloto'
+                GROUP BY students.id, students.name, students.last_names, careers.name, students.start_date;");
         return response()->json($data);
-    }
+}
 
-
+/*
+    Buscador de alumnos en vista vuelos 
+    usa la funcion indexSimulator
+*/
     function getStudentSimulatorByName(string $name)
     {
         return $this->indexSimulator($name);
     }
 
+/*
+    Obtiene reporte de un alumno
+    Validada por base 
+*/
     public function getInfoVueloAlumno(int $id)
     {
         if ($id == null) {
@@ -389,7 +378,10 @@ GROUP BY
         ], 200);
     }
 
-
+/*
+    Funcion para validar si un alumno tiene deuda
+    retorna true si tiene deuda
+*/
     function is_debt(int $id)
     {
         $value = DB::select("
@@ -404,7 +396,7 @@ GROUP BY
               LEFT JOIN flight_payments ON students.id = flight_payments.id_student
               LEFT JOIN flight_history ON flight_payments.id_flight = flight_history.id
               LEFT JOIN monthly_payments ON monthly_payments.id_student = students.id
-                WHERE students.id_base = 1 and students.id = $id
+                WHERE students.id = $id
             GROUP BY students.id, students.name, students.last_names, careers.name, students.start_date;
             ");
 
@@ -415,14 +407,17 @@ GROUP BY
         }
     }
 
+/*
+    funcion para agendar un vuelo a un alumno 
+*/
     function storeFlight(Request $request)
     {
-        $client = Auth::user();
         $validator = Validator::make($request->all(), [
             'id_student' => 'required|numeric',
-            'id_instructor' => 'required|numeric',
+            'id_instructor' => 'required|numeric|exists:employees,id',
             'flight_type' => 'required|string',
             'flight_date' => 'required|string',
+            'flight_hour' => 'required|string',
             'flight_payment_status' => 'required|string',
             'hours' => 'required|numeric',
             'total' => 'required|numeric',
@@ -431,10 +426,13 @@ GROUP BY
             'installment_value' => 'nullable|numeric'
         ], [
             'id_student.required' => 'El id del usuario es requerido',
+            'id_instructor.exists' => 'Selecciona un instructor',
             'id_instructor.required' => 'El id del instructor es requerido',
             'flight_type.required' => 'El tipo de vuelo es requerido',
             'flight_date.required' => 'La fecha de vuelo es requerida',
             'flight_date.date' => 'La fecha de vuelo no es válida',
+            'flight_hour.required' => 'La hora a tomar el vuelo es requerida',
+            'flight_hour.string' => 'La hora de vuelo no es válida',
             'flight_payment_status.required' => 'El estatus de pago es requerido',
             'hours.required' => 'Las horas de vuelo son requeridas',
             'hours.numeric' => 'Las horas de vuelo no son válidas',
@@ -448,24 +446,27 @@ GROUP BY
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
         }
+        
+        return response()->json(["message" => "Vuelo agendado, pendiente de pago"], 201);
+
         $empleado = Employee::find($request->id_instructor);
         if ($empleado->user_type != 'instructor') {
-            return response()->json(["error" => "El empleado no es un instructor"], 400);
+            return response()->json(["errors" => ["El empleado no es un instructor"]], 400);
         }
 
         $student = Student::find($request->id_student);
         $hoursCredit = $this->getPriceFly($request->flight_type) * $request->hours;
         if ($student->credit < $hoursCredit) {
-            return response()->json(["error" => "El estudiante no tiene suficientes créditos"], 400);
+            return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
         }
-
-        DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+        
+        DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)', [
             $request->id_student,
             Auth::user()->id,
             $request->id_instructor,
-
             $request->flight_type,
             $request->flight_date,
+            $request->flight_hour,
             $request->flight_payment_status,
             $request->hours,
             $request->total,

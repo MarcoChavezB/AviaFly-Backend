@@ -16,8 +16,9 @@ return new class extends Migration
         Schema::create('flight_history', function(Blueprint $table) {
             $table->id();
             $table->decimal('hours', 8, 2);
-                $table->enum('type_flight', ['simulator', 'monomotor', 'multimotor']);
+                $table->enum('type_flight', ['simulador', 'monomotor', 'multimotor']);
                 $table->date('flight_date');
+                $table->string('flight_hour');
             $table->timestamps();
         });
     }

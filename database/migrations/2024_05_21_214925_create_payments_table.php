@@ -13,13 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('info_flights', function (Blueprint $table) {
+        Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->enum('flight_type', ['simulador', 'monomotor', 'multimotor'])->nullable();
-            $table->decimal('price', 10, 2)->nullable();
-            $table->decimal('min_credit_hours_required', 10, 2)->nullable();
             $table->timestamps();
-        });
+            $table->decimal('amount')->default(0);
+            });
     }
 
     /**
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('info_flights');
+        Schema::dropIfExists('payments');
     }
 };
