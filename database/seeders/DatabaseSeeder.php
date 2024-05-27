@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
             'monthly_fee' => 5975,
         ]);
         
+        
         $subjects = [
             'Servicio a Bordo',
             'Meteorología',
@@ -63,7 +64,6 @@ class DatabaseSeeder extends Seeder
         Turn::create([
             'name' => 'Vespertino',
         ]);
-        
                 DB::table('career_subjects')->insert([
             'id_career' => 1,
             'id_subject' => 1,
@@ -214,7 +214,7 @@ class DatabaseSeeder extends Seeder
             'id_base' => 1,
         ]);
         
-                TeacherSubjectTurn::create([
+        TeacherSubjectTurn::create([
             'id_teacher' => 8,
             'id_subject' => 1,
             'id_turn' => 1,
@@ -261,6 +261,23 @@ class DatabaseSeeder extends Seeder
             'id_subject' => 8,
             'id_turn' => 1,
         ]);
-
+        
+        InfoFlight::create([
+            "flight_type" => "simulador",
+            "price" => 800,
+            "min_credit_hours_required" => 12,
+        ]);
+        
+        InfoFlight::create([
+            "flight_type" => "monomotor",
+            "price" => 3000,
+            "min_credit_hours_required" => 20,
+        ]);
+        
+        InfoFlight::create([
+            "flight_type" => "multimotor",
+            "price" => 11000,
+            "min_credit_hours_required" => 40,
+        ]);
     }
 }

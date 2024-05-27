@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,11 +29,10 @@ class FlightPayment extends Model
 
     public function flight()
     {
-        return $this->belongsTo(Flight::class, 'id_flight');
+        return $this->belongsTo(flightHistory::class, 'id_flight');
     }
 
     public function id_instructor(){
-        return $this->belongsTo(Employee::class, 'id_instructor')
+        return $this->belongsTo(Employee::class, 'id_instructor');
     }
-
 }

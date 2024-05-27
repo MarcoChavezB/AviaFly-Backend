@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class flightHistory extends Model
 {
     use HasFactory;
-
+    protected $table = 'flight_history';
     protected $fillable = [
         'hours',
         'type_flight',

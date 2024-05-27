@@ -13,13 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('flight_history', function(Blueprint $table) {
+        Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->decimal('hours', 8, 2);
-                $table->enum('type_flight', ['simulador', 'monomotor', 'multimotor']);
-                $table->date('flight_date');
             $table->timestamps();
-        });
+            $table->decimal('amount')->default(0);
+            });
     }
 
     /**
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('flight_history');
+        Schema::dropIfExists('payments');
     }
 };

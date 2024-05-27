@@ -14,6 +14,7 @@ use App\Http\Controllers\PendingController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\InfoFlightController;
 
 /*
@@ -127,5 +128,9 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get', [InfoFlightController::class, 'index']);
+    Route::post('/flights/already/reserved', [FlightHistoryController::class, 'isDateReserved']);
 });
 
+Route::prefix('/flights/histroy')->middleware('auth:sanctum')->group(function () {
+    Route::post('/already/date/reserved', [FlightHistoryController::class, 'isDateReserved']);
+});

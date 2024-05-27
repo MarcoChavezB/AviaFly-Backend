@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('info_flights', function (Blueprint $table) {
             $table->id();
-            $table->enum('flight_type', ['simulator', 'monomotor', 'multimotor'])->nullable();
+            $table->enum('flight_type', ['simulador', 'monomotor', 'multimotor'])->nullable();
             $table->decimal('price', 10, 2)->nullable();
             $table->decimal('min_credit_hours_required', 10, 2)->nullable();
             $table->timestamps();
