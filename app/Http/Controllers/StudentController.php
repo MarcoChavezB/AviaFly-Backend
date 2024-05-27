@@ -76,7 +76,7 @@ class StudentController extends Controller
             $student = new Student();
             $student->name = $request->name;
             $student->last_names = $request->last_names;
-            $student->curp = $request->curp;
+            $student->curp = strtoupper($request->curp);
             $student->phone = $request->phone;
             $student->cellphone = $request->cellphone;
             $student->email = $request->email;
@@ -150,10 +150,11 @@ class StudentController extends Controller
     {
         try {
 
-            //$user = auth()->user(); //Sacar el id de la base del usuario logueado
+            $user = Auth::user();
+            $base_id = Employee::where('user_identification', $user->user_identification)->first()->id_base;
 
-            $base = Base::where('id', 1)
-                ->first(['id', 'name']); //Torreón
+            $base = Base::where('id', $base_id)
+                ->first(['id','name']);
 
             if (!$base) {
                 return response()->json(["errors" => ["No hay bases creadas o no se encontro la base del usuario auth"]], 404);
@@ -210,7 +211,7 @@ class StudentController extends Controller
                 ->get();
 
             $student->career_name = $career->name;
-            $student->makeHidden(['id_created_by', 'id_history_flight', 'created_at', 'updated_at']); //8714936204
+            $student->makeHidden(['id_created_by', 'id_history_flight', 'created_at', 'updated_at']);
 
             return response()->json(['student' => $student, 'student_subjects' => $subjects], 200);
         } catch (\Exception $e) {
@@ -259,6 +260,8 @@ class StudentController extends Controller
             }
 
             $studentSubject->update($request->all());
+            $studentSubject->status = $studentSubject->final_grade >= 85 ? 'approved' : 'failed';
+            $studentSubject->save();
 
             return response()->json(["message" => "Calificación actualizada"], 200);
         } catch (\Exception $e) {
@@ -454,6 +457,10 @@ class StudentController extends Controller
             $request->id_student,
             Auth::user()->id,
             $request->id_instructor,
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0b3033ec14fbee5cff793d656cb803b3d870c930
             $request->flight_type,
             $request->flight_date,
             $request->flight_payment_status,
