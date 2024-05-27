@@ -111,6 +111,9 @@ class StudentController extends Controller
                         'id_subject' => $careerSubject->id_subject,
                         'id_turn' => $request->turn,
                         'id_teacher' => $teacher->id_teacher,
+                        'start_date' => $teacher->start_date,
+                        'end_date' => $teacher->end_date,
+                        'duration' => $teacher->duration,
                     ]);
                 } else {
                     $student->delete();

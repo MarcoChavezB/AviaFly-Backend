@@ -13,5 +13,8 @@ class TeacherSubjectTurn extends Model
         'id_teacher',
         'id_subject',
         'id_turn',
+        'start_date',
+        'end_date',
+        'duration',
     ];
 }

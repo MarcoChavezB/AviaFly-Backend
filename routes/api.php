@@ -73,9 +73,9 @@ Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/student')->group(function () {
     Route::post('/enroll', [CourseController::class, 'create']);
-    Route::post('/create', [StudentController::class, 'create']); // Esto puede hacerlo: root, admin
     Route::get('/show/{id}', [StudentController::class, 'show'])->where('id', '[0-9]+');
     Route::put('/update/grade', [StudentController::class, 'updateGrade']);
+    Route::post('/create', [StudentController::class, 'create']); // Esto puede hacerlo: root, admin
 
     Route::middleware('auth:sanctum')->group(function (){
         Route::get('/get', [StudentController::class, 'getStudents']); // Esto puede hacerlo: root, admin
@@ -89,12 +89,13 @@ Route::prefix('/base')->group(function () {
 
 Route::prefix('/instructor')->group(function () {
     Route::post('/create', [InstructorController::class, 'create']);
-    Route::get('/get', [InstructorController::class, 'getInstructors']);
+    //Route::get('/get', [InstructorController::class, 'getInstructors']);
 
     Route::middleware('auth:sanctum')->group(function (){
-        //Endpoints solo para rol instructor.
-        Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']);
-        Route::get('/get/students', [InstructorController::class, 'getStudentsByInstructor']);
+        Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']); // Esto puede hacerlo: instructor
+        Route::get('/get/students', [InstructorController::class, 'getStudentsByInstructor']); // Esto puede hacerlo: instructor
+        Route::get('/get/instructors-subjects', [InstructorController::class, 'getInstructorsSubjects']); // Esto puede hacerlo: root, admin
+        Route::put('/update/instructors-subjects', [InstructorController::class, 'updateInstructorsSubjects']); // Esto puede hacerlo: root, admin
     });
 });
 
