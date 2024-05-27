@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('hours', 8, 2);
                 $table->enum('type_flight', ['simulador', 'monomotor', 'multimotor']);
                 $table->date('flight_date');
+                $table->string('flight_hour');
             $table->timestamps();
         });
     }

@@ -76,7 +76,7 @@ class StudentController extends Controller
             $student = new Student();
             $student->name = $request->name;
             $student->last_names = $request->last_names;
-            $student->curp = strtoupper($request->curp);
+            $student->curp = $request->curp;
             $student->phone = $request->phone;
             $student->cellphone = $request->cellphone;
             $student->email = $request->email;
@@ -150,11 +150,10 @@ class StudentController extends Controller
     {
         try {
 
-            $user = Auth::user();
-            $base_id = Employee::where('user_identification', $user->user_identification)->first()->id_base;
+            //$user = auth()->user(); //Sacar el id de la base del usuario logueado
 
-            $base = Base::where('id', $base_id)
-                ->first(['id','name']);
+            $base = Base::where('id', 1)
+                ->first(['id', 'name']); //Torreón
 
             if (!$base) {
                 return response()->json(["errors" => ["No hay bases creadas o no se encontro la base del usuario auth"]], 404);
@@ -211,7 +210,7 @@ class StudentController extends Controller
                 ->get();
 
             $student->career_name = $career->name;
-            $student->makeHidden(['id_created_by', 'id_history_flight', 'created_at', 'updated_at']);
+            $student->makeHidden(['id_created_by', 'id_history_flight', 'created_at', 'updated_at']); //8714936204
 
             return response()->json(['student' => $student, 'student_subjects' => $subjects], 200);
         } catch (\Exception $e) {
@@ -260,8 +259,6 @@ class StudentController extends Controller
             }
 
             $studentSubject->update($request->all());
-            $studentSubject->status = $studentSubject->final_grade >= 85 ? 'approved' : 'failed';
-            $studentSubject->save();
 
             return response()->json(["message" => "Calificación actualizada"], 200);
         } catch (\Exception $e) {
@@ -414,9 +411,10 @@ class StudentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'id_student' => 'required|numeric',
-            'id_instructor' => 'required|numeric',
+            'id_instructor' => 'required|numeric|exists:employees,id',
             'flight_type' => 'required|string',
             'flight_date' => 'required|string',
+            'flight_hour' => 'required|string',
             'flight_payment_status' => 'required|string',
             'hours' => 'required|numeric',
             'total' => 'required|numeric',
@@ -425,10 +423,13 @@ class StudentController extends Controller
             'installment_value' => 'nullable|numeric'
         ], [
             'id_student.required' => 'El id del usuario es requerido',
+            'id_instructor.exists' => 'Selecciona un instructor',
             'id_instructor.required' => 'El id del instructor es requerido',
             'flight_type.required' => 'El tipo de vuelo es requerido',
             'flight_date.required' => 'La fecha de vuelo es requerida',
             'flight_date.date' => 'La fecha de vuelo no es válida',
+            'flight_hour.required' => 'La hora a tomar el vuelo es requerida',
+            'flight_hour.string' => 'La hora de vuelo no es válida',
             'flight_payment_status.required' => 'El estatus de pago es requerido',
             'hours.required' => 'Las horas de vuelo son requeridas',
             'hours.numeric' => 'Las horas de vuelo no son válidas',
@@ -442,27 +443,27 @@ class StudentController extends Controller
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
         }
+        
+        return response()->json(["message" => "Vuelo agendado, pendiente de pago"], 201);
+
         $empleado = Employee::find($request->id_instructor);
         if ($empleado->user_type != 'instructor') {
-            return response()->json(["error" => "El empleado no es un instructor"], 400);
+            return response()->json(["errors" => ["El empleado no es un instructor"]], 400);
         }
 
         $student = Student::find($request->id_student);
         $hoursCredit = $this->getPriceFly($request->flight_type) * $request->hours;
         if ($student->credit < $hoursCredit) {
-            return response()->json(["error" => "El estudiante no tiene suficientes créditos"], 400);
+            return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
         }
         
-        DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+        DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)', [
             $request->id_student,
             Auth::user()->id,
             $request->id_instructor,
-<<<<<<< HEAD
-=======
-
->>>>>>> 0b3033ec14fbee5cff793d656cb803b3d870c930
             $request->flight_type,
             $request->flight_date,
+            $request->flight_hour,
             $request->flight_payment_status,
             $request->hours,
             $request->total,

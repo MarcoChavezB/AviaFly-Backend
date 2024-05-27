@@ -13,6 +13,7 @@ class flightHistory extends Model
         'hours',
         'type_flight',
         'flight_date',
+        'flight_hour',
         'create_at',
         'update_at'
     ];
