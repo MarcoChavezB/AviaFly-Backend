@@ -1,11 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Base;
 use App\Models\Employee;
-use App\Models\Enrollment;
-use App\Models\FlightPayment;
 use App\Models\InfoFlight;
 use App\Models\Student;
 use App\Models\StudentSubject;
@@ -14,11 +11,28 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class StudentController extends Controller
 {
+
+    function index (string $name = null){
+        $client = Auth::user();
+        $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
+        
+        $studens = Student::select('students.id','students.name', 'students.last_names', 'students.curp', 'students.credit', 'careers.name as career_name')
+        ->leftJoin('careers', 'students.id_career', '=', 'careers.id')
+        ->where('careers.name' , 'Piloto')
+        ->where('students.id_base', $id_base)
+        ->where('students.name', 'like', "%$name%")
+        ->groupBy('students.id', 'students.name', 'students.last_names', 'students.curp', 'students.credit', 'careers.name')
+        ->get();
+        
+        return response()->json($studens, 200);
+    }
+    function indexByName(string $name){
+        return $this->index($name);
+    }
     public function create(Request $request)
     {
         try {
@@ -87,6 +101,7 @@ class StudentController extends Controller
             $student->start_date = $request->register_date;
             $student->id_career = $request->career;
             $student->user_identification = $request->curp;
+            $student->credit = 0;
             $student->save();
 
             $base = Base::find($request->base);
@@ -363,13 +378,22 @@ class StudentController extends Controller
             ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
             ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->where('students.id', $id)
+            ->where('flight_history.status', 'done')
             ->select(
-                DB::raw('SUM(CASE WHEN flight_history.type_flight = "simulator" THEN flight_history.hours ELSE 0 END) AS simulator_hours'),
+                DB::raw('SUM(CASE WHEN flight_history.type_flight = "simulador" THEN flight_history.hours ELSE 0 END) AS simulator_hours'),
                 DB::raw('SUM(CASE WHEN flight_history.type_flight = "monomotor" THEN flight_history.hours ELSE 0 END) AS monomotor_hours'),
-                DB::raw('SUM(CASE WHEN flight_history.type_flight = "multimotor" THEN flight_history.hours ELSE 0 END) AS multimotor_hours')
+                DB::raw('SUM(CASE WHEN flight_history.type_flight = "multimotor" THEN flight_history.hours ELSE 0 END) AS multimotor_hours'),
             )
             ->groupBy('students.name')
             ->first();
+            
+        if (is_null($flightCategoryHours)) {
+            $flightCategoryHours = (object) [
+                'simulator_hours' => '0.00',
+                'monomotor_hours' => '0.00',
+                'multimotor_hours' => '0.00',
+            ];
+        }
 
         $isDebt = $this->is_debt($id);
 
@@ -449,8 +473,6 @@ class StudentController extends Controller
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
         }
-
-        return response()->json(["message" => "Vuelo agendado, pendiente de pago"], 201);
 
         $empleado = Employee::find($request->id_instructor);
         if ($empleado->user_type != 'instructor') {

@@ -13,9 +13,6 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('subjects', function (Blueprint $table) {
-            $table->string('weeks_duration');
-        });
     }
 
     /**
@@ -25,8 +22,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('subjects', function (Blueprint $table) {
-            $table->dropColumn('weeks_duration');
-        });
+    
     }
 };

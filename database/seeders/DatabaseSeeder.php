@@ -63,12 +63,8 @@ class DatabaseSeeder extends Seeder
         Turn::create([
             'name' => 'Vespertino',
         ]);
-<<<<<<< HEAD
-        DB::table('career_subjects')->insert([
-=======
 
                 DB::table('career_subjects')->insert([
->>>>>>> aa77c2c655da95c66a1d33509f274d5a52a3df76
             'id_career' => 1,
             'id_subject' => 1,
         ]);
@@ -310,14 +306,14 @@ class DatabaseSeeder extends Seeder
         
         Career::create([
             'name' => 'Piloto',
-            'monthly_payments' => '1000',
+            'monthly_payments' => 6,
             'registration_fee' => '1000',
             'monthly_fee' => '1000',
         ]);
         
         Career::create([
             'name' => 'Intensivo',
-            'monthly_payments' => '1000',
+            'monthly_payments' => 6,
             'registration_fee' => '1000',
             'monthly_fee' => '1000',
         ]);
