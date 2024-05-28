@@ -153,10 +153,13 @@ class StudentController extends Controller
     {
         try {
 
-            //$user = auth()->user(); //Sacar el id de la base del usuario logueado
+            $user = Auth::user();
 
-            $base = Base::where('id', 1)
-                ->first(['id', 'name']); //Torreón
+            $employee = Employee::where('user_identification', $user->user_identification)
+                ->first();
+
+            $base = Base::where('id', $employee->id_base)
+                ->first(['id', 'name']);
 
             if (!$base) {
                 return response()->json(["errors" => ["No hay bases creadas o no se encontro la base del usuario auth"]], 404);
@@ -299,7 +302,7 @@ class StudentController extends Controller
 }
 
 /*
-    Buscador de alumnos en vista vuelos 
+    Buscador de alumnos en vista vuelos
     usa la funcion indexSimulator
 */
     function getStudentSimulatorByName(string $name)
@@ -309,7 +312,7 @@ class StudentController extends Controller
 
 /*
     Obtiene reporte de un alumno
-    Validada por base 
+    Validada por base
 */
     public function getInfoVueloAlumno(int $id)
     {
@@ -408,7 +411,7 @@ class StudentController extends Controller
     }
 
 /*
-    funcion para agendar un vuelo a un alumno 
+    funcion para agendar un vuelo a un alumno
 */
     function storeFlight(Request $request)
     {
@@ -446,7 +449,7 @@ class StudentController extends Controller
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
         }
-        
+
         return response()->json(["message" => "Vuelo agendado, pendiente de pago"], 201);
 
         $empleado = Employee::find($request->id_instructor);
@@ -459,7 +462,7 @@ class StudentController extends Controller
         if ($student->credit < $hoursCredit) {
             return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
         }
-        
+
         DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)', [
             $request->id_student,
             Auth::user()->id,

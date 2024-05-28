@@ -141,7 +141,7 @@ class InstructorController extends Controller
             $students = $query->get();
 
             if($students->isEmpty()){
-                return response()->json(["errors" => ["No hay estudiantes con los parametros solicitados", $instructor->id]], 404);
+                return response()->json(["errors" => ["No hay estudiantes con los parametros solicitados"]], 404);
             }
 
             return response()->json(['students'=>$students]);
