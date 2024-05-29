@@ -303,5 +303,20 @@ class DatabaseSeeder extends Seeder
             "price" => 11000,
             "min_credit_hours_required" => 40,
         ]);
+        
+        Career::create([
+            'name' => 'Piloto',
+            'monthly_payments' => 6,
+            'registration_fee' => '1000',
+            'monthly_fee' => '1000',
+        ]);
+        
+        Career::create([
+            'name' => 'Intensivo',
+            'monthly_payments' => 6,
+            'registration_fee' => '1000',
+            'monthly_fee' => '1000',
+        ]);
+
     }
 }

@@ -3,33 +3,53 @@
 namespace Database\Seeders;
 
 use App\Models\Subject;
+use App\Models\TeacherSubjectTurn;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class SubjectSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
-    {
-        $subjects = [
-            'Servicio a Bordo',
-            'Meteorología',
-            'Mercancias Peligrosas',
-            'Procedimientos de Emerg.',
-            'Aerodinamica',
-            'Reglametación Aérea',
-            'Factores Humanos y CRM',
-            'Geografía turística',
-        ];
+    {   
+                DB::table('career_subjects')->insert([
+            'id_career' => 2,
+            'id_subject' => 1,
+        ]);
 
-        foreach ($subjects as $subject) {
-            Subject::create([
-                'name' => $subject,
-            ]);
-        }
+        DB::table('career_subjects')->insert([
+            'id_career' => 2,
+            'id_subject' => 2,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 2,
+            'id_subject' => 3,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 2,
+            'id_subject' => 4,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 2,
+            'id_subject' => 5,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 2,
+            'id_subject' => 6,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' =>2,
+            'id_subject' => 7,
+        ]);
+
+        DB::table('career_subjects')->insert([
+            'id_career' => 2,
+            'id_subject' => 8,
+        ]);
     }
 }

@@ -17,4 +17,16 @@ class TeacherSubjectTurn extends Model
         'end_date',
         'duration',
     ];
+    
+    function subject(){
+        return $this->belongsTo(Subject::class);
+    }
+    
+    function teacher(){
+        return $this->belongsTo(Employee::class);
+    }
+    
+    function turn(){
+        return $this->belongsTo(Turn::class);
+    }
 }

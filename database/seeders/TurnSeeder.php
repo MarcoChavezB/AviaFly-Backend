@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Career;
 use App\Models\Turn;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -15,12 +16,23 @@ class TurnSeeder extends Seeder
      */
     public function run()
     {
-        Turn::create([
-            'name' => 'Matutino',
+        Career::create([
+            'name' => 'Piloto',
+            'monthly_payments' => '1000',
+            'registration_fee' => '1000',
+            'monthly_fee' => '1000',
         ]);
-
-        Turn::create([
-            'name' => 'Vespertino',
+        Career::create([
+            'name' => 'Intensivo',
+            'monthly_payments' => '1000',
+            'registration_fee' => '1000',
+            'monthly_fee' => '1000',
         ]);
     }
 }
+
+/**
+    - piloto 
+    - intensivo 
+    - sobrecargo 
+*/
