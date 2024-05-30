@@ -44,9 +44,9 @@ Route::prefix('/avia')->group(function () {
     Route::post('login', [UserController::class, 'login']);
 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/authenticatetoken', function () {
+        Route::get('/auth/check', function () {
             return response()->json([
-                'status' => true
+                 true
             ]);
         });
 
