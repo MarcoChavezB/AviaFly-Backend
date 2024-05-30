@@ -280,6 +280,8 @@ class StudentController extends Controller
             }
 
             $studentSubject->update($request->all());
+            $studentSubject->status = $request->final_grade >= 85 ? 'approved' : 'failed';
+            $studentSubject->save();
 
             return response()->json(["message" => "Calificación actualizada"], 200);
         } catch (\Exception $e) {

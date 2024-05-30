@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Employee;
 use App\Models\Student;
+use App\Models\StudentSubject;
 use App\Models\TeacherSubjectTurn;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -119,12 +120,13 @@ class InstructorController extends Controller
                 ->join('students', 'student_subjects.id_student', '=', 'students.id')
                 ->join('careers', 'students.id_career', '=', 'careers.id')
                 ->join('employees', 'student_subjects.id_teacher', '=', 'employees.id')
+                ->join('subjects', 'student_subjects.id_subject', '=', 'subjects.id')
                 ->join('teacher_subject_turns', function($join) use ($instructor) {
                     $join->on('student_subjects.id_subject', '=', 'teacher_subject_turns.id_subject')
                         ->on('student_subjects.id_turn', '=', 'teacher_subject_turns.id_turn')
                         ->where('employees.id', '=', $instructor->id);
                 })
-                ->select('students.id as student_id', 'students.user_identification as student_identification', DB::raw('CONCAT(students.name, " ", students.last_names) as student_full_name'),
+                ->select('students.id as student_id', 'subjects.name as subject_name','student_subjects.id_subject as subject_id', 'students.user_identification as student_identification', DB::raw('CONCAT(students.name, " ", students.last_names) as student_full_name'),
                     'careers.name as career_name', 'careers.id as career_id',
                     'student_subjects.final_grade', 'student_subjects.id_subject as student_subject_id',
                     'student_subjects.duration', 'student_subjects.start_date', 'student_subjects.end_date', 'student_subjects.updated_at as last_update', 'student_subjects.status as grade_status');
@@ -175,7 +177,7 @@ class InstructorController extends Controller
                 ->join('subjects', 'teacher_subject_turns.id_subject', '=', 'subjects.id')
                 ->join('turns', 'teacher_subject_turns.id_turn', '=', 'turns.id')
                 ->join('career_subjects', 'teacher_subject_turns.id_subject', '=', 'career_subjects.id_subject')
-                ->select('employees.id as teacher_id', 'employees.user_identification as teacher_identification', DB::raw('CONCAT(employees.name, " ", employees.last_names) as teacher_full_name'),
+                ->select('teacher_subject_turns.id as id', 'employees.id as teacher_id', 'employees.user_identification as teacher_identification', DB::raw('CONCAT(employees.name, " ", employees.last_names) as teacher_full_name'),
                     'subjects.id as subject_id', 'subjects.name as subject_name', 'turns.id as turn_id',
                     'turns.name as turn_name', 'teacher_subject_turns.start_date', 'teacher_subject_turns.end_date', 'teacher_subject_turns.duration', 'career_subjects.id_career as career_id')
                 ->where('employees.id_base', $admin->id_base)
@@ -186,7 +188,19 @@ class InstructorController extends Controller
                 return response()->json(["errors" => ["No hay materias ni profesores asignados"]], 400);
             }
 
-            return response()->json(['teachers_subjects'=>$teachers_subjects]);
+            $instructors = Employee::where('user_type', 'instructor')->where('id_base', $admin->id_base)->get(['id', 'user_identification', 'name', 'last_names']);
+
+            if($instructors->isEmpty()){
+                return response()->json(["errors" => ["No hay instructores asignados"]], 400);
+            }
+
+            $turns = DB::table('turns')->get(['id', 'name']);
+
+            if($turns->isEmpty()){
+                return response()->json(["errors" => ["No hay turnos asignados"]], 400);
+            }
+
+            return response()->json(['teachers_subjects'=>$teachers_subjects, 'turns'=>$turns, 'instructors'=>$instructors]);
         }
 
         return response()->json(["error" => "Admin not found"], 404);
@@ -202,8 +216,8 @@ class InstructorController extends Controller
             'duration' => 'sometimes|numeric'
         ],
         [
-            'teacher_subject_id.required' => 'La materia es requerida',
-            'teacher_subject_id.exists' => 'La materia no existe',
+            'id.required' => 'La materia es requerida',
+            'id.exists' => 'La materia no existe',
             'teacher_id.exists' => 'El profesor no existe',
             'turn_id.exists' => 'El turno no existe',
             'start_date.date' => 'La fecha de inicio no es válida',
@@ -212,14 +226,14 @@ class InstructorController extends Controller
         ]);
 
         if($validator->fails()){
-            return response()->json(["errors" => $validator->errors()], 400);
+            return response()->json(["errors" => $validator->errors(), 'id from req' => $request->id], 400);
         }
 
         $teacher_subject = TeacherSubjectTurn::find($request->id);
 
         if($teacher_subject){
             if($request->has('teacher_id')){
-                $teacher_subject->id_teacher = $request->teacher_id;
+                $teacher_subject->id_teacher = $request->id;
             }
             if($request->has('turn_id')){
                 $teacher_subject->id_turn = $request->turn_id;
@@ -238,5 +252,43 @@ class InstructorController extends Controller
 
             return response()->json($teacher_subject, 200);
         }
+
+        return response()->json(["errors" => ["No se encontro la relacion de la materia con el profesor"]], 404);
+    }
+
+    public function updateStudentGrade(Request $request){
+        $validator = Validator::make($request->all(), [
+            'subject_id' => 'required|exists:subjects,id',
+            'student_id' => 'required|exists:students,id',
+            'grade' => 'required|numeric|min:0|max:100'
+        ],
+        [
+            'subject_id.required' => 'La materia es requerida',
+            'subject_id.exists' => 'La materia no existe',
+            'grade.required' => 'La calificación es requerida',
+            'grade.numeric' => 'La calificación no es válida',
+            'grade.min' => 'La calificación no puede ser menor a 0',
+            'grade.max' => 'La calificación no puede ser mayor a 100',
+            'student_id.required' => 'El estudiante es requerido',
+            'student_id.exists' => 'El estudiante no existe'
+        ]);
+
+        if($validator->fails()){
+            return response()->json(["errors" => $validator->errors()], 400);
+        }
+
+        $studentSubject = StudentSubject::where('id_student', $request->student_id)
+            ->where('id_subject', $request->subject_id)
+            ->first();
+
+        if($studentSubject){
+            $studentSubject->final_grade = $request->grade;
+            $studentSubject->status = $request->grade >= 85 ? 'approved' : 'failed';
+            $studentSubject->save();
+
+            return response()->json($studentSubject, 200);
+        }
+
+        return response()->json(["errors" => ["No se encontro la relación de la materia con el estudiante"]], 404);
     }
 }

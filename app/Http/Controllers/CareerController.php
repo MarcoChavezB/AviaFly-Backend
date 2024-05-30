@@ -36,7 +36,7 @@ class CareerController extends Controller
             if ($careers->isEmpty()) {
                 return response()->json(["errors" => ["No hay formaciones creadas"]], 404);
             }
-            return response()->json($careers, 200);
+            return response()->json(['careers' => $careers], 200);
         } catch (\Exception $e) {
             return response()->json(["message" => "Internal Server Error"], 500);
         }
