@@ -26,7 +26,6 @@ class FlightHistoryController extends Controller
             'flight_history.flight_date as fecha_vuelo',
             'flight_history.flight_hour as hora_vuelo',
             DB::raw('flight_history.status as status_vuelo'),
-            'flight_payments.payment_method as status_pago',
             'flight_payments.total as total_dinero',
             DB::raw('COALESCE(SUM(payments.amount), 0) as total_amounts'),
             DB::raw('flight_payments.total - COALESCE(SUM(payments.amount), 0) as deuda_viva'),
@@ -42,7 +41,6 @@ class FlightHistoryController extends Controller
                 'flight_history.flight_date',
                 'flight_history.flight_hour',
                 'flight_history.status',
-                'flight_payments.payment_method',
                 'flight_payments.total',
                 'payments.id_flight',
             )
