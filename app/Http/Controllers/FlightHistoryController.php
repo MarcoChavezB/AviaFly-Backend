@@ -30,11 +30,11 @@ class FlightHistoryController extends Controller
             'flight_payments.total as total_dinero',
             DB::raw('COALESCE(SUM(payments.amount), 0) as total_amounts'),
             DB::raw('flight_payments.total - COALESCE(SUM(payments.amount), 0) as deuda_viva'),
-            'flight_payments.id_payment'
+            'payments.id_flight'
         )
             ->leftJoin('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
             ->leftJoin('students', 'students.id', '=', 'flight_payments.id_student')
-            ->leftJoin('payments', 'payments.id', '=', 'flight_payments.id_payment')
+            ->leftJoin('payments', 'flight_payments.id', '=', 'payments.id_flight')
             ->where('students.id', $id_student)
             ->groupBy(
                 'students.curp',
@@ -44,13 +44,13 @@ class FlightHistoryController extends Controller
                 'flight_history.status',
                 'flight_payments.payment_method',
                 'flight_payments.total',
-                'flight_payments.id_payment',
+                'payments.id_flight',
             )
             ->get();
         $data = $flights->map(function($flights){
             $history_amounts = DB::table('payments')
-                ->select('amount', 'created_at as date')
-                ->where('id', $flights->id_payment)
+                ->select('amount', 'created_at')
+                ->where('id_flight', $flights->id_flight)
                 ->get();
                 
             return [

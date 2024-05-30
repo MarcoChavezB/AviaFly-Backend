@@ -15,11 +15,12 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
             $table->decimal('amount')->default(0);
+            $table->enum('payment_method', ['cash','installments', 'transfer', 'flight_credit']);
             
             $table->unsignedBigInteger('id_flight');
             $table->foreign('id_flight')->references('id')->on('flight_payments');
+            $table->timestamps();
         });
     }
 

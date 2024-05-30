@@ -14,7 +14,6 @@ use HasFactory;
         'id_employee',
         'total',
         'status',
-        'payment_method',
         'dueWeek',
         'installment_value',
         'created_at',
@@ -34,10 +33,5 @@ use HasFactory;
     public function instructor()
     {
         return $this->belongsTo(Employee::class, 'id_instructor');
-    }
-    
-    public function payment()
-    {
-        return $this->belongsTo(Payments::class, 'id_payment');
     }
 }

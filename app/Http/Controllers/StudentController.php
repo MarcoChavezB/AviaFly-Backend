@@ -22,7 +22,7 @@ class StudentController extends Controller
         
         $studens = Student::select('students.id','students.name', 'students.last_names', 'students.curp', 'students.credit', 'careers.name as career_name')
         ->leftJoin('careers', 'students.id_career', '=', 'careers.id')
-        ->where('careers.name' , 'Piloto')
+        ->where('careers.name' , 'Piloto privado')
         ->where('students.id_base', $id_base)
         ->where('students.name', 'like', "%$name%")
         ->groupBy('students.id', 'students.name', 'students.last_names', 'students.curp', 'students.credit', 'careers.name')
@@ -313,7 +313,7 @@ class StudentController extends Controller
                 WHERE
                 students.id_base = $id_base
                 AND students.name LIKE '%$name%'
-                AND careers.name = 'Piloto'
+                AND careers.name = 'Piloto privado'
                 GROUP BY students.id, students.name, students.last_names, careers.name, students.start_date;");
         return response()->json($data);
 }
