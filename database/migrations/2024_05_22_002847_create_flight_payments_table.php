@@ -27,13 +27,9 @@ return new class extends Migration
 
                 $table->unsignedBigInteger('id_employee');
                 $table->foreign('id_employee')->references('id')->on('employees');
-                
-                $table->unsignedBigInteger('id_payment')->nullable();
-                $table->foreign('id_payment')->references('id')->on('payments')->nullable();
 
                 $table->decimal('total', 8, 2);
                 $table->enum('status', ['pending', 'paid', 'canceled', 'owed']);
-                $table->enum('payment_method', ['cash','installments', 'transfer']);
                 $table->integer('due_week')->nullable();
             $table->timestamps();
         });
