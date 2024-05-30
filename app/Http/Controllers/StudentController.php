@@ -362,7 +362,7 @@ class StudentController extends Controller
             $student->hours = DB::table('flight_history')
                 ->join('flight_payments', 'flight_history.id', '=', 'flight_payments.id_flight')
                 ->where('flight_payments.id_student', $student->id)
-                ->select('flight_history.hours', 'flight_history.type_flight', 'flight_history.flight_date')
+                ->select('flight_history.hours', 'flight_history.type_flight', 'flight_history.flight_date' ,'flight_history.status')
                 ->get();
         }
 
@@ -371,6 +371,7 @@ class StudentController extends Controller
             ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
             ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->where('students.id', $id)
+            ->where('flight_history.status', 'done')
             ->select(DB::raw('SUM(flight_history.hours) AS total_hours'))
             ->groupBy('students.id', 'students.name')
             ->first();
