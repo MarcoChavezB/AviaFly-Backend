@@ -74,7 +74,7 @@ Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [StudentController::class, 'index']);
-    Route::get('/index/{name?}', [StudentController::class, 'indexByName']);
+    Route::get('/index/{name}', [StudentController::class, 'indexByName']);
     Route::post('/enroll', [CourseController::class, 'create']);
     Route::post('/create', [StudentController::class, 'create']); // Esto puede hacerlo: root, admin
     Route::get('/show/{id}', [StudentController::class, 'show'])->where('id', '[0-9]+');
@@ -142,7 +142,7 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get', [InfoFlightController::class, 'index']);
-    Route::post('/flights/already/reserved', [FlightHistoryController::class, 'isDateReserved']);
+   Route::get('get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']); 
 });
 
 Route::prefix('/flights/histroy')->middleware('auth:sanctum')->group(function () {

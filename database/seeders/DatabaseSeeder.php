@@ -64,7 +64,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Vespertino',
         ]);
 
-                DB::table('career_subjects')->insert([
+        DB::table('career_subjects')->insert([
             'id_career' => 1,
             'id_subject' => 1,
         ]);

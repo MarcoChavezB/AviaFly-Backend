@@ -5,19 +5,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class FlightPayment extends Model
 {
-    use HasFactory;
+use HasFactory;
 
-    protected $filleable =
-    [
+    protected $fillable = [
         'id_student',
         'id_flight',
         'id_instructor',
         'id_employee',
+        'id_payment',
         'total',
         'status',
         'payment_method',
         'dueWeek',
-        'intallment_value',
+        'installment_value',
         'created_at',
         'updated_at'
     ];
@@ -29,10 +29,16 @@ class FlightPayment extends Model
 
     public function flight()
     {
-        return $this->belongsTo(flightHistory::class, 'id_flight');
+        return $this->belongsTo(FlightHistory::class, 'id_flight');
     }
 
-    public function id_instructor(){
+    public function instructor()
+    {
         return $this->belongsTo(Employee::class, 'id_instructor');
+    }
+    
+    public function payment()
+    {
+        return $this->belongsTo(Payments::class, 'id_payment');
     }
 }
