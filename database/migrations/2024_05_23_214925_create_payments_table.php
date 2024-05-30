@@ -17,7 +17,10 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->decimal('amount')->default(0);
-            });
+            
+            $table->unsignedBigInteger('id_flight');
+            $table->foreign('id_flight')->references('id')->on('flight_payments');
+        });
     }
 
     /**

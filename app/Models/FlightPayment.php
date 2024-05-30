@@ -12,7 +12,6 @@ use HasFactory;
         'id_flight',
         'id_instructor',
         'id_employee',
-        'id_payment',
         'total',
         'status',
         'payment_method',

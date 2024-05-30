@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('cellphone')->nullable();
             $table->string('curp')->unique();
-            $table->decimal('credit', 8, 2)->nullable();
+            $table->decimal('credit', 8, 2)->nullable()->default(0);
             $table->string('user_identification')->unique()->nullable();
             $table->string('emergency_contact');
             $table->string('emergency_phone');
