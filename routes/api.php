@@ -95,11 +95,9 @@ Route::prefix('/instructor')->group(function () {
     Route::get('/get', [InstructorController::class, 'getInstructors']);
 
     Route::middleware('auth:sanctum')->group(function (){
-        Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']); // Esto puede hacerlo: instructor
-        Route::get('/get/students', [InstructorController::class, 'getStudentsByInstructor']); // Esto puede hacerlo: instructor
-        Route::get('/get/instructors-subjects', [InstructorController::class, 'getInstructorsSubjects']); // Esto puede hacerlo: root, admin
-        Route::put('/update/instructors-subjects', [InstructorController::class, 'updateInstructorsSubjects']); // Esto puede hacerlo: root, admin
-        Route::put('/update/student/grade', [InstructorController::class, 'updateStudentGrade']); // Esto puede hacerlo: instructor
+        //Endpoints solo para rol instructor.
+        Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']);
+        Route::get('/get/students', [InstructorController::class, 'getStudentsByInstructor']);
     });
 });
 
@@ -144,7 +142,8 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get', [InfoFlightController::class, 'index']);
-   Route::get('get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']); 
+   Route::get('/get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']); 
+   Route::get('/get/flight/report/{id_flight}', [FlightHistoryController::class, 'reportDataById']);
 });
 
 Route::prefix('/flights/histroy')->middleware('auth:sanctum')->group(function () {

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Payments extends Model
 {
     use HasFactory;
-    protected $fillable = ['amount', 'id_flight'];
+    protected $fillable = ['amount', 'id_flight', 'pay_method'];
     
     function flight(){
         return $this->belongsTo(FlightPayment::class, 'id_flight');
