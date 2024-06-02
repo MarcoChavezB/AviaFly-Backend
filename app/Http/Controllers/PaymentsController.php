@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request; // Corrección aquí
+use Illuminate\Http\Request; 
 use Illuminate\Support\Facades\DB;
 
 class PaymentsController extends Controller
 {
-    function addPayment(Request $request){ // Y aquí también
+    function addPayment(Request $request){ 
         $data = $request->all();
         DB::statement('CALL installmentPayment(?, ?, ?)', [
             $data['id_flight'], 
