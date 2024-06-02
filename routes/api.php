@@ -16,6 +16,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\InfoFlightController;
+use App\Http\Controllers\PaymentsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -144,6 +145,10 @@ Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get', [InfoFlightController::class, 'index']);
    Route::get('/get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']); 
    Route::get('/get/flight/report/{id_flight}', [FlightHistoryController::class, 'reportDataById']);
+});
+
+Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
+    Route::post('/amount', [PaymentsController::class, 'addPayment']);
 });
 
 Route::prefix('/flights/histroy')->middleware('auth:sanctum')->group(function () {
