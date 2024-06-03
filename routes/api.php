@@ -82,6 +82,10 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function (){
         Route::get('/get', [StudentController::class, 'getStudents']); // Esto puede hacerlo: root, admin
+        Route::get('/get/subjects/{id}', [StudentController::class, 'getStudentSubjects'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
+        Route::post('/add/subject', [StudentController::class, 'addSubjectToStudent']); // Esto puede hacerlo: root, admin
+        Route::delete('/delete/subject', [StudentController::class, 'deleteSubjectFromStudent']); // Esto puede hacerlo: root, admin
+        Route::put('/change/instructor', [StudentController::class, 'changeInstructorFromStudentSubject']); // Esto puede hacerlo: root, admin
     });
 });
 
@@ -92,14 +96,16 @@ Route::prefix('/base')->group(function () {
 
 Route::prefix('/instructor')->group(function () {
     Route::post('/create', [InstructorController::class, 'create']);
-    Route::get('/get', [InstructorController::class, 'getInstructors']);
 
     Route::middleware('auth:sanctum')->group(function (){
         Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']); // Esto puede hacerlo: instructor
+        Route::get('/get/subjects', [InstructorController::class, 'getInstructorSubjects']); // Esto puede hacerlo: instructor
         Route::get('/get/students', [InstructorController::class, 'getStudentsByInstructor']); // Esto puede hacerlo: instructor
         Route::get('/get/instructors-subjects', [InstructorController::class, 'getInstructorsSubjects']); // Esto puede hacerlo: root, admin
         Route::put('/update/instructors-subjects', [InstructorController::class, 'updateInstructorsSubjects']); // Esto puede hacerlo: root, admin
         Route::put('/update/student/grade', [InstructorController::class, 'updateStudentGrade']); // Esto puede hacerlo: instructor
+        Route::get('/get/instructors-and-turns', [InstructorController::class, 'getInstructorsAndTurns']); // Esto puede hacerlo: root, admin
+
     });
 });
 
@@ -112,9 +118,13 @@ Route::prefix('/career')->group(function () {
 
 
 Route::prefix('/subject')->group(function () {
-    Route::post('/create', [SubjectController::class, 'create']);
     Route::get('/get', [SubjectController::class, 'getSubjects']);
     Route::get('/get-info-calendar/{id_career}', [SubjectController::class, 'getSubjectsInfoCalendar']);
+
+    Route::middleware('auth:sanctum')->group(function (){
+        Route::post('/create', [SubjectController::class, 'create']); // Esto puede hacerlo: root, admin
+        Route::delete('/destroy', [SubjectController::class, 'destroy']); // Esto puede hacerlo: root, admin
+    });
 });
 
 Route::prefix('/employes')->middleware('auth:sanctum')->group(function () {
@@ -144,7 +154,7 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get', [InfoFlightController::class, 'index']);
-   Route::get('get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']); 
+   Route::get('get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']);
 });
 
 Route::prefix('/flights/histroy')->middleware('auth:sanctum')->group(function () {
