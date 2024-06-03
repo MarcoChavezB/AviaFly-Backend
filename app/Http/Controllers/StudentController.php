@@ -343,7 +343,7 @@ class StudentController extends Controller
         // Obtener información de los estudiantes
         $students = Student::select(
             'students.id',
-            'students.credit',
+            'students.flight_credit',
             'students.name',
             'students.last_names',
             'students.start_date',
@@ -354,7 +354,7 @@ class StudentController extends Controller
             ->leftJoin('student_subjects', 'students.id', '=', 'student_subjects.id_student')
             ->where('students.id_base', $id_base)
             ->where('students.id', $id)
-            ->groupBy('students.id', 'students.name', 'students.last_names', 'students.credit', 'students.start_date', 'careers.name')
+            ->groupBy('students.id', 'students.name', 'students.last_names', 'students.flight_credit', 'students.start_date', 'careers.name')
             ->get();
 
         // Obtener las horas de vuelo
@@ -375,6 +375,12 @@ class StudentController extends Controller
             ->select(DB::raw('SUM(flight_history.hours) AS total_hours'))
             ->groupBy('students.id', 'students.name')
             ->first();
+            
+        if($totalHours == null){
+            $totalHours = (object) [
+                'total_hours' => '0.00'
+            ];
+        }
 
         // Obtener las horas por categoría de vuelo
         $flightCategoryHours = DB::table('students')
@@ -472,7 +478,7 @@ class StudentController extends Controller
             'due_week.numeric' => 'La semana de vencimiento no es válida',
             'installment_value.numeric' => 'El valor de la mensualidad no es válido',
         ]);
-
+        
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
         }
@@ -520,24 +526,7 @@ class StudentController extends Controller
         WHERE students.id = $id and employees.user_type = 'instructor'");
         return response()->json($employees, 200);
     }
-
-    function hasCredit(int $id, int $hours, string $flight_type)
-    {
-        $student = Student::find($id);
-        $minHoursRequired = $this->getMinCreditHoursRequired($flight_type);
-        $restantCredit = $student->credit - $hours * $this->getPriceFly($flight_type);
-        $optimCredit = $this->getPriceFly($flight_type) * $minHoursRequired;
-        if ($restantCredit < $optimCredit || $restantCredit < 0) {
-            return response()->json([false], 400);
-        }
-        return response()->json([true], 200);
-    }
-
-    function getMinCreditHoursRequired(string $name)
-    {
-        return InfoFlight::where('flight_type', $name)->value('min_credit_hours_required');
-    }
-
+    
     function getPriceFly(string $name)
     {
         return InfoFlight::where('flight_type', $name)->value('price');

@@ -19,6 +19,7 @@ class Student extends Model
         'cellphone',
         'curp',
         'credit',
+        'flight_credit',
         'user_identification',
         'emergency_contact',
         'emergency_phone',

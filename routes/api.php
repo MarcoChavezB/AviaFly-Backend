@@ -16,6 +16,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\InfoFlightController;
+use App\Http\Controllers\PaymentsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -105,7 +106,6 @@ Route::prefix('/instructor')->group(function () {
         Route::put('/update/instructors-subjects', [InstructorController::class, 'updateInstructorsSubjects']); // Esto puede hacerlo: root, admin
         Route::put('/update/student/grade', [InstructorController::class, 'updateStudentGrade']); // Esto puede hacerlo: instructor
         Route::get('/get/instructors-and-turns', [InstructorController::class, 'getInstructorsAndTurns']); // Esto puede hacerlo: root, admin
-
     });
 });
 
@@ -154,7 +154,13 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get', [InfoFlightController::class, 'index']);
-   Route::get('get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']);
+
+   Route::get('/get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']);
+   Route::get('/get/flight/report/{id_flight}', [FlightHistoryController::class, 'reportDataById']);
+});
+
+Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
+    Route::post('/amount', [PaymentsController::class, 'addPayment']);
 });
 
 Route::prefix('/flights/histroy')->middleware('auth:sanctum')->group(function () {
