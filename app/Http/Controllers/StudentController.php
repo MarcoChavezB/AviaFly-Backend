@@ -489,9 +489,11 @@ class StudentController extends Controller
         }
 
         $student = Student::find($request->id_student);
-        $hoursCredit = $this->getPriceFly($request->flight_type) * $request->hours;
-        if ($student->credit < $hoursCredit) {
-            return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
+        if($request->pay_method == 'credit'){
+            $hoursCredit = $this->getPriceFly($request->flight_type) * $request->hours;
+            if ($student->flight_credit < $hoursCredit) {
+                return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
+            }
         }
 
         DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)', [
