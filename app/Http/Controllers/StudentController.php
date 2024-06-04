@@ -510,7 +510,7 @@ class StudentController extends Controller
         ]);
 
         $message = $request->flight_payment_status == 'pending' ? 'Vuelo agendado, pendiente de pago' : 'Se agendo el vuelo';
-        return response()->json(["message" => $message], 201);
+        return response()->json(["msg" => $message], 201);
     }
 
 

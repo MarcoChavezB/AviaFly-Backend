@@ -81,7 +81,7 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
     Route::get('/show/{id}', [StudentController::class, 'show'])->where('id', '[0-9]+');
     Route::put('/update/grade', [StudentController::class, 'updateGrade']);
 
-    Route::middleware('auth:sanctum')->group(function (){
+    Route::middleware('auth:sanctum')->group(function () {
         Route::get('/get', [StudentController::class, 'getStudents']); // Esto puede hacerlo: root, admin
     });
 });
@@ -95,7 +95,7 @@ Route::prefix('/instructor')->group(function () {
     Route::post('/create', [InstructorController::class, 'create']);
     Route::get('/get', [InstructorController::class, 'getInstructors']);
 
-    Route::middleware('auth:sanctum')->group(function (){
+    Route::middleware('auth:sanctum')->group(function () {
         //Endpoints solo para rol instructor.
         Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']);
         Route::get('/get/students', [InstructorController::class, 'getStudentsByInstructor']);
@@ -143,8 +143,8 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get', [InfoFlightController::class, 'index']);
-   Route::get('/get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']); 
-   Route::get('/get/flight/report/{id_flight}', [FlightHistoryController::class, 'reportDataById']);
+    Route::get('/get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']);
+    Route::get('/get/flight/report/{id_flight}', [FlightHistoryController::class, 'reportDataById']);
 });
 
 Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
