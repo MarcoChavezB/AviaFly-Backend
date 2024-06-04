@@ -110,6 +110,30 @@ class InstructorController extends Controller
         return response()->json(["error" => "Instructor not found"], 404);
     }
 
+    public function getInstructorSubjects(){
+        $user = Auth::user();
+
+        $instructor = Employee::where('user_identification', $user->user_identification)->first();
+
+        if($instructor) {
+            $subjects = DB::table('student_subjects')
+                ->join('students', 'student_subjects.id_student', '=', 'students.id')
+                ->join('subjects', 'student_subjects.id_subject', '=', 'subjects.id')
+                ->where('student_subjects.id_teacher', $instructor->id)
+                ->select('subjects.id', 'subjects.name')
+                ->distinct()
+                ->get();
+
+            if($subjects->isEmpty()){
+                return response()->json(["errors" => ["No hay materias asignadas"]], 404);
+            }
+
+            return response()->json(['subjects'=>$subjects]);
+        }
+
+        return response()->json(["error" => "Instructor not found"], 404);
+    }
+
     public function getStudentsByInstructor(Request $request){
         $user = Auth::user();
 
@@ -121,11 +145,12 @@ class InstructorController extends Controller
                 ->join('careers', 'students.id_career', '=', 'careers.id')
                 ->join('employees', 'student_subjects.id_teacher', '=', 'employees.id')
                 ->join('subjects', 'student_subjects.id_subject', '=', 'subjects.id')
-                ->join('teacher_subject_turns', function($join) use ($instructor) {
+                ->leftJoin('teacher_subject_turns', function($join) use ($instructor) {
                     $join->on('student_subjects.id_subject', '=', 'teacher_subject_turns.id_subject')
                         ->on('student_subjects.id_turn', '=', 'teacher_subject_turns.id_turn')
                         ->where('employees.id', '=', $instructor->id);
                 })
+                ->where('student_subjects.id_teacher', $instructor->id)
                 ->select('students.id as student_id', 'subjects.name as subject_name','student_subjects.id_subject as subject_id', 'students.user_identification as student_identification', DB::raw('CONCAT(students.name, " ", students.last_names) as student_full_name'),
                     'careers.name as career_name', 'careers.id as career_id',
                     'student_subjects.final_grade', 'student_subjects.id_subject as student_subject_id',
@@ -138,6 +163,10 @@ class InstructorController extends Controller
 
             if($request->has('without_grade')) {
                 $query->whereNull('student_subjects.final_grade');
+            }
+
+            if($request->has('subject_id')){
+                $query->where('student_subjects.id_subject', $request->subject_id);
             }
 
             $students = $query->get();
@@ -290,5 +319,24 @@ class InstructorController extends Controller
         }
 
         return response()->json(["errors" => ["No se encontro la relación de la materia con el estudiante"]], 404);
+    }
+
+    public function getInstructorsAndTurns(){
+        $user = Auth::user();
+        $admin = Employee::where('user_identification', $user->user_identification)->first();
+
+        $instructors = Employee::where('user_type', 'instructor')->where('id_base', $admin->id_base)->get(['id', 'user_identification', 'name', 'last_names']);
+
+        if($instructors->isEmpty()){
+            return response()->json(["errors" => ["No hay instructores asignados"]], 400);
+        }
+
+        $turns = DB::table('turns')->get(['id', 'name']);
+
+        if($turns->isEmpty()){
+            return response()->json(["errors" => ["No hay turnos asignados"]], 400);
+        }
+
+        return response()->json(['turns'=>$turns, 'instructors'=>$instructors]);
     }
 }
