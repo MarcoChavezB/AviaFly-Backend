@@ -13,9 +13,10 @@ use HasFactory;
         'id_instructor',
         'id_employee',
         'total',
-        'status',
-        'dueWeek',
+        'payment_status',
+        'due_week',
         'installment_value',
+        'instructor_cost',
         'created_at',
         'updated_at'
     ];

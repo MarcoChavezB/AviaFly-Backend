@@ -28,8 +28,8 @@ class FlightHistoryController extends Controller
             'flight_history.type_flight as tipo_vuelo',
             'flight_history.flight_date as fecha_vuelo',
             'flight_history.flight_hour as hora_vuelo',
-            'flight_payments.status as status_pago',
-            DB::raw('flight_history.status as status_vuelo'),
+            'flight_payments.payment_status as status_pago',
+            DB::raw('flight_history.flight_status as status_vuelo'),
             'flight_payments.total as total_dinero',
             DB::raw('COALESCE(SUM(payments.amount), 0) as total_amounts'),
             DB::raw('flight_payments.total - COALESCE(SUM(payments.amount), 0) as deuda_viva'),
@@ -45,10 +45,10 @@ class FlightHistoryController extends Controller
                 'flight_history.type_flight',
                 'flight_history.flight_date',
                 'flight_history.flight_hour',
-                'flight_history.status',
+                'flight_history.flight_status',
                 'flight_payments.total',
                 'payments.id_flight',
-                'flight_payments.status',
+                'flight_payments.payment_status',
                 'flight_payments.id')
             ->OrderBy('flight_history.created_at', 'desc')
             ->get();
@@ -91,8 +91,8 @@ class FlightHistoryController extends Controller
             'flight_history.type_flight as tipo_vuelo',
             'flight_history.flight_date as fecha_vuelo',
             'flight_history.flight_hour as hora_vuelo',
-            'flight_payments.status as status_pago',
-            DB::raw('flight_history.status as status_vuelo'),
+            'flight_payments.payment_status as status_pago',
+            DB::raw('flight_history.flight_status as status_vuelo'),
             'flight_payments.total as total_dinero',
             DB::raw('COALESCE(SUM(payments.amount), 0) as total_amounts'),
             DB::raw('flight_payments.total - COALESCE(SUM(payments.amount), 0) as deuda_viva'),
@@ -107,10 +107,10 @@ class FlightHistoryController extends Controller
                 'flight_history.type_flight',
                 'flight_history.flight_date',
                 'flight_history.flight_hour',
-                'flight_history.status',
+                'flight_history.flight_status',
                 'flight_payments.total',
                 'payments.id_flight',
-                'flight_payments.status',
+                'flight_payments.payment_status',
                 'flight_payments.id',
                 'students.name',
                 'students.last_names',
@@ -157,12 +157,12 @@ class FlightHistoryController extends Controller
 
 
         $flight = flightHistory::find($data['id_flight']);
-        if ($flight->status == $data['status']) {
+        if ($flight->flight_status == $data['status']) {
             return response()->json([
                 'msg' => 'El vuelo ya está en el estado solicitado'
             ], 400);
         }
-        $flight->status = $data['status'];
+        $flight->flight_status = $data['status'];
         $flight->save();
         return response()->json([
             'msg' => 'El vuelo se ha modificado correctamente'

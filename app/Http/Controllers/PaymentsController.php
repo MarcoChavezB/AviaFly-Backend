@@ -48,7 +48,7 @@ class PaymentsController extends Controller
     function changeFlightPaymentStatus(Request $request){
         $data = $request->all();
         $flight = FlightPayment::find($data['id_flight']);
-        $flight->status = $data['status'];
+        $flight->payment_status = $data['status'];
         $flight->save();
         return response()->json([
             'status' => 'success',

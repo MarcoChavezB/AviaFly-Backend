@@ -302,7 +302,7 @@ class StudentController extends Controller
                 SELECT
                 students.id, students.name, students.last_names, careers.name AS career_name, students.start_date,
                     MAX(CASE WHEN student_subjects.status = 'failed' OR student_subjects.status = 'pending' THEN 1 ELSE 0 END) AS subjects_failed,
-                    MAX(CASE WHEN flight_payments.status = 'pending' THEN 1 ELSE 0 END) AS pendings_payments,
+                    MAX(CASE WHEN flight_payments.payment_status = 'pending' THEN 1 ELSE 0 END) AS pendings_payments,
                     MAX(CASE WHEN monthly_payments.status = 'pending' OR monthly_payments.status = 'owed' THEN 1 ELSE 0 END) AS pendings_months
                 FROM students
                 LEFT JOIN careers ON students.id_career = careers.id
@@ -362,7 +362,7 @@ class StudentController extends Controller
             $student->hours = DB::table('flight_history')
                 ->join('flight_payments', 'flight_history.id', '=', 'flight_payments.id_flight')
                 ->where('flight_payments.id_student', $student->id)
-                ->select('flight_history.hours', 'flight_history.type_flight', 'flight_history.flight_date' ,'flight_history.status')
+                ->select('flight_history.hours', 'flight_history.type_flight', 'flight_history.flight_date' ,'flight_history.flight_status')
                 ->get();
         }
 
@@ -371,7 +371,7 @@ class StudentController extends Controller
             ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
             ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->where('students.id', $id)
-            ->where('flight_history.status', 'done')
+            ->where('flight_history.flight_status', 'done')
             ->select(DB::raw('SUM(flight_history.hours) AS total_hours'))
             ->groupBy('students.id', 'students.name')
             ->first();
@@ -387,7 +387,7 @@ class StudentController extends Controller
             ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
             ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->where('students.id', $id)
-            ->where('flight_history.status', 'done')
+            ->where('flight_history.flight_status', 'done')
             ->select(
                 DB::raw('SUM(CASE WHEN flight_history.type_flight = "simulador" THEN flight_history.hours ELSE 0 END) AS simulator_hours'),
                 DB::raw('SUM(CASE WHEN flight_history.type_flight = "monomotor" THEN flight_history.hours ELSE 0 END) AS monomotor_hours'),
@@ -423,7 +423,7 @@ class StudentController extends Controller
         $value = DB::select("
             SELECT
               MAX(CASE WHEN student_subjects.status = 'failed' OR student_subjects.status = 'pending' THEN 1 ELSE 0 END) AS subjects_failed,
-              MAX(CASE WHEN flight_payments.status = 'pending' THEN 1 ELSE 0 END) AS pendings_payments,
+              MAX(CASE WHEN flight_payments.payment_status = 'pending' THEN 1 ELSE 0 END) AS pendings_payments,
               MAX(CASE WHEN monthly_payments.status = 'pending' OR monthly_payments.status = 'owed' THEN 1 ELSE 0 END) AS pendings_months
             FROM
              students

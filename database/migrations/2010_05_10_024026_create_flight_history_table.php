@@ -16,10 +16,19 @@ return new class extends Migration
         Schema::create('flight_history', function(Blueprint $table) {
             $table->id();
             $table->decimal('hours', 8, 2);
-            $table->enum('type_flight', ['simulador', 'monomotor', 'multimotor']);
-            $table->enum('status', ['process', 'canceled', 'done'])->default('process');
+            $table->enum('type_flight', ['simulador', 'vuelo']); 
+            $table->enum('flight_status', ['proceso', 'cancelado', 'hecho']); 
+            $table->enum('maneuver', ['local', 'ruta']);
+            $table->enum('equipo', ['XBPDY', 'simulador', 'vuelo']);
+            $table->enum('flight_category', ['VFR', 'IFR', 'night_IFR']);       
             $table->date('flight_date');
             $table->string('flight_hour');
+            $table->boolean('flight_alone')->default(false);
+            $table->decimal('initial_horometer', 8, 2);
+            $table->decimal('final_horometer', 8, 2);
+            $table->decimal('total_horometer', 8, 2);
+            $table->decimal('final_tacometer', 8, 2);
+            $table->string('comment')->nullable();
             $table->timestamps();
         });
     }
