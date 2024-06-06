@@ -452,40 +452,58 @@ class StudentController extends Controller
     function storeFlight(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'id_student' => 'required|numeric',
             'id_instructor' => 'required|numeric|exists:employees,id',
-            'flight_type' => 'required|string',
             'flight_date' => 'required|string',
             'flight_hour' => 'required|string',
-            'flight_payment_status' => 'required|string',
+            'equipo' => 'required|string|in:XBPDY,simulador,matricula',
             'hours' => 'required|numeric',
+            'flight_type' => 'required|string|in:simulador,vuelo',
+            'flight_category' => 'required|string|in:VFR,IFR,IFR_nocturno',
+            'maneuver' => 'required|string|in:local,ruta',
             'total' => 'required|numeric',
-            'pay_method' => 'required|string',
+            'hour_instructor_cost' => 'required|numeric',
+            'pay_method' => 'required|string|in:efectivo,abonos,transferencia,credito_vuelo',
             'due_week' => 'nullable|numeric',
-            'installment_value' => 'nullable|numeric'
+            'installment_value' => 'nullable|numeric',
+            'id_student' => 'required|numeric',
+            'flight_payment_status' => 'required|string|in:pendiente,pagado,cancelado',
         ], [
-            'id_student.required' => 'El id del usuario es requerido',
+            'id_student.required' => 'campo requerido',
             'id_instructor.exists' => 'Selecciona un instructor',
-            'id_instructor.required' => 'El id del instructor es requerido',
-            'flight_type.required' => 'El tipo de vuelo es requerido',
-            'flight_date.required' => 'La fecha de vuelo es requerida',
+            'id_instructor.required' => 'campo requerido',
+            'flight_type.required' => 'campo requerido',
+            'flight_type.in' => 'El tipo de vuelo no es válido',
+            'flight_date.required' => 'campo requerido',
             'flight_date.date' => 'La fecha de vuelo no es válida',
-            'flight_hour.required' => 'La hora a tomar el vuelo es requerida',
+            'flight_hour.required' => 'campo requerido',
             'flight_hour.string' => 'La hora de vuelo no es válida',
-            'flight_payment_status.required' => 'El estatus de pago es requerido',
-            'hours.required' => 'Las horas de vuelo son requeridas',
+            'flight_payment_status.required' => 'campo requerido',
+            'flight_payment_status.in' => 'El estatus de pago no es válido',
+            'hours.required' => 'campo requerido',
             'hours.numeric' => 'Las horas de vuelo no son válidas',
-            'total.required' => 'El total es requerido',
-            'total.numeric' => 'El total no es válido',
-            'pay_method.required' => 'El método de pago es requerido',
+            'total.required' => 'campo requerido',
+            'total.numeric' => 'campo requerido',
+            'pay_method.required' => 'campo requerido',
+            'pay_method.in' => 'El método de pago no es válido',    
             'due_week.numeric' => 'La semana de vencimiento no es válida',
             'installment_value.numeric' => 'El valor de la mensualidad no es válido',
+            'equipo.required' => 'El equipo es requerido',
+            'equipo.in' => 'El equipo no es válido',
+            'flight_category.required' => 'campo requerido',
+            'flight_category.in' => 'La categoría de vuelo no es válida',
+            'maneuver.required' => 'campo requerido',
+            'maneuver.in' => 'campo no válido',
+            'hour_instructor_cost.numeric' => 'El costo de la hora de instructor no es válido',
         ]);
-
+        
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
         }
-
+        
+        if($this->OtherFlightReserved($request->flight_date, $request->flight_hour, $request->hours, $request->flight_type)){
+            return response()->json(["errors" => [ "sameDate" => ["Existe un vuelo en la fecha y hora por favor de seleccionar otra hora"]]], 400);
+        }
+        
         $empleado = Employee::find($request->id_instructor);
         if ($empleado->user_type != 'instructor') {
             return response()->json(["errors" => ["El empleado no es un instructor"]], 400);
@@ -499,19 +517,23 @@ class StudentController extends Controller
             }
         }
 
-        DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)', [
-            $request->id_student,
-            Auth::user()->id,
-            $request->id_instructor,
-            $request->flight_type,
-            $request->flight_date,
-            $request->flight_hour,
-            $request->flight_payment_status,
-            $request->hours,
-            $request->total,
-            $request->pay_method,
-            $request->due_week,
-            $request->installment_value
+        DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+            $request->id_student,           // id_student: INT
+            Auth::user()->id,                         // id_employee: INT
+            $request->id_instructor,                  // id_instructor: INT
+            $request->flight_type,                    // flight_type: VARCHAR(50)
+            $request->flight_date,                    // flight_date: DATE
+            $request->flight_hour,                    // flight_hour: VARCHAR(10)
+            $request->flight_payment_status,          // flight_payment_status: VARCHAR(50)
+            $request->hours,                          // hours: INT
+            $request->total,                          // total: INT
+            $request->pay_method,                     // pay_method: VARCHAR(50)
+            $request->due_week,                       // due_week: INT
+            $request->installment_value,              // installment_value: DECIMAL(8, 2)
+            $request->equipo,                         // equipo: ENUM('XBPDY', 'simulador', 'vuelo')
+            $request->flight_category,                // flight_category: ENUM('VFR', 'IFR', 'IFR_nocturno')
+            $request->maneuver,                       // maneuver: ENUM('local', 'ruta')
+            $request->hour_instructor_cost            // hour_instructor_cost: DECIMAL(8, 2)
         ]);
 
         $message = $request->flight_payment_status == 'pending' ? 'Vuelo agendado, pendiente de pago' : 'Se agendo el vuelo';
@@ -737,4 +759,27 @@ class StudentController extends Controller
 
         return response()->json([["message" => "Instructor actualizado", 'data' => $studen_subject, 'req' => $request->all()]], 200);
     }
+    
+    
+function OtherFlightReserved($flight_date, $flight_hour, $hours, $flight_type) {
+    $startTime = Carbon::createFromFormat('Y-m-d H:i', "$flight_date $flight_hour");
+    $endTime = $startTime->copy()->addHours($hours);
+
+    $start_time_str = $startTime->format('H:i:s');
+    $end_time_str = $endTime->format('H:i:s');
+
+    $query = DB::table('flight_history')
+        ->leftJoin('flight_payments', 'flight_history.id', '=', 'flight_payments.id_flight')
+        ->where('flight_history.flight_date', $flight_date)
+        ->where('flight_history.flight_status', 'proceso')
+        ->where('flight_history.type_flight', $flight_type)
+        ->where(function($q) use ($start_time_str, $end_time_str) {
+            $q->whereBetween('flight_history.flight_hour', [$start_time_str, $end_time_str])
+              ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$start_time_str])
+              ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$end_time_str]);
+        })
+        ->get();
+    
+    return $query->isNotEmpty();
+}
 }

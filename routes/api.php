@@ -178,3 +178,10 @@ Route::prefix('/employee')->group(function () {
 Route::prefix('/products')->middleware('auth:sanctum')->group(function () {
     Route::get('/index/{name?}', [ProductController::class, 'index']);
 });
+
+Route::prefix('/enum/values')->group(function () {
+    Route::get('/flight/equipo', [InfoFlightController::class, 'getEquipFlight']);  
+    Route::get('/flight/flight_type', [InfoFlightController::class, 'getFlightType']);  
+    Route::get('/flight/flight_category', [InfoFlightController::class, 'getFlightCategory']);  
+    Route::get('/flight/maneuver', [InfoFlightController::class, 'getFlightManeuver']);  
+});

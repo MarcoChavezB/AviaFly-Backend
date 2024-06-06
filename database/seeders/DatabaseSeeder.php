@@ -8,9 +8,11 @@ use App\Models\Base;
 use App\Models\Career;
 use App\Models\Employee;
 use App\Models\InfoFlight;
+use App\Models\Student;
 use App\Models\Subject;
 use App\Models\TeacherSubjectTurn;
 use App\Models\Turn;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -235,19 +237,44 @@ class DatabaseSeeder extends Seeder
             'end_date' => '2024-11-30',
             'duration' => 4,
         ]);
+        InfoFlight::create([
+            "equipo" => "XBPDY",
+            "price" => 4100,
+            "min_credit_hours_required" => 2,
+            "min_hours_required" => 12,
+        ]);
 
         InfoFlight::create([
-            "flight_type" => "vuelo",
+            "equipo" => "simulador",
             "price" => 800,
             "min_credit_hours_required" => 2,
             "min_hours_required" => 12,
         ]);
 
         InfoFlight::create([
-            "flight_type" => "simulador",
-            "price" => 3000,
+            "equipo" => "matricula",
+            "price" => 0,
             "min_credit_hours_required" => 2,
             "min_hours_required" => 20,
         ]);    
+    
+            Employee::create([
+            'name' => 'root',
+            'last_names' => 'root',
+            'email' => 'marco1102004@gmail.com',
+            'company_email' => 'marco1102004@gmail.com',
+            'phone' => '1234567890',
+            'cellphone' => '1234567890',
+            'curp' => 'AAMM110200HDFLRR00',
+            'user_identification' => '1234567890',
+            'user_type' => 'root',
+            'id_base' => 1,
+        ]);
+
+        User::create([
+            'user_identification' => '1234567890',
+            'user_type' => 'root',
+            'password' => bcrypt('1234567890'),
+        ]);
     }
 }

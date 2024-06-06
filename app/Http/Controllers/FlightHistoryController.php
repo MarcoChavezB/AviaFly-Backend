@@ -41,7 +41,7 @@ class FlightHistoryController extends Controller
             ->where('students.id', $id_student)
             ->groupBy(
                 'students.curp',
-                'students.id', // Aquí se elimina el alias
+                'students.id',
                 'flight_history.type_flight',
                 'flight_history.flight_date',
                 'flight_history.flight_hour',

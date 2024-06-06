@@ -29,8 +29,8 @@ return new class extends Migration
                 $table->foreign('id_employee')->references('id')->on('employees');
 
                 $table->decimal('total', 8, 2);
-                $table->enum('payment_status', ['pending', 'paid', 'canceled', 'owed']);
-                $table->decimal('instructor_cost', 8, 2)->nullable();
+                $table->enum('payment_status', ['pendiente', 'pagado', 'cancelado']); 
+                $table->decimal('hour_instructor_cost', 8, 2)->nullable();
                 $table->integer('due_week')->nullable();
             $table->timestamps();
         });
