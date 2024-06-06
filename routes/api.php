@@ -87,6 +87,7 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
         Route::post('/add/subject', [StudentController::class, 'addSubjectToStudent']); // Esto puede hacerlo: root, admin
         Route::delete('/delete/subject', [StudentController::class, 'deleteSubjectFromStudent']); // Esto puede hacerlo: root, admin
         Route::put('/change/instructor', [StudentController::class, 'changeInstructorFromStudentSubject']); // Esto puede hacerlo: root, admin
+        Route::put('/update', [StudentController::class, 'update']); // Esto puede hacerlo: root, admin
     });
 });
 
@@ -165,3 +166,10 @@ Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
 Route::prefix('/flights/histroy')->middleware('auth:sanctum')->group(function () {
     Route::post('/already/date/reserved', [FlightHistoryController::class, 'isDateReserved']);
 });
+
+Route::prefix('/employee')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/index', [EmployeeController::class, 'index']);
+    });
+});
+

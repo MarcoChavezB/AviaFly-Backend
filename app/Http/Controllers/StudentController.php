@@ -108,9 +108,35 @@ class StudentController extends Controller
             $student->user_identification = 'A' . $base->name[0] . $student->id;
             $student->save();
 
+            $user = new User();
+            $user->user_identification = $student->user_identification;
+            $user->password = bcrypt($student->curp);
+            $user->user_type = 'student';
+            $user->save();
+
+            $career = DB::table('careers')->find($request->career);
+
+            $startDate = Carbon::parse($request->register_date);
+
+            for ($i = 0; $i < $career->monthly_payments; $i++) {
+                $paymentDate = clone $startDate;
+                $paymentDate->addMonths($i + 1);
+
+                DB::table('monthly_payments')->insert([
+                    'id_student' => $student->id,
+                    'payment_date' => $paymentDate,
+                    'amount' => $career->monthly_fee,
+                    'status' => 'pending',
+                ]);
+            }
+
             $careerSubjects = DB::table('career_subjects')
                 ->where('id_career', $request->career)
                 ->get();
+
+            if ($careerSubjects->isEmpty()) {
+                return response()->json(["message" => "Se inscribio el alumno pero no se le asignaron materias."], 202);
+            }
 
             foreach ($careerSubjects as $careerSubject) {
                 $teacher = DB::table('teacher_subject_turns')
@@ -131,32 +157,9 @@ class StudentController extends Controller
                         'duration' => $teacher->duration,
                     ]);
                 } else {
-                    $student->delete();
-                    return response()->json(["errors" => ["No se encontró un profesor para la materia " . $careerSubject->id_subject]], 400);
+                    return response()->json(["message" => "El estudiante fue inscrito pero no se completo la asociacion con las materias debido a que no se encontro un profesor en la materia con ID: " . $careerSubject->id_subject], 202);
                 }
             }
-
-            $career = DB::table('careers')->find($request->career);
-
-            $startDate = Carbon::parse($request->register_date);
-
-            for ($i = 0; $i < $career->monthly_payments; $i++) {
-                $paymentDate = clone $startDate;
-                $paymentDate->addMonths($i + 1);
-
-                DB::table('monthly_payments')->insert([
-                    'id_student' => $student->id,
-                    'payment_date' => $paymentDate,
-                    'amount' => $career->monthly_fee,
-                    'status' => 'pending',
-                ]);
-            }
-
-            $user = new User();
-            $user->user_identification = $student->user_identification;
-            $user->password = bcrypt($student->curp);
-            $user->user_type = 'student';
-            $user->save();
 
             return response()->json($student, 201);
         } catch (\Exception $e) {
@@ -198,7 +201,7 @@ class StudentController extends Controller
                 return response()->json(['students' => $students], 200);
             }
         } catch (\Exception $e) {
-            return response()->json(["message" => $e->getMessage()], 500);
+            return response()->json(["message" => 'Internal Server Error'], 500);
         }
     }
 
@@ -375,7 +378,7 @@ class StudentController extends Controller
             ->select(DB::raw('SUM(flight_history.hours) AS total_hours'))
             ->groupBy('students.id', 'students.name')
             ->first();
-            
+
         if($totalHours == null){
             $totalHours = (object) [
                 'total_hours' => '0.00'
@@ -478,7 +481,7 @@ class StudentController extends Controller
             'due_week.numeric' => 'La semana de vencimiento no es válida',
             'installment_value.numeric' => 'El valor de la mensualidad no es válido',
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
         }
@@ -526,93 +529,70 @@ class StudentController extends Controller
         WHERE students.id = $id and employees.user_type = 'instructor'");
         return response()->json($employees, 200);
     }
-    
+
     function getPriceFly(string $name)
     {
         return InfoFlight::where('flight_type', $name)->value('price');
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public function update(Request $request){
+        $validator = Validator::make($request->all(), [
+            'student_id' => 'required|exists:students,id',
+            'name' => 'required|string',
+            'last_names' => 'required|string',
+            'curp' => 'required|string',
+            'phone' => 'required|string',
+            'cellphone' => 'required|string',
+            'email' => 'required|email|unique:students,email,'.$request->student_id,
+            'emergency_contact' => 'required|string',
+            'emergency_phone' => 'required|string',
+            'emergency_direction' => 'required|string',
+        ],[
+            'id_student.required' => 'El id del estudiante es requerido',
+            'id_student.exists' => 'El id del estudiante no existe',
+            'name.required' => 'El nombre es requerido',
+            'name.string' => 'El nombre no es válido',
+            'last_names.required' => 'El apellido es requerido',
+            'last_names.string' => 'El apellido no es válido',
+            'curp.required' => 'La CURP es requerida',
+            'curp.string' => 'La CURP no es válida',
+            'phone.required' => 'El teléfono es requerido',
+            'phone.string' => 'El teléfono no es válido',
+            'cellphone.required' => 'El celular es requerido',
+            'cellphone.string' => 'El celular no es válido',
+            'email.required' => 'El correo electrónico es requerido',
+            'email.email' => 'El correo electrónico no es válido',
+            'email.unique' => 'El correo electrónico ya está en uso',
+            'emergency_contact.required' => 'El contacto de emergencia es requerido',
+            'emergency_contact.string' => 'El contacto de emergencia no es válido',
+            'emergency_phone.required' => 'El teléfono de emergencia es requerido',
+            'emergency_phone.string' => 'El teléfono de emergencia no es válido',
+            'emergency_direction.required' => 'La dirección de emergencia es requerida',
+            'emergency_direction.string' => 'La dirección de emergencia no es válida',
+        ]);
+
+        if($validator->fails()){
+            return response()->json(["errors" => $validator->errors()], 400);
+        }
+
+        $student = Student::find($request->student_id);
+        if(!$student){
+            return response()->json(["error" => "Estudiante no encontrado"], 404);
+        }
+
+        $student->name = $request->name;
+        $student->last_names = $request->last_names;
+        $student->curp = $request->curp;
+        $student->phone = $request->phone;
+        $student->cellphone = $request->cellphone;
+        $student->email = $request->email;
+        $student->emergency_contact = $request->emergency_contact;
+        $student->emergency_phone = $request->emergency_phone;
+        $student->emergency_direction = $request->emergency_direction;
+        $student->save();
+
+        return response()->json(["message" => "Estudiante actualizado"], 200);
+    }
 
     public function getStudentSubjects(Int $id){
         $user = Auth::user();

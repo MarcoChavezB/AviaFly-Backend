@@ -73,32 +73,36 @@ class SubjectController extends Controller
     public function destroy(Request $request){
 
         $validator = Validator::make($request->all(),[
-            'subject_id' => 'required|integer|exists:student_subjects,id',
+            'subject_id' => 'required|integer|exists:career_subjects,id',
+            'career_id' => 'required|integer|exists:careers,id',
         ],
             [
                 'subject_id.required' => 'El id de la materia es requerido',
                 'subject_id.integer' => 'El id de la materia debe ser un número entero',
                 'subject_id.exists' => 'El id de la materia no existe',
-
+                'career_id.required' => 'El id de la carrera es requerido',
+                'career_id.integer' => 'El id de la carrera debe ser un número entero',
+                'career_id.exists' => 'El id de la carrera no existe',
             ]);
 
         if($validator->fails()){
             return response()->json(["errors" => $validator->errors()], 400);
         }
 
-        $student_subject = DB::table('student_subjects')->where('id', $request->subject_id)->first();
-
-        $career_subject = CareerSubject::where('id_subject', $student_subject->id_subject)->first();
+        $career_subject = CareerSubject::where('id_subject', $request->subject_id)
+            ->where('id_career', $request->career_id)
+            ->first();
         if(!$career_subject){
-            return response()->json(["errors" => ["El id de la materia no esta relacionado con ninguna carrera"]], 400);
+            return response()->json(["errors" => ["La materia no esta relacionada con ninguna carrera"]], 400);
         }
         $career_subject->delete();
 
-        $teacher_subject_turn = TeacherSubjectTurn::where('id_subject', $student_subject->id_subject)->first();
+        $teacher_subject_turn = TeacherSubjectTurn::where('id_subject', $request->subject_id)->first();
         if(!$teacher_subject_turn){
-            return response()->json(["errors" => ["El id de la materia no esta relacionado con ningun instructor"]], 400);
+            return response()->json(["errors" => ["La materia no esta relacionada con ningun instructor, pero fue eliminada correctamente"]], 400);
         }
         $teacher_subject_turn->delete();
+
 
         return response()->json(["message" => "Materia eliminada"], 200);
     }
