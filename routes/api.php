@@ -17,6 +17,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\PaymentsController;
+use App\Http\Controllers\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -161,6 +162,7 @@ Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
     Route::post('/amount', [PaymentsController::class, 'addPayment']);
+    Route::post('/change/status', [PaymentsController::class, 'changeFlightPaymentStatus']);
 });
 
 Route::prefix('/flights/histroy')->middleware('auth:sanctum')->group(function () {
@@ -173,3 +175,6 @@ Route::prefix('/employee')->group(function () {
     });
 });
 
+Route::prefix('/products')->middleware('auth:sanctum')->group(function () {
+    Route::get('/index/{name?}', [ProductController::class, 'index']);
+});
