@@ -10,13 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 class FlightHistoryController extends Controller
 {
-    function isDateReserved(Request $request)
-    {
-        $data = $request->all();
-        $date = $data['date'];
-        $id_instructor = $data['id_instructor'];
-        $flight_type = $data['flight_type'];
-    }
 
     function flightsData(int $id_student)
     {
@@ -49,7 +42,8 @@ class FlightHistoryController extends Controller
                 'flight_payments.total',
                 'payments.id_flight',
                 'flight_payments.payment_status',
-                'flight_payments.id')
+                'flight_payments.id'
+            )
             ->OrderBy('flight_history.created_at', 'desc')
             ->get();
 
@@ -83,11 +77,9 @@ class FlightHistoryController extends Controller
         $flights = FlightPayment::select(
             'flight_payments.id as id_flight',
             'students.curp',
-
             'students.name',
             'students.last_names',
-            'students.credit',
-
+            'students.flight_credit',
             'flight_history.type_flight as tipo_vuelo',
             'flight_history.flight_date as fecha_vuelo',
             'flight_history.flight_hour as hora_vuelo',
@@ -114,7 +106,7 @@ class FlightHistoryController extends Controller
                 'flight_payments.id',
                 'students.name',
                 'students.last_names',
-                'students.credit',
+                'students.flight_credit',
             )
             ->get();
         $data = $flights->map(function ($flights) {
@@ -127,7 +119,7 @@ class FlightHistoryController extends Controller
                 'id_flight' => $flights->id_flight,
                 'name' => $flights->name,
                 'last_names' => $flights->last_names,
-                'creadit' => $flights->credit,
+                'flight_credit' => $flights->flight_credit,
                 'curp' => $flights->curp,
                 'flight_type' => $flights->tipo_vuelo,
                 'flight_date' => $flights->fecha_vuelo,
@@ -167,5 +159,67 @@ class FlightHistoryController extends Controller
         return response()->json([
             'msg' => 'El vuelo se ha modificado correctamente'
         ], 200);
+    }
+
+
+    /*
+ *  Payload:
+ *
+    {
+    "horometroInicial": 1,
+    "horometroFinal": 4.5,
+    "tacometro": "100",
+    "comments": "ksoakosk",
+    "flight_alone": true,
+    "total_horometro": 3.5
+    }
+
+    */
+
+    function storeReport(Request $request)
+    {
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
+            'id_flight' => 'required|numeric',
+            'horometroInicial' => 'required|numeric',
+            'horometroFinal' => 'required|numeric',
+            'tacometro' => 'required|string',
+            'comments' => 'required|string',
+            'flight_alone' => 'required|boolean',
+            'total_horometro' => 'required|numeric',
+        ], [
+            'horometroInicial.required' => 'Campo requerido',
+            'horometroFinal.required' => 'Campo requerido',
+            'horoemtroInicial.numeric' => 'Dato incorrecto',
+            'horometroFinal.numeric' => 'Dato incorrecto',
+            'tacometro.required' => 'Campo requerido',
+            'comments.required' => 'Campo requerido',
+            'flight_alone.required' => 'Campo requerido',
+            'total_horometro.required' => 'Campo requerido',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        return response()->json([
+            'msg' => "El reporte se ha guardado correctamente"
+        ]);
+
+        $flight = flightHistory::find($data['id_flight']);
+
+        $flight->flight_alone = $data['flight_alone'];
+        $flight->initial_horometer = $data['horometroInicial'];
+        $flight->final_horometer = $data['horometroFinal'];
+        $flight->total_horometer = $data['total_horometro'];
+        $flight->final_tacometer = $data['tacometro'];
+        $flight->comment = $data['comments'];
+
+        $flight->save();
+
+        return response()->json([
+            'msg' => "El reporte se ha guardado correctamente"
+        ]);
     }
 }
