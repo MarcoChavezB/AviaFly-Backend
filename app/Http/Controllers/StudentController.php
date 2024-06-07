@@ -140,7 +140,7 @@ class StudentController extends Controller
 
             foreach ($careerSubjects as $careerSubject) {
                 $teacher = DB::table('teacher_subject_turns')
-                    ->where('id_subject', $careerSubject->id_subject)
+                    ->where('career_subject_id', $careerSubject->id)
                     ->where('id_turn', $request->turn)
                     ->join('employees', 'teacher_subject_turns.id_teacher', '=', 'employees.id')
                     ->where('employees.id_base', $student->id_base)
@@ -163,7 +163,7 @@ class StudentController extends Controller
 
             return response()->json($student, 201);
         } catch (\Exception $e) {
-            return response()->json(["error" => "Internal Server Error"], 500);
+            return response()->json(["error" => $e->getMessage()], 500);
         }
     }
 
@@ -184,7 +184,7 @@ class StudentController extends Controller
             }
 
             if ($base->name == 'Torreón') {
-                $students = Student::all(['id', 'name', 'last_names', 'user_identification']);
+                $students = Student::with('base:id,name')->get(['id', 'name', 'last_names', 'user_identification']);
 
                 if ($students->isEmpty()) {
                     return response()->json(["errors" => ["No hay estudiantes creados"]], 404);
@@ -192,7 +192,7 @@ class StudentController extends Controller
 
                 return response()->json(['students' => $students], 200);
             } else {
-                $students = Student::where('id_base', $base->id)->get(['id', 'name', 'last_names', 'user_identification']);
+                $students = Student::where('id_base', $base->id)->with('base')->get(['id', 'name', 'last_names', 'user_identification']);
 
                 if ($students->isEmpty()) {
                     return response()->json(["errors" => ["No hay estudiantes creados"]], 400);

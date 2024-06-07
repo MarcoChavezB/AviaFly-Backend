@@ -183,57 +183,57 @@ class InstructorController extends Controller
 
     public function getInstructorsSubjects(Request $request){
 
-        $validator = Validator::make($request->all(), [
-            'career_id' => 'required|exists:careers,id'
-        ],
-        [
-            'career_id.required' => 'La formación es requerida',
-            'career_id.exists' => 'La formación no existe'
-        ]);
+    $validator = Validator::make($request->all(), [
+        'career_id' => 'required|exists:careers,id'
+    ],
+    [
+        'career_id.required' => 'La formación es requerida',
+        'career_id.exists' => 'La formación no existe'
+    ]);
 
-        if($validator->fails()){
-            return response()->json(["errors" => $validator->errors()], 400);
-        }
-
-        $user = Auth::user();
-
-        $admin = Employee::where('user_identification', $user->user_identification)->first();
-
-        if($admin){
-
-            $teachers_subjects = DB::table('teacher_subject_turns')
-                ->join('employees', 'teacher_subject_turns.id_teacher', '=', 'employees.id')
-                ->join('subjects', 'teacher_subject_turns.id_subject', '=', 'subjects.id')
-                ->join('turns', 'teacher_subject_turns.id_turn', '=', 'turns.id')
-                ->join('career_subjects', 'teacher_subject_turns.id_subject', '=', 'career_subjects.id_subject')
-                ->select('teacher_subject_turns.id as id', 'employees.user_identification as teacher_identification', DB::raw('CONCAT(employees.name, " ", employees.last_names) as teacher_full_name'),
-                    'subjects.id as subject_id', 'subjects.name as subject_name',
-                    'turns.name as turn_name', 'teacher_subject_turns.start_date', 'teacher_subject_turns.end_date', 'teacher_subject_turns.duration', 'career_subjects.id as career_subjects_id')
-                ->where('employees.id_base', $admin->id_base)
-                ->where('career_subjects.id_career', $request->career_id)
-                ->get();
-
-            if($teachers_subjects->isEmpty()){
-                return response()->json(["errors" => ["No hay materias ni profesores asignados"]], 400);
-            }
-
-            $instructors = Employee::where('user_type', 'instructor')->where('id_base', $admin->id_base)->get(['id', 'user_identification', 'name', 'last_names']);
-
-            if($instructors->isEmpty()){
-                return response()->json(["errors" => ["No hay instructores asignados"]], 400);
-            }
-
-            $turns = DB::table('turns')->get(['id', 'name']);
-
-            if($turns->isEmpty()){
-                return response()->json(["errors" => ["No hay turnos asignados"]], 400);
-            }
-
-            return response()->json(['teachers_subjects'=>$teachers_subjects, 'turns'=>$turns, 'instructors'=>$instructors]);
-        }
-
-        return response()->json(["error" => "Admin not found"], 404);
+    if($validator->fails()){
+        return response()->json(["errors" => $validator->errors()], 400);
     }
+
+    $user = Auth::user();
+
+    $admin = Employee::where('user_identification', $user->user_identification)->first();
+
+    if($admin){
+
+        $teachers_subjects = DB::table('teacher_subject_turns')
+            ->join('employees', 'teacher_subject_turns.id_teacher', '=', 'employees.id')
+            ->join('career_subjects', 'teacher_subject_turns.career_subject_id', '=', 'career_subjects.id')
+            ->join('subjects', 'career_subjects.id_subject', '=', 'subjects.id')
+            ->join('turns', 'teacher_subject_turns.id_turn', '=', 'turns.id')
+            ->select('teacher_subject_turns.id as id', 'employees.user_identification as teacher_identification', DB::raw('CONCAT(employees.name, " ", employees.last_names) as teacher_full_name'),
+                'career_subjects.id as career_subject_id', 'subjects.name as subject_name',
+                'turns.name as turn_name', 'teacher_subject_turns.start_date', 'teacher_subject_turns.end_date', 'teacher_subject_turns.duration', 'career_subjects.id as career_subjects_id')
+            ->where('employees.id_base', $admin->id_base)
+            ->where('career_subjects.id_career', $request->career_id)
+            ->get();
+
+        if($teachers_subjects->isEmpty()){
+            return response()->json(["errors" => ["No hay materias ni profesores asignados"]], 400);
+        }
+
+        $instructors = Employee::where('user_type', 'instructor')->where('id_base', $admin->id_base)->get(['id', 'user_identification', 'name', 'last_names']);
+
+        if($instructors->isEmpty()){
+            return response()->json(["errors" => ["No hay instructores asignados"]], 400);
+        }
+
+        $turns = DB::table('turns')->get(['id', 'name']);
+
+        if($turns->isEmpty()){
+            return response()->json(["errors" => ["No hay turnos asignados"]], 400);
+        }
+
+        return response()->json(['teachers_subjects'=>$teachers_subjects, 'turns'=>$turns, 'instructors'=>$instructors]);
+    }
+
+    return response()->json(["error" => "Admin not found"], 404);
+}
 
     public function updateInstructorsSubjects(Request $request){
         $validator = Validator::make($request->all(), [

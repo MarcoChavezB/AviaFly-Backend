@@ -13,4 +13,9 @@ class Base extends Model
         'name',
         'location'
     ];
+
+    public function students()
+    {
+        return $this->hasMany(Student::class, 'id_base');
+    }
 }
