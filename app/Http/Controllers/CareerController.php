@@ -32,7 +32,7 @@ class CareerController extends Controller
     public function getCareers()
     {
         try {
-            $careers = Career::all();
+                $careers = Career::get(['id', 'name']);
             if ($careers->isEmpty()) {
                 return response()->json(["errors" => ["No hay formaciones creadas"]], 404);
             }

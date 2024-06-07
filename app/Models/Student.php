@@ -36,4 +36,9 @@ class Student extends Model
         return $this->belongsTo(Career::class, 'id_career');
     }
 
+    public function base()
+    {
+        return $this->belongsTo(Base::class, 'id');
+    }
+
 }
