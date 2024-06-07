@@ -206,9 +206,9 @@ class InstructorController extends Controller
                 ->join('subjects', 'teacher_subject_turns.id_subject', '=', 'subjects.id')
                 ->join('turns', 'teacher_subject_turns.id_turn', '=', 'turns.id')
                 ->join('career_subjects', 'teacher_subject_turns.id_subject', '=', 'career_subjects.id_subject')
-                ->select('teacher_subject_turns.id as id', 'employees.id as teacher_id', 'employees.user_identification as teacher_identification', DB::raw('CONCAT(employees.name, " ", employees.last_names) as teacher_full_name'),
-                    'subjects.id as subject_id', 'subjects.name as subject_name', 'turns.id as turn_id',
-                    'turns.name as turn_name', 'teacher_subject_turns.start_date', 'teacher_subject_turns.end_date', 'teacher_subject_turns.duration', 'career_subjects.id_career as career_id')
+                ->select('teacher_subject_turns.id as id', 'employees.user_identification as teacher_identification', DB::raw('CONCAT(employees.name, " ", employees.last_names) as teacher_full_name'),
+                    'subjects.id as subject_id', 'subjects.name as subject_name',
+                    'turns.name as turn_name', 'teacher_subject_turns.start_date', 'teacher_subject_turns.end_date', 'teacher_subject_turns.duration', 'career_subjects.id as career_subjects_id')
                 ->where('employees.id_base', $admin->id_base)
                 ->where('career_subjects.id_career', $request->career_id)
                 ->get();
@@ -279,7 +279,7 @@ class InstructorController extends Controller
 
             $teacher_subject->save();
 
-            return response()->json($teacher_subject, 200);
+            return response()->json(['msg' => 'ok'], 200);
         }
 
         return response()->json(["errors" => ["No se encontro la relacion de la materia con el profesor"]], 404);

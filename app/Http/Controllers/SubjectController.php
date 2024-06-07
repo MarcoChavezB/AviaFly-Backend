@@ -73,31 +73,30 @@ class SubjectController extends Controller
     public function destroy(Request $request){
 
         $validator = Validator::make($request->all(),[
-            'subject_id' => 'required|integer|exists:career_subjects,id',
-            'career_id' => 'required|integer|exists:careers,id',
+            'career_sub_id' => 'required|integer|exists:career_subjects,id',
+            'teacher_sub_turn_id' => 'required|integer|exists:teacher_subject_turns,id',
         ],
             [
-                'subject_id.required' => 'El id de la materia es requerido',
-                'subject_id.integer' => 'El id de la materia debe ser un número entero',
-                'subject_id.exists' => 'El id de la materia no existe',
-                'career_id.required' => 'El id de la carrera es requerido',
-                'career_id.integer' => 'El id de la carrera debe ser un número entero',
-                'career_id.exists' => 'El id de la carrera no existe',
+                'career_sub_id.required' => 'El id de la materia es requerido',
+                'career_sub_id.integer' => 'El id de la materia debe ser un número entero',
+                'career_sub_id.exists' => 'El id de la materia no existe',
+                'teacher_sub_turn_id.required' => 'El id de la carrera es requerido',
+                'teacher_sub_turn_id.integer' => 'El id de la carrera debe ser un número entero',
+                'teacher_sub_turn_id.exists' => 'El id de la carrera no existe',
             ]);
 
         if($validator->fails()){
             return response()->json(["errors" => $validator->errors()], 400);
         }
 
-        $career_subject = CareerSubject::where('id_subject', $request->subject_id)
-            ->where('id_career', $request->career_id)
+        $career_subject = CareerSubject::where('id', $request->career_sub_id)
             ->first();
         if(!$career_subject){
             return response()->json(["errors" => ["La materia no esta relacionada con ninguna carrera"]], 400);
         }
         $career_subject->delete();
 
-        $teacher_subject_turn = TeacherSubjectTurn::where('id_subject', $request->subject_id)->first();
+        $teacher_subject_turn = TeacherSubjectTurn::where('id', $request->teacher_sub_turn_id)->first();
         if(!$teacher_subject_turn){
             return response()->json(["errors" => ["La materia no esta relacionada con ningun instructor, pero fue eliminada correctamente"]], 400);
         }
