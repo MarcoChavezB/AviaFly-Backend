@@ -55,7 +55,7 @@ Route::prefix('/avia')->group(function () {
 
         Route::post('logout', [UserController::class, 'logout']);
 
-        Route::prefix('/instructor')->group(function () {
+        Route::prefix('/instructors')->group(function () {
             Route::get('/get/periods', [InstructorController::class, 'getPeriods']);
         });
     });
@@ -74,7 +74,7 @@ Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {
     Route::post('/update', [PendingController::class, 'update']);
 });
 
-Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
+Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [StudentController::class, 'index']);
     Route::get('/index/{name}', [StudentController::class, 'indexByName']);
     Route::post('/enroll', [CourseController::class, 'create']);
@@ -92,12 +92,12 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::prefix('/base')->group(function () {
+Route::prefix('/bases')->group(function () {
     Route::post('/create', [BaseController::class, 'create']);
     Route::get('/get', [BaseController::class, 'getBases']);
 });
 
-Route::prefix('/instructor')->group(function () {
+Route::prefix('/instructors')->group(function () {
     Route::post('/create', [InstructorController::class, 'create']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']); // Esto puede hacerlo: instructor
@@ -110,7 +110,7 @@ Route::prefix('/instructor')->group(function () {
     });
 });
 
-Route::prefix('/career')->group(function () {
+Route::prefix('/careers')->group(function () {
     Route::post('/create', [CareerController::class, 'create']);
     Route::get('/get', [CareerController::class, 'getCareers']);
     Route::get('/get-with-subjects', [CareerController::class, 'getCareersWithSubjects']);
@@ -118,7 +118,7 @@ Route::prefix('/career')->group(function () {
 
 
 
-Route::prefix('/subject')->group(function () {
+Route::prefix('/subjects')->group(function () {
     Route::get('/get', [SubjectController::class, 'getSubjects']);
     Route::get('/get-info-calendar/{id_career}', [SubjectController::class, 'getSubjectsInfoCalendar']);
 
@@ -132,7 +132,7 @@ Route::prefix('/employes')->middleware('auth:sanctum')->group(function () {
     Route::get('/get/tasks', [UserController::class, 'getEmployes']);
 });
 
-Route::prefix('/contact')->group(function () {
+Route::prefix('/contacts')->group(function () {
     Route::post('/create', [ContactController::class, 'create']);
     Route::get('/get', [ContactController::class, 'index2']);
     Route::get('/show/{id}', [ContactController::class, 'show'])->where('id', '[0-9]+');
@@ -141,11 +141,11 @@ Route::prefix('/contact')->group(function () {
     Route::get('/index', [ContactController::class, 'index2']);
 });
 
-Route::prefix('/turn')->group(function () {
+Route::prefix('/turns')->group(function () {
     Route::get('/get', [TurnController::class, 'index']);
 });
 
-Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
+Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/index', [StudentController::class, 'indexSimulator']);
     Route::get('/flight/index/{name}', [StudentController::class, 'getStudentSimulatorByName']);
     Route::get('/flight/report/{id}', [StudentController::class, 'getInfoVueloAlumno']);
@@ -169,7 +169,7 @@ Route::prefix('/flights/histroy')->middleware('auth:sanctum')->group(function ()
     Route::post('/already/date/reserved', [FlightHistoryController::class, 'isDateReserved']);
 });
 
-Route::prefix('/employee')->group(function () {
+Route::prefix('/employees')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/index', [EmployeeController::class, 'index']);
     });
@@ -188,6 +188,6 @@ Route::prefix('/enum/values')->group(function () {
 
 Route::prefix('/report')->group(function () {
     Route::post('/store', [FlightHistoryController::class, 'storeReport']);
-    Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']); 
-    Route::get('/index/students', [StudentController::class, 'indexStudents']);  
+    Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']);
+    Route::get('/index/students', [StudentController::class, 'indexStudents']);
 });
