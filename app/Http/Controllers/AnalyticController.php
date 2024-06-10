@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Enrollment;
 use App\Models\Pending;
-use App\Models\User;
+use App\Models\Student;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
@@ -17,8 +17,8 @@ class AnalyticController extends Controller
  */
     function getCardData()
     {
-        $totalStudents = User::where('user_type', 'student')->count();
-        $totalInstructors = User::where('user_type', 'instructor')->count();
+        $totalStudents = Student::where('user_type', 'student')->count();
+        $totalInstructors = Student::where('user_type', 'instructor')->count();
         $totalPendingsToday = Pending::where('status', 'uncompleted')
             ->where('date_to_complete', Date::now()->toDateString())
             ->count();
@@ -30,7 +30,8 @@ class AnalyticController extends Controller
         ]);
     }
 
-    function getEnrollmentsYear(){
+    function getEnrollmentsYear()
+    {
         $enrollmentsByMonth = Enrollment::select(DB::raw('MONTH(date) as month'), DB::raw('COUNT(*) as enrollments'))
             ->groupBy(DB::raw('MONTH(date)'))
             ->get();
@@ -44,7 +45,8 @@ class AnalyticController extends Controller
         }
         return response()->json($formattedResponse);
     }
-    
-    function getWeekActivity (){
-    }    
+
+    function getWeekActivity()
+    {
+    }
 }

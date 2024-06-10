@@ -48,7 +48,7 @@ Route::prefix('/avia')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auth/check', function () {
             return response()->json([
-                 true
+                true
             ]);
         });
 
@@ -99,7 +99,7 @@ Route::prefix('/base')->group(function () {
 
 Route::prefix('/instructor')->group(function () {
     Route::post('/create', [InstructorController::class, 'create']);
-    Route::middleware('auth:sanctum')->group(function (){
+    Route::middleware('auth:sanctum')->group(function () {
         Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']); // Esto puede hacerlo: instructor
         Route::get('/get/subjects', [InstructorController::class, 'getInstructorSubjects']); // Esto puede hacerlo: instructor
         Route::get('/get/students', [InstructorController::class, 'getStudentsByInstructor']); // Esto puede hacerlo: instructor
@@ -122,7 +122,7 @@ Route::prefix('/subject')->group(function () {
     Route::get('/get', [SubjectController::class, 'getSubjects']);
     Route::get('/get-info-calendar/{id_career}', [SubjectController::class, 'getSubjectsInfoCalendar']);
 
-    Route::middleware('auth:sanctum')->group(function (){
+    Route::middleware('auth:sanctum')->group(function () {
         Route::post('/create', [SubjectController::class, 'create']); // Esto puede hacerlo: root, admin
         Route::delete('/destroy', [SubjectController::class, 'destroy']); // Esto puede hacerlo: root, admin
     });
@@ -155,9 +155,9 @@ Route::prefix('/student')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get', [InfoFlightController::class, 'index']);
-   Route::get('/get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']);
-   Route::post('/changeStatus', [FlightHistoryController::class, 'changeStatusFlight']);
-   Route::get('/get/flight/report/{id_flight}', [FlightHistoryController::class, 'reportDataById']);
+    Route::get('/get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']);
+    Route::post('/changeStatus', [FlightHistoryController::class, 'changeStatusFlight']);
+    Route::get('/get/flight/report/{id_flight}', [FlightHistoryController::class, 'reportDataById']);
 });
 
 Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
@@ -177,4 +177,17 @@ Route::prefix('/employee')->group(function () {
 
 Route::prefix('/products')->middleware('auth:sanctum')->group(function () {
     Route::get('/index/{name?}', [ProductController::class, 'index']);
+});
+
+Route::prefix('/enum/values')->group(function () {
+    Route::get('/flight/equipo', [InfoFlightController::class, 'getEquipFlight']);
+    Route::get('/flight/flight_type', [InfoFlightController::class, 'getFlightType']);
+    Route::get('/flight/flight_category', [InfoFlightController::class, 'getFlightCategory']);
+    Route::get('/flight/maneuver', [InfoFlightController::class, 'getFlightManeuver']);
+});
+
+Route::prefix('/report')->group(function () {
+    Route::post('/store', [FlightHistoryController::class, 'storeReport']);
+    Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']); 
+    Route::get('/index/students', [StudentController::class, 'indexStudents']);  
 });

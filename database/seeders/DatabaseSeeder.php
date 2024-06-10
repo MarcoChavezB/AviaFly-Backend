@@ -8,9 +8,11 @@ use App\Models\Base;
 use App\Models\Career;
 use App\Models\Employee;
 use App\Models\InfoFlight;
+use App\Models\Student;
 use App\Models\Subject;
 use App\Models\TeacherSubjectTurn;
 use App\Models\Turn;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -267,6 +269,12 @@ class DatabaseSeeder extends Seeder
             'end_date' => '2024-11-30',
             'duration' => 4,
         ]);
+        InfoFlight::create([
+            "equipo" => "XBPDY",
+            "price" => 4100,
+            "min_credit_hours_required" => 2,
+            "min_hours_required" => 12,
+        ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 4,
@@ -355,15 +363,21 @@ class DatabaseSeeder extends Seeder
         #//////////////#
 
         InfoFlight::create([
-            "flight_type" => "vuelo",
+            "equipo" => "simulador",
             "price" => 800,
             "min_credit_hours_required" => 2,
             "min_hours_required" => 12,
         ]);
 
         InfoFlight::create([
-            "flight_type" => "simulador",
-            "price" => 3000,
+            "equipo" => "matricula",
+            "price" => 0,
+            "min_credit_hours_required" => 2,
+            "min_hours_required" => 20,
+        ]);
+        InfoFlight::create([
+            "equipo" => "XBPDY",
+            "price" => 3100,
             "min_credit_hours_required" => 2,
             "min_hours_required" => 20,
         ]);

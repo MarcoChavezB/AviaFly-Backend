@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('flight_status', ['proceso', 'cancelado', 'hecho']); 
             $table->enum('maneuver', ['local', 'ruta']);
             $table->enum('equipo', ['XBPDY', 'simulador', 'vuelo']);
-            $table->enum('flight_category', ['VFR', 'IFR', 'night_IFR']);       
+            $table->enum('flight_category', ['VFR', 'IFR', 'IFR_nocturno']);       
             $table->date('flight_date');
             $table->string('flight_hour');
             $table->boolean('flight_alone')->default(false);
