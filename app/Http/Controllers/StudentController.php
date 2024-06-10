@@ -184,7 +184,7 @@ class StudentController extends Controller
             }
 
             if ($base->name == 'Torreón') {
-                $students = Student::with('base:id,name')->get(['id', 'name', 'last_names', 'user_identification']);
+                $students = Student::with('base')->get(['id', 'name', 'last_names', 'user_identification']);
 
                 if ($students->isEmpty()) {
                     return response()->json(["errors" => ["No hay estudiantes creados"]], 404);

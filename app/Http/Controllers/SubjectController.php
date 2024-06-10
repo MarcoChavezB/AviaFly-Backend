@@ -89,19 +89,20 @@ class SubjectController extends Controller
             return response()->json(["errors" => $validator->errors()], 400);
         }
 
-        $career_subject = CareerSubject::where('id', $request->career_sub_id)
-            ->first();
-        if(!$career_subject){
-            return response()->json(["errors" => ["La materia no esta relacionada con ninguna carrera"]], 400);
-        }
-        $career_subject->delete();
 
         $teacher_subject_turn = TeacherSubjectTurn::where('id', $request->teacher_sub_turn_id)->first();
         if(!$teacher_subject_turn){
-            return response()->json(["errors" => ["La materia no esta relacionada con ningun instructor, pero fue eliminada correctamente"]], 400);
+            return response()->json(["errors" => ["La materia no esta relacionada con ningun instructor."]], 400);
         }
         $teacher_subject_turn->delete();
 
+
+        $career_subject = CareerSubject::where('id', $request->career_sub_id)
+            ->first();
+        if(!$career_subject){
+            return response()->json(["errors" => ["La materia no esta relacionada con ninguna carrera."]], 400);
+        }
+        $career_subject->delete();
 
         return response()->json(["message" => "Materia eliminada"], 200);
     }
