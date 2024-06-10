@@ -4,12 +4,52 @@ namespace App\Http\Controllers;
 
 use App\Models\flightHistory;
 use App\Models\FlightPayment;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class FlightHistoryController extends Controller
 {
+
+    public function indexReport(int $id_flight)
+    {
+        $report = Student::select(
+            'flight_history.id as id_flight',
+            'students.name',
+            'students.last_names',
+            'flight_history.type_flight',
+            'flight_payments.total',
+            'flight_history.initial_horometer',
+            'flight_history.final_horometer',
+            'flight_history.total_horometer',
+            'flight_history.final_tacometer',
+            'flight_history.comment',
+            'flight_history.flight_date'
+        )
+            ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
+            ->join('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
+            ->where('flight_history.id', $id_flight)
+            ->orderBy('flight_history.created_at', 'desc')
+            ->groupBy(
+                'students.name',
+                'students.last_names',
+                'flight_history.type_flight',
+                'flight_payments.total',
+                'flight_history.initial_horometer',
+                'flight_history.final_horometer',
+                'flight_history.total_horometer',
+                'flight_history.final_tacometer',
+                'flight_history.comment',
+                'flight_history.flight_date',
+                'flight_history.id'
+            )
+            ->get();
+
+        return response()->json($report, 200);
+    }
+
+
 
     function flightsData(int $id_student)
     {
@@ -77,6 +117,14 @@ class FlightHistoryController extends Controller
         $flights = FlightPayment::select(
             'flight_payments.id as id_flight',
             'students.curp',
+
+            'flight_history.flight_alone',
+            'flight_history.initial_horometer',
+            'flight_history.final_horometer',
+            'flight_history.total_horometer',
+            'flight_history.final_tacometer',
+            'flight_history.comment',
+
             'students.name',
             'students.last_names',
             'students.flight_credit',
@@ -107,6 +155,12 @@ class FlightHistoryController extends Controller
                 'students.name',
                 'students.last_names',
                 'students.flight_credit',
+                'flight_history.flight_alone',
+                'flight_history.initial_horometer',
+                'flight_history.final_horometer',
+                'flight_history.total_horometer',
+                'flight_history.final_tacometer',
+                'flight_history.comment',
             )
             ->get();
         $data = $flights->map(function ($flights) {
@@ -129,7 +183,14 @@ class FlightHistoryController extends Controller
                 'total' => $flights->total_dinero,
                 'total_amounts' => $flights->total_amounts,
                 'debt' => $flights->deuda_viva,
-                'history_amounts' => $history_amounts
+                'history_amounts' => $history_amounts,
+
+                'flight_alone' => $flights->flight_alone,
+                'initial_horometer' => $flights->initial_horometer,
+                'final_horometer' => $flights->final_horometer,
+                'total_horometer' => $flights->total_horometer,
+                'final_tacometer' => $flights->final_tacometer,
+                'comment' => $flights->comment,
             ];
         });
 
@@ -202,10 +263,6 @@ class FlightHistoryController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
-
-        return response()->json([
-            'msg' => "El reporte se ha guardado correctamente"
-        ]);
 
         $flight = flightHistory::find($data['id_flight']);
 

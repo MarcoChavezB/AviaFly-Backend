@@ -373,5 +373,11 @@ class DatabaseSeeder extends Seeder
             "min_credit_hours_required" => 2,
             "min_hours_required" => 20,
         ]);
+        InfoFlight::create([
+            "equipo" => "XBPDY",
+            "price" => 3100,
+            "min_credit_hours_required" => 2,
+            "min_hours_required" => 20,
+        ]);
     }
 }

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\flightHistory;
 use App\Models\InfoFlight;
-use Illuminate\Http\Request;
 
 class InfoFlightController extends Controller
 {
