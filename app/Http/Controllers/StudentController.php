@@ -354,7 +354,6 @@ class StudentController extends Controller
             'students.last_names',
             'students.start_date',
             'careers.name as career_name',
-            DB::raw('COALESCE(AVG(student_subjects.final_grade), 0) AS average')
         )
             ->leftJoin('careers', 'students.id_career', '=', 'careers.id')
             ->leftJoin('student_subjects', 'students.id', '=', 'student_subjects.id_student')
@@ -377,7 +376,7 @@ class StudentController extends Controller
             ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
             ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->where('students.id', $id)
-            ->where('flight_history.flight_status', 'done')
+            ->where('flight_history.flight_status', 'hecho')
             ->select(DB::raw('SUM(flight_history.hours) AS total_hours'))
             ->groupBy('students.id', 'students.name')
             ->first();
@@ -393,11 +392,10 @@ class StudentController extends Controller
             ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
             ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->where('students.id', $id)
-            ->where('flight_history.flight_status', 'done')
+            ->where('flight_history.flight_status', 'hecho')
             ->select(
                 DB::raw('SUM(CASE WHEN flight_history.type_flight = "simulador" THEN flight_history.hours ELSE 0 END) AS simulator_hours'),
-                DB::raw('SUM(CASE WHEN flight_history.type_flight = "monomotor" THEN flight_history.hours ELSE 0 END) AS monomotor_hours'),
-                DB::raw('SUM(CASE WHEN flight_history.type_flight = "multimotor" THEN flight_history.hours ELSE 0 END) AS multimotor_hours'),
+                DB::raw('SUM(CASE WHEN flight_history.type_flight = "vuelo" THEN flight_history.hours ELSE 0 END) AS vuelo_hours'),
             )
             ->groupBy('students.name')
             ->first();
@@ -405,8 +403,7 @@ class StudentController extends Controller
         if (is_null($flightCategoryHours)) {
             $flightCategoryHours = (object) [
                 'simulator_hours' => '0.00',
-                'monomotor_hours' => '0.00',
-                'multimotor_hours' => '0.00',
+                'vuelo_hours' => '0.00',
             ];
         }
 
@@ -429,7 +426,7 @@ class StudentController extends Controller
         $value = DB::select("
             SELECT
               MAX(CASE WHEN student_subjects.status = 'failed' OR student_subjects.status = 'pending' THEN 1 ELSE 0 END) AS subjects_failed,
-              MAX(CASE WHEN flight_payments.payment_status = 'pending' THEN 1 ELSE 0 END) AS pendings_payments,
+              MAX(CASE WHEN flight_payments.payment_status = 'pendiente' THEN 1 ELSE 0 END) AS pendings_payments,
               MAX(CASE WHEN monthly_payments.status = 'pending' OR monthly_payments.status = 'owed' THEN 1 ELSE 0 END) AS pendings_months
             FROM
              students

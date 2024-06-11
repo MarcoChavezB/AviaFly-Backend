@@ -28,7 +28,7 @@ return new class extends Migration
             $table->decimal('final_horometer', 8, 2);
             $table->decimal('total_horometer', 8, 2);
             $table->decimal('final_tacometer', 8, 2);
-            $table->string('comment')->nullable();
+            $table->string('comment')->default('');
             $table->timestamps();
         });
     }
