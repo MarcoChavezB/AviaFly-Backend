@@ -115,6 +115,7 @@ class StudentController extends Controller
             $user->user_identification = $student->user_identification;
             $user->password = bcrypt($student->curp);
             $user->user_type = 'student';
+            $user->id_base = $request->base;
             $user->save();
 
             $career = DB::table('careers')->find($request->career);
@@ -794,8 +795,8 @@ class StudentController extends Controller
 
         return $query->isNotEmpty();
     }
-    
-    function indexStudents(){   
+
+    function indexStudents(){
         $student = Student::select(
             'flight_history.id as id_flight',
             'flight_history.id',
@@ -809,7 +810,7 @@ class StudentController extends Controller
         ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
         ->groupBy('students.name', 'students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id')
         ->get();
-        
+
         return response()->json($student, 200);
     }
 }

@@ -78,6 +78,7 @@ class InstructorController extends Controller
             $user->user_identification = $instructor->user_identification;
             $user->password = bcrypt($instructor->curp);
             $user->user_type = $instructor->user_type;
+            $user->id_base = $instructor->base;
             $user->save();
 
             return response()->json($instructor->user_identification, 201);

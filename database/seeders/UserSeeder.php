@@ -33,6 +33,7 @@ class UserSeeder extends Seeder
             'user_identification' => '1234567890',
             'user_type' => 'root',
             'password' => bcrypt('1234567890'),
+            'id_base' => 1,
         ]);
     }
 }

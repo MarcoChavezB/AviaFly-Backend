@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    
+
     public function login(Request $request){
         $validator = Validator::make($request->all(), [
             'user_identification' => 'required|string',
@@ -23,7 +23,7 @@ class UserController extends Controller
             return response()->json(["errors" => $validator->errors()], 400);
         }
 
-        $user = User::where('user_identification', $request->user_identification)->first();
+        $user = User::where('user_identification', $request->user_identification)->with('base:id,name')->first();
 
         if(!$user){
             return response()->json(["errors" => ["Usuario no encontrado"]], 404);
@@ -43,9 +43,9 @@ class UserController extends Controller
             'message' => 'Se ha logeado correctamente',
             'data' => $user,
             'jwt' => $token,
-            'user_type' => $user->user_type
+            'user_type' => $user->user_type,
         ])->withCookie($cookie);
-        
+
         return $response;
     }
 

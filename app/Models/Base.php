@@ -18,4 +18,9 @@ class Base extends Model
     {
         return $this->hasMany(Student::class, 'id_base', 'id');
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'id_base', 'id');
+    }
 }

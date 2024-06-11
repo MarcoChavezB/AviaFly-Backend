@@ -16,6 +16,7 @@ class User extends Authenticatable
         'user_identification',
         'user_type',
         'password',
+        'id_base'
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -35,4 +36,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function base()
+    {
+        return $this->belongsTo(Base::class, 'id_base');
+    }
 }

@@ -17,10 +17,12 @@ return new class extends Migration
             $table->id();
             $table->string('user_identification')->unique();
             $table->enum('user_type', ['root', 'admin', 'employee', 'instructor', 'student']);
+            $table->unsignedBigInteger('id_base');
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
 
+            $table->foreign('id_base')->references('id')->on('bases');
         });
     }
 
