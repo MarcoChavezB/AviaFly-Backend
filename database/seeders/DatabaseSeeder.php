@@ -358,6 +358,8 @@ class DatabaseSeeder extends Seeder
             'duration' => 4,
         ]);
 
+
+
         #//////////////#
 
         InfoFlight::create([

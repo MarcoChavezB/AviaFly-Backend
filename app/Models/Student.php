@@ -38,7 +38,7 @@ class Student extends Model
 
     public function base()
     {
-        return $this->belongsTo(Base::class, 'id');
+        return $this->belongsTo(Base::class, 'id_base');
     }
 
 }
