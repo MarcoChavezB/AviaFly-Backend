@@ -15,6 +15,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FlightHistoryController;
+use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\ProductController;
@@ -190,4 +191,9 @@ Route::prefix('/report')->group(function () {
     Route::post('/store', [FlightHistoryController::class, 'storeReport']);
     Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']); 
     Route::get('/index/students', [StudentController::class, 'indexStudents']);  
+    Route::post('/update/total', [FlightPaymentController::class, 'updateTotalPrice']);   
+});
+
+Route::prefix('/price')->group(function () {
+    Route::post('/flight', [FlightPaymentController::class, 'getFlightPrice']); 
 });
