@@ -117,14 +117,14 @@ class FlightHistoryController extends Controller
         $flights = FlightPayment::select(
             'flight_payments.id as id_flight',
             'students.curp',
-
             'flight_history.flight_alone',
             'flight_history.initial_horometer',
             'flight_history.final_horometer',
             'flight_history.total_horometer',
             'flight_history.final_tacometer',
             'flight_history.comment',
-
+            'flight_history.hours',
+            'flight_history.equipo',
             'students.name',
             'students.last_names',
             'students.flight_credit',
@@ -144,6 +144,7 @@ class FlightHistoryController extends Controller
             ->where('flight_payments.id', $id_flight)
             ->groupBy(
                 'students.curp',
+                'flight_history.hours',
                 'flight_history.type_flight',
                 'flight_history.flight_date',
                 'flight_history.flight_hour',
@@ -157,6 +158,7 @@ class FlightHistoryController extends Controller
                 'students.flight_credit',
                 'flight_history.flight_alone',
                 'flight_history.initial_horometer',
+                'flight_history.equipo',
                 'flight_history.final_horometer',
                 'flight_history.total_horometer',
                 'flight_history.final_tacometer',
@@ -178,19 +180,21 @@ class FlightHistoryController extends Controller
                 'flight_type' => $flights->tipo_vuelo,
                 'flight_date' => $flights->fecha_vuelo,
                 'hour_flight' => $flights->hora_vuelo,
+                'flight_hours' => $flights->hours,
+                'equipo' => $flights->equipo,
                 'flight_status' => $flights->status_vuelo,
                 'payment_status' => $flights->status_pago,
                 'total' => $flights->total_dinero,
                 'total_amounts' => $flights->total_amounts,
                 'debt' => $flights->deuda_viva,
-                'history_amounts' => $history_amounts,
-
                 'flight_alone' => $flights->flight_alone,
                 'initial_horometer' => $flights->initial_horometer,
                 'final_horometer' => $flights->final_horometer,
                 'total_horometer' => $flights->total_horometer,
                 'final_tacometer' => $flights->final_tacometer,
                 'comment' => $flights->comment,
+
+                'history_amounts' => $history_amounts,
             ];
         });
 
