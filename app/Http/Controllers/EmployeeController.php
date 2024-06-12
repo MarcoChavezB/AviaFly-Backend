@@ -15,6 +15,7 @@ class EmployeeController extends Controller
         $employees = DB::table('employees')
             ->join('bases', 'employees.id_base', '=', 'bases.id')
             ->select('employees.id', 'employees.name', 'employees.last_names', 'employees.user_identification', 'employees.email', 'employees.phone', 'employees.cellphone', 'employees.company_email', 'employees.user_type','bases.name as base')
+            ->orderBy('employees.id', 'desc')
             ->get();
 
         if($employees->isEmpty()){

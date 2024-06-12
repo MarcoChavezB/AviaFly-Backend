@@ -175,6 +175,7 @@ class StudentController extends Controller
     {
         try {
 
+
             $user = Auth::user();
 
             $employee = Employee::where('user_identification', $user->user_identification)
@@ -188,7 +189,7 @@ class StudentController extends Controller
             }
 
             if ($base->name == 'Torreón') {
-                $students = Student::with('base')->get(['id', 'name', 'last_names', 'user_identification']);
+                $students = Student::with('base')->orderBy('id', 'desc')->get(['id', 'name', 'last_names', 'user_identification']);
 
                 if ($students->isEmpty()) {
                     return response()->json(["errors" => ["No hay estudiantes creados"]], 404);
@@ -196,7 +197,7 @@ class StudentController extends Controller
 
                 return response()->json(['students' => $students], 200);
             } else {
-                $students = Student::where('id_base', $base->id)->with('base')->get(['id', 'name', 'last_names', 'user_identification']);
+                $students = Student::where('id_base', $base->id)->with('base')->orderBy('id', 'desc')->get(['id', 'name', 'last_names', 'user_identification']);
 
                 if ($students->isEmpty()) {
                     return response()->json(["errors" => ["No hay estudiantes creados"]], 400);
@@ -246,7 +247,6 @@ class StudentController extends Controller
         }
     }
 
-    //Abajo de 85 es reprobado
     public function updateGrade(Request $request)
     {
         try {
@@ -810,4 +810,15 @@ class StudentController extends Controller
 
         return response()->json($student, 200);
     }
+
+
+    public function getStudentMonthlyPayments(int $id)
+    {
+        $monthly_payments = DB::table('monthly_payments')
+            ->where('id_student', $id)
+            ->get(['id', 'payment_date', 'amount', 'status']);
+
+        return response()->json([ 'monthly_payments' => $monthly_payments], 200);
+    }
+
 }
