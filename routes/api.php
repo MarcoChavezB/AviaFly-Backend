@@ -180,7 +180,7 @@ Route::prefix('/products')->middleware('auth:sanctum')->group(function () {
 Route::prefix('/enum/values')->group(function () {
     Route::get('/flight/equipo', [InfoFlightController::class, 'getEquipFlight']);
     Route::get('/flight/flight_type', [InfoFlightController::class, 'getFlightType']);
-    Route::get('/flight/flight_category', [InfoFlightController::class, 'getFlightCategory']);
+    
     Route::get('/flight/maneuver', [InfoFlightController::class, 'getFlightManeuver']);
 });
 
@@ -188,6 +188,7 @@ Route::prefix('/reports')->group(function () {
     Route::post('/store', [FlightHistoryController::class, 'storeReport']);
     Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']);
     Route::get('/index/students', [StudentController::class, 'indexStudents']);
+    Route::post('/update/total', [FlightPaymentController::class, 'updateTotalPrice']);
 });
 
 Route::prefix('/prices')->group(function () {
