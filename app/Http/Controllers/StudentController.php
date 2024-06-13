@@ -800,6 +800,7 @@ class StudentController extends Controller
             'students.name',
             'students.last_names',
             'flight_history.equipo',
+            'flight_history.type_flight',
             'flight_history.flight_category',
             'flight_history.flight_date',
             'flight_history.total_horometer'
@@ -807,12 +808,11 @@ class StudentController extends Controller
         ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
         ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
         ->where('flight_history.total_horometer', '>', 0)
-        ->groupBy('students.name', 'flight_history.total_horometer','students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id')
+        ->groupBy('students.name', 'flight_history.total_horometer','students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight')
         ->get(); 
 
         return response()->json($student, 200);
     }
-
 
     public function getStudentMonthlyPayments(int $id)
     {
@@ -822,5 +822,4 @@ class StudentController extends Controller
 
         return response()->json([ 'monthly_payments' => $monthly_payments], 200);
     }
-
 }

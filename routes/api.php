@@ -20,6 +20,7 @@ use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\ProductController;
 use App\Http\Middleware\userType;
+use App\Models\flightHistory;
 
 /*
 |--------------------------------------------------------------------------
@@ -187,8 +188,9 @@ Route::prefix('/enum/values')->group(function () {
 Route::prefix('/reports')->group(function () {
     Route::post('/store', [FlightHistoryController::class, 'storeReport']);
     Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']);
-    Route::get('/index/students', [StudentController::class, 'indexStudents']);
     Route::post('/update/total', [FlightPaymentController::class, 'updateTotalPrice']);
+    Route::get('/index/students', [StudentController::class, 'indexStudents']);
+    Route::post('/index/students/filter', [FlightHistoryController::class, 'indexStudentsFilter']);
 });
 
 Route::prefix('/prices')->group(function () {

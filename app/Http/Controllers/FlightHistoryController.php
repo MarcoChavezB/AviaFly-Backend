@@ -313,4 +313,55 @@ class FlightHistoryController extends Controller
 
         return response()->json($flights);
     }
+    
+    /**
+        filtros para el reporte de vuelos
+        payload: 
+        {
+            "flight_date": "2021-09-01",
+            "flight_end_date": "2021-09-30",
+            "flight_type": "(simulador, vuelo)",
+            "student_name": "jose"
+        }
+    */
+    function indexStudentsFilter(Request $request) {
+    $query = Student::select(
+        'flight_history.id as id_flight',
+        'flight_history.id',
+        'students.name',
+        'students.last_names',
+        'flight_history.equipo',
+        'flight_history.type_flight',
+        'flight_history.flight_category',
+        'flight_history.flight_date',
+        'flight_history.total_horometer'
+    )
+    ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
+    ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+    ->where('flight_history.total_horometer', '>', 0);
+
+    $query->when($request->filled('student_name'), function ($query) use ($request) {
+        $query->where(function ($query) use ($request) {
+            $studentName = $request->input('student_name');
+            $query->where('students.name', 'like', '%' . $studentName . '%')
+                  ->orWhere('students.last_names', 'like', '%' . $studentName . '%');
+        });
+    });
+
+    $query->when($request->filled('flight_type'), function ($query) use ($request) {
+        $query->where('flight_history.type_flight', $request->input('flight_type'));
+    });
+
+    $query->when($request->filled(['flight_date', 'flight_end_date']), function ($query) use ($request) {
+        $query->whereBetween('flight_history.flight_date', [$request->input('flight_date'), $request->input('flight_end_date')]);
+    });
+
+    $student = $query
+        ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight')
+        ->get(); 
+
+    return response()->json($student, 200);
+}
+
+
 }
