@@ -23,7 +23,7 @@ class UserController extends Controller
             return response()->json(["errors" => $validator->errors()], 400);
         }
 
-        $user = User::where('user_identification', $request->user_identification)->with('base:id,name')->first();
+        $user = User::where('user_identification', $request->user_identification)->first();
 
         if(!$user){
             return response()->json(["errors" => ["Usuario no encontrado"]], 404);

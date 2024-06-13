@@ -96,6 +96,7 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
         Route::delete('/delete/subject', [StudentController::class, 'deleteSubjectFromStudent']); // Esto puede hacerlo: root, admin
         Route::put('/change/instructor', [StudentController::class, 'changeInstructorFromStudentSubject']); // Esto puede hacerlo: root, admin
         Route::put('/update', [StudentController::class, 'update']); // Esto puede hacerlo: root, admin
+        Route::get('/student/monthly-payments/{id}', [StudentController::class, 'getStudentMonthlyPayments'])->where('id','[0-9]+'); // Esto puede hacerlo: root, admin
     });
 });
 
@@ -185,12 +186,12 @@ Route::prefix('/enum/values')->group(function () {
 
 Route::prefix('/reports')->group(function () {
     Route::post('/store', [FlightHistoryController::class, 'storeReport']);
-    Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']); 
+    Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']);
     Route::get('/index/students', [StudentController::class, 'indexStudents']);
 });
 
 Route::prefix('/prices')->group(function () {
-    Route::post('/flight', [FlightPaymentController::class, 'getFlightPrice']); 
+    Route::post('/flight', [FlightPaymentController::class, 'getFlightPrice']);
 });
 
 Route::prefix('/calendars')->group(function () {
