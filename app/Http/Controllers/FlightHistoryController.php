@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\flightHistory;
 use App\Models\FlightPayment;
 use App\Models\Student;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -16,6 +17,8 @@ class FlightHistoryController extends Controller
     {
         $report = Student::select(
             'flight_history.id as id_flight',
+            'flight_history.flight_status',
+            'flight_payments.payment_status',
             'students.name',
             'students.last_names',
             'flight_history.type_flight',
@@ -42,7 +45,9 @@ class FlightHistoryController extends Controller
                 'flight_history.final_tacometer',
                 'flight_history.comment',
                 'flight_history.flight_date',
-                'flight_history.id'
+                'flight_history.id',
+                'flight_history.flight_status',
+                'flight_payments.payment_status',
             )
             ->get();
 
@@ -282,5 +287,30 @@ class FlightHistoryController extends Controller
         return response()->json([
             'msg' => "El reporte se ha guardado correctamente"
         ]);
+    }
+    
+    /**
+        title: flight_type
+        start:fligt_dateTflight_hour
+        end: fligt_dateTflight_hour + flight_hours
+    */
+    function getFLightReservations(){
+        $flights = FlightHistory::select('flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours')
+            ->groupBy('flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours')
+            ->get();
+
+        $flights = $flights->map(function($flight) {
+            $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
+            
+            $end = $start->copy()->addHours($flight->hours);
+            
+            return [
+                'title' => $flight->type_flight,
+                'start' => $start->toIso8601String(),
+                'end' => $end->toIso8601String(),
+            ];
+        });
+
+        return response()->json($flights);
     }
 }

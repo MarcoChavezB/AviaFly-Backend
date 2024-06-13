@@ -801,12 +801,14 @@ class StudentController extends Controller
             'students.last_names',
             'flight_history.equipo',
             'flight_history.flight_category',
-            'flight_history.flight_date'
+            'flight_history.flight_date',
+            'flight_history.total_horometer'
         )
         ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
         ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
-        ->groupBy('students.name', 'students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id')
-        ->get();
+        ->where('flight_history.total_horometer', '>', 0)
+        ->groupBy('students.name', 'flight_history.total_horometer','students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id')
+        ->get(); 
 
         return response()->json($student, 200);
     }
