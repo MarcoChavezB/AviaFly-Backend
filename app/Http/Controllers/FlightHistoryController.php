@@ -295,8 +295,8 @@ class FlightHistoryController extends Controller
         end: fligt_dateTflight_hour + flight_hours
     */
     function getFLightReservations(){
-        $flights = FlightHistory::select('flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours')
-            ->groupBy('flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours')
+        $flights = FlightHistory::select('flight_history.flight_status', 'flight_history.id','flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours')
+            ->groupBy('flight_history.flight_status','flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours', 'flight_history.id')
             ->get();
 
         $flights = $flights->map(function($flight) {
@@ -305,6 +305,8 @@ class FlightHistoryController extends Controller
             $end = $start->copy()->addHours($flight->hours);
             
             return [
+                'id' => $flight->id,
+                'flight_status' => $flight->flight_status,
                 'title' => $flight->type_flight,
                 'start' => $start->toIso8601String(),
                 'end' => $end->toIso8601String(),
