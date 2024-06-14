@@ -199,7 +199,7 @@ Route::prefix('/prices')->group(function () {
 
 Route::prefix('/calendars')->group(function () {
     Route::get('/flight/reservate', [FlightHistoryController::class, 'getFLightReservations']); 
-    Route::get('/flight/details/{id}', [FlightHistoryController::class, 'getFlightDetails']);
+    Route::get('/flight/details/{id_flight}', [FlightHistoryController::class, 'getFlightDetails']);
 });
 
 

@@ -288,22 +288,23 @@ class FlightHistoryController extends Controller
             'msg' => "El reporte se ha guardado correctamente"
         ]);
     }
-    
+
     /**
         title: flight_type
         start:fligt_dateTflight_hour
         end: fligt_dateTflight_hour + flight_hours
-    */
-    function getFLightReservations(){
-        $flights = FlightHistory::select('flight_history.flight_status', 'flight_history.id','flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours')
-            ->groupBy('flight_history.flight_status','flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours', 'flight_history.id')
+     */
+    function getFLightReservations()
+    {
+        $flights = FlightHistory::select('flight_history.flight_status', 'flight_history.id', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours')
+            ->groupBy('flight_history.flight_status', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours', 'flight_history.id')
             ->get();
 
-        $flights = $flights->map(function($flight) {
+        $flights = $flights->map(function ($flight) {
             $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
-            
+
             $end = $start->copy()->addHours($flight->hours);
-            
+
             return [
                 'id' => $flight->id,
                 'flight_status' => $flight->flight_status,
@@ -315,7 +316,7 @@ class FlightHistoryController extends Controller
 
         return response()->json($flights);
     }
-    
+
     /**
         filtros para el reporte de vuelos
         payload: 
@@ -325,45 +326,83 @@ class FlightHistoryController extends Controller
             "flight_type": "(simulador, vuelo)",
             "student_name": "jose"
         }
-    */
-    function indexStudentsFilter(Request $request) {
-    $query = Student::select(
-        'flight_history.id as id_flight',
-        'flight_history.id',
-        'students.name',
-        'students.last_names',
-        'flight_history.equipo',
-        'flight_history.type_flight',
-        'flight_history.flight_category',
-        'flight_history.flight_date',
-        'flight_history.total_horometer'
-    )
-    ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
-    ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
-    ->where('flight_history.total_horometer', '>', 0);
+     */
+    function indexStudentsFilter(Request $request)
+    {
+        $query = Student::select(
+            'flight_history.id as id_flight',
+            'flight_history.id',
+            'students.name',
+            'students.last_names',
+            'flight_history.equipo',
+            'flight_history.type_flight',
+            'flight_history.flight_category',
+            'flight_history.flight_date',
+            'flight_history.total_horometer'
+        )
+            ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
+            ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->where('flight_history.total_horometer', '>', 0);
 
-    $query->when($request->filled('student_name'), function ($query) use ($request) {
-        $query->where(function ($query) use ($request) {
-            $studentName = $request->input('student_name');
-            $query->where('students.name', 'like', '%' . $studentName . '%')
-                  ->orWhere('students.last_names', 'like', '%' . $studentName . '%');
+        $query->when($request->filled('student_name'), function ($query) use ($request) {
+            $query->where(function ($query) use ($request) {
+                $studentName = $request->input('student_name');
+                $query->where('students.name', 'like', '%' . $studentName . '%')
+                    ->orWhere('students.last_names', 'like', '%' . $studentName . '%');
+            });
         });
-    });
 
-    $query->when($request->filled('flight_type'), function ($query) use ($request) {
-        $query->where('flight_history.type_flight', $request->input('flight_type'));
-    });
+        $query->when($request->filled('flight_type'), function ($query) use ($request) {
+            $query->where('flight_history.type_flight', $request->input('flight_type'));
+        });
 
-    $query->when($request->filled(['flight_date', 'flight_end_date']), function ($query) use ($request) {
-        $query->whereBetween('flight_history.flight_date', [$request->input('flight_date'), $request->input('flight_end_date')]);
-    });
+        $query->when($request->filled(['flight_date', 'flight_end_date']), function ($query) use ($request) {
+            $query->whereBetween('flight_history.flight_date', [$request->input('flight_date'), $request->input('flight_end_date')]);
+        });
 
-    $student = $query
-        ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight')
-        ->get(); 
+        $student = $query
+            ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight')
+            ->get();
 
-    return response()->json($student, 200);
-}
-
-
+        return response()->json($student, 200);
+    }
+    /** */
+    function getFlightDetails(int $id_flight){
+        $flight = flightHistory::select(
+        'flight_history.hours', 
+        'flight_history.flight_status', 
+        'flight_history.type_flight',
+        'flight_history.flight_date',
+        'flight_history.flight_hour',
+        'flight_payments.total',
+        'flight_payments.payment_status',
+        'employees.name as instructor',
+        'employees.last_names as instructor_last_name',
+        'employees.phone as instructor_phone',
+        'students.name as student_name',
+        'students.last_names as student_last_name',
+        'students.phone as student_phone'
+        )
+        ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
+        ->join('students', 'students.id', '=', 'flight_payments.id_student')
+        ->join('employees', 'employees.id', '=', 'flight_payments.id_instructor')
+        ->where('flight_history.id', $id_flight)
+        ->groupBy(
+            'flight_history.hours', 
+            'flight_history.type_flight',
+            'flight_history.flight_date',
+            'flight_history.flight_hour',
+            'flight_payments.total',
+            'flight_payments.payment_status',
+            'employees.name',
+            'employees.last_names',
+            'employees.phone',
+            'students.name',
+            'flight_history.flight_status',
+            'students.last_names',
+            'students.phone'
+        )->get();
+        
+        return response()->json($flight, 200);
+    }
 }
