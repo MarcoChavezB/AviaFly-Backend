@@ -122,6 +122,15 @@ class StudentController extends Controller
 
             $startDate = Carbon::parse($request->register_date);
 
+
+            DB::table('monthly_payments')->insert([
+                'id_student' => $student->id,
+                'payment_date' => $student->created_at,
+                'amount' => $career->registration_fee,
+                'concept' => 'Inscripción',
+                'status' => 'pending',
+            ]);
+
             for ($i = 0; $i < $career->monthly_payments; $i++) {
                 $paymentDate = clone $startDate;
                 $paymentDate->addMonths($i + 1);
@@ -130,6 +139,7 @@ class StudentController extends Controller
                     'id_student' => $student->id,
                     'payment_date' => $paymentDate,
                     'amount' => $career->monthly_fee,
+                    'concept' => 'Mensualidad',
                     'status' => 'pending',
                 ]);
             }
@@ -816,9 +826,23 @@ class StudentController extends Controller
     {
         $monthly_payments = DB::table('monthly_payments')
             ->where('id_student', $id)
-            ->get(['id', 'payment_date', 'amount', 'status']);
+            ->get(['id', 'payment_date', 'amount', 'status', 'concept']);
 
         return response()->json([ 'monthly_payments' => $monthly_payments], 200);
+    }
+
+    public function getStudentAndOwedMonthlyPayments(int $id)
+    {
+        $student = Student::with('owed_and_pending_payments')
+            ->where('id', $id)
+            ->select('id', 'user_identification', 'name', 'last_names')
+            ->first();
+
+        if (!$student) {
+            return response()->json(["error" => "Estudiante no encontrado"], 404);
+        }
+
+        return response()->json($student, 200);
     }
 
 }

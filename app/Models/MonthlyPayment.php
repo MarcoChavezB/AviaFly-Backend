@@ -15,4 +15,9 @@ class MonthlyPayment extends Model
         'payment_date',
         'amount',
     ];
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class, 'id_student');
+    }
 }

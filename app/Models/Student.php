@@ -41,4 +41,15 @@ class Student extends Model
         return $this->belongsTo(Base::class, 'id_base');
     }
 
+    public function monthly_payments()
+    {
+        return $this->hasMany(MonthlyPayment::class, 'id_student');
+    }
+
+    public function owed_and_pending_payments()
+    {
+        return $this->hasMany(MonthlyPayment::class, 'id_student')
+            ->whereIn('status', ['owed', 'pending']);
+    }
+
 }
