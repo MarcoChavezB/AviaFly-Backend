@@ -97,7 +97,7 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
         Route::delete('/delete/subject', [StudentController::class, 'deleteSubjectFromStudent']); // Esto puede hacerlo: root, admin
         Route::put('/change/instructor', [StudentController::class, 'changeInstructorFromStudentSubject']); // Esto puede hacerlo: root, admin
         Route::put('/update', [StudentController::class, 'update']); // Esto puede hacerlo: root, admin
-        Route::get('/student/monthly-payments/{id}', [StudentController::class, 'getStudentMonthlyPayments'])->where('id','[0-9]+'); // Esto puede hacerlo: root, admin
+        Route::get('/student/monthly-payments/{id}', [StudentController::class, 'getStudentMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
     });
 });
 
@@ -199,9 +199,8 @@ Route::prefix('/prices')->group(function () {
 });
 
 Route::prefix('/calendars')->group(function () {
-    Route::get('/flight/reservate', [FlightHistoryController::class, 'getFLightReservations']); 
-    Route::get('/flight/reservate/{id_student}', [FlightHistoryController::class, 'getFLightReservationsById']); 
+    Route::get('/flight/reservate', [FlightHistoryController::class, 'getFLightReservations']);
+    Route::get('/flight/types/{flight_type}', [FlightHistoryController::class, 'getFLightTypes']);
+    Route::get('/flight/reservate/{id_student}', [FlightHistoryController::class, 'getFLightReservationsById']);
     Route::get('/flight/details/{id_flight}', [FlightHistoryController::class, 'getFlightDetails']);
 });
-
-
