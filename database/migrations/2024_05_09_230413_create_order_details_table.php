@@ -15,15 +15,15 @@ return new class extends Migration
     {
         Schema::create('order_details', function (Blueprint $table) {
             $table->id();
-            $table->decimal('price', 8, 2);
             $table->integer('quantity');
-            $table->timestamps();
 
             $table->unsignedBigInteger('id_order');
             $table->foreign('id_order')->references('id')->on('orders');
 
             $table->unsignedBigInteger('id_product');
             $table->foreign('id_product')->references('id')->on('products');
+            
+            $table->timestamps();
         });
     }
 

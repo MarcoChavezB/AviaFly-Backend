@@ -20,6 +20,7 @@ use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\ProductController;
 use App\Http\Middleware\userType;
+use App\Models\flightHistory;
 
 /*
 |--------------------------------------------------------------------------
@@ -176,6 +177,7 @@ Route::prefix('/employees')->group(function () {
 
 Route::prefix('/products')->middleware('auth:sanctum')->group(function () {
     Route::get('/index/{name?}', [ProductController::class, 'index']);
+    Route::post('/store', [ProductController::class, 'store']);
 });
 
 Route::prefix('/enum/values')->group(function () {
@@ -188,16 +190,19 @@ Route::prefix('/enum/values')->group(function () {
 Route::prefix('/reports')->group(function () {
     Route::post('/store', [FlightHistoryController::class, 'storeReport']);
     Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']);
-    Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']);
+    Route::post('/update/total', [FlightPaymentController::class, 'updateTotalPrice']);
     Route::get('/index/students', [StudentController::class, 'indexStudents']);
+    Route::post('/index/students/filter', [FlightHistoryController::class, 'indexStudentsFilter']);
 });
 
 Route::prefix('/prices')->group(function () {
     Route::post('/flight', [FlightPaymentController::class, 'getFlightPrice']);
 });
 
-Route::get('/test', function(){
-    return response()->json([
-        'message' => 'pudo'
-    ]);
-})->middleware(userType::class . ':admin,root');
+Route::prefix('/calendars')->group(function () {
+    Route::get('/flight/reservate', [FlightHistoryController::class, 'getFLightReservations']); 
+    Route::get('/flight/reservate/{id_student}', [FlightHistoryController::class, 'getFLightReservationsById']); 
+    Route::get('/flight/details/{id_flight}', [FlightHistoryController::class, 'getFlightDetails']);
+});
+
+

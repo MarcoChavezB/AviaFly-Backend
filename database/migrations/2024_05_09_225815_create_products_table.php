@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->decimal('price', 8, 2);
             $table->integer('stock');
-            $table->boolean('is_active')->default(true);
+            $table->enum('product_status', ['activo', 'inactivo']);
             $table->timestamps();
         });
     }

@@ -13,14 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('monthly_payments', function (Blueprint $table) {
+        Schema::create('product_payments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_student');
-            $table->foreign('id_student')->references('id')->on('students');
-            $table->enum('status', ['pending', 'paid', 'owed']);
-            $table->date('payment_date');
-            $table->double('amount');
-            $table->string('concept');
+            $table->unsignedBigInteger('id_order');
+            $table->foreign('id_order')->references('id')->on('orders');
+            $table->enum('payment_method', ['efectivo', 'tarjeta', 'abonos']);
+            $table->decimal('amount', 8, 2);
             $table->timestamps();
         });
     }
@@ -32,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('monthly_payments');
+        Schema::dropIfExists('product_payments');
     }
 };
