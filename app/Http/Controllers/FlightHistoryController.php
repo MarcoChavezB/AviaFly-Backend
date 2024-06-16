@@ -319,7 +319,7 @@ class FlightHistoryController extends Controller
 
     /**
         filtros para el reporte de vuelos
-        payload: 
+        payload:
         {
             "flight_date": "2021-09-01",
             "flight_end_date": "2021-09-30",
@@ -367,45 +367,46 @@ class FlightHistoryController extends Controller
         return response()->json($student, 200);
     }
     /** */
-    function getFlightDetails(int $id_flight){
+    function getFlightDetails(int $id_flight)
+    {
         $flight = flightHistory::select(
-        'flight_history.hours', 
-        'flight_history.flight_status', 
-        'flight_history.type_flight',
-        'flight_history.flight_date',
-        'flight_history.flight_hour',
-        'flight_payments.total',
-        'flight_payments.payment_status',
-        'employees.name as instructor',
-        'employees.last_names as instructor_last_name',
-        'employees.phone as instructor_phone',
-        'students.name as student_name',
-        'students.last_names as student_last_name',
-        'students.phone as student_phone'
-        )
-        ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
-        ->join('students', 'students.id', '=', 'flight_payments.id_student')
-        ->join('employees', 'employees.id', '=', 'flight_payments.id_instructor')
-        ->where('flight_history.id', $id_flight)
-        ->groupBy(
-            'flight_history.hours', 
+            'flight_history.hours',
+            'flight_history.flight_status',
             'flight_history.type_flight',
             'flight_history.flight_date',
             'flight_history.flight_hour',
             'flight_payments.total',
             'flight_payments.payment_status',
-            'employees.name',
-            'employees.last_names',
-            'employees.phone',
-            'students.name',
-            'flight_history.flight_status',
-            'students.last_names',
-            'students.phone'
-        )->get();
-        
+            'employees.name as instructor',
+            'employees.last_names as instructor_last_name',
+            'employees.phone as instructor_phone',
+            'students.name as student_name',
+            'students.last_names as student_last_name',
+            'students.phone as student_phone'
+        )
+            ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->join('students', 'students.id', '=', 'flight_payments.id_student')
+            ->join('employees', 'employees.id', '=', 'flight_payments.id_instructor')
+            ->where('flight_history.id', $id_flight)
+            ->groupBy(
+                'flight_history.hours',
+                'flight_history.type_flight',
+                'flight_history.flight_date',
+                'flight_history.flight_hour',
+                'flight_payments.total',
+                'flight_payments.payment_status',
+                'employees.name',
+                'employees.last_names',
+                'employees.phone',
+                'students.name',
+                'flight_history.flight_status',
+                'students.last_names',
+                'students.phone'
+            )->get();
+
         return response()->json($flight, 200);
     }
-    
+
 
     function getFLightReservationsById(int $id_student)
     {
@@ -432,4 +433,41 @@ class FlightHistoryController extends Controller
         return response()->json($flights);
     }
 
+
+    function getFLightTypes(string $fligth_type)
+    {
+
+        if ($fligth_type != 'simulador' && $fligth_type != 'vuelo') {
+            return response()->json([
+                'msg' => 'Tipo de vuelo no válido'
+            ], 400);
+        }
+
+        $flights = FlightHistory::select('flight_history.flight_status', 'flight_history.id', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours')
+            ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->where('flight_history.type_flight', $fligth_type)
+            ->groupBy('flight_history.flight_status', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours', 'flight_history.id')
+            ->get();
+
+        $flights = $flights->map(function ($flight) {
+            $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
+
+            $end = $start->copy()->addHours($flight->hours);
+
+            return[
+                    'id' => $flight->id,
+                    'flight_status' => $flight->flight_status,
+                    'title' => $flight->type_flight,
+                    'start' => $start->toIso8601String(),
+                    'end' => $end->toIso8601String(),
+                ];
+        });
+
+        return response()->json($flights);
+    }
+
+
+    function getFLightReservationTiket(int $id_flight){
+
+    }
 }

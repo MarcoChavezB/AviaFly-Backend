@@ -7,7 +7,9 @@ use Faker\Factory as Faker;
 use App\Models\Base;
 use App\Models\Career;
 use App\Models\Employee;
+use App\Models\FlightLessons;
 use App\Models\InfoFlight;
+use App\Models\Lesson;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\TeacherSubjectTurn;
@@ -269,7 +271,7 @@ class DatabaseSeeder extends Seeder
             'end_date' => '2024-11-30',
             'duration' => 4,
         ]);
-        
+
         TeacherSubjectTurn::create([
             'id_teacher' => 4,
             'career_subject_id' => 25,
@@ -374,6 +376,99 @@ class DatabaseSeeder extends Seeder
             "price" => 3100,
             "min_credit_hours_required" => 2,
             "min_hours_required" => 20,
+        ]);
+
+
+        /// FlightLessons Seeders
+
+        Lesson::create([
+            "lesson_title" => "Inspección antes del vuelo",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Inspección ",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Encendido del motor",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Rodaje",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Revisión antes del Despegue y Prueba de Motor",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Despegue Normal y Ascenso Inicial",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Ascensos",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Nivelar",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Utilización de Compensador",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Vuelo Recto y Nivelado",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Tendencias de la Aeronave para Volar Recto y Nivelado",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Virajes con Banqueo Medio",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Virajes con Banqueo Medio",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Descensos",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Aproximación Normal y Aterrizaje",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Procedimientos Después del Aterrizaje",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Estacionamiento y Aseguramiento de la Aeronave",
+            "lesson_points" => 10,
+        ]);
+
+        Lesson::create([
+            "lesson_title" => "Procedimientos Posteriores al Vuelo",
+            "lesson_points" => 10,
         ]);
     }
 }
