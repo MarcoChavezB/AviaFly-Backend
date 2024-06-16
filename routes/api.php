@@ -18,9 +18,8 @@ use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\PaymentsController;
+use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
-use App\Http\Middleware\userType;
-use App\Models\flightHistory;
 
 /*
 |--------------------------------------------------------------------------
@@ -203,4 +202,10 @@ Route::prefix('/calendars')->group(function () {
     Route::get('/flight/types/{flight_type}', [FlightHistoryController::class, 'getFLightTypes']);
     Route::get('/flight/reservate/{id_student}', [FlightHistoryController::class, 'getFLightReservationsById']);
     Route::get('/flight/details/{id_flight}', [FlightHistoryController::class, 'getFlightDetails']);
+});
+
+
+Route::prefix('/tikets')->group(function () {
+    Route::get('/flight/reservation/{id_flight}', [FlightHistoryController::class, 'getFlightReservationTiket']);
+    Route::get('/flight/reservation', [PDFController::class, 'generatePDF']);
 });

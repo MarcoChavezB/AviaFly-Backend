@@ -454,15 +454,20 @@ class FlightHistoryController extends Controller
 
             $end = $start->copy()->addHours($flight->hours);
 
-            return [
-                'id' => $flight->id,
-                'flight_status' => $flight->flight_status,
-                'title' => $flight->type_flight,
-                'start' => $start->toIso8601String(),
-                'end' => $end->toIso8601String(),
-            ];
+            return[
+                    'id' => $flight->id,
+                    'flight_status' => $flight->flight_status,
+                    'title' => $flight->type_flight,
+                    'start' => $start->toIso8601String(),
+                    'end' => $end->toIso8601String(),
+                ];
         });
 
         return response()->json($flights);
+    }
+
+
+    function getFLightReservationTiket(int $id_flight){
+
     }
 }
