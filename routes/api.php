@@ -17,6 +17,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\InfoFlightController;
+use App\Http\Controllers\LessonController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
@@ -192,6 +193,7 @@ Route::prefix('/reports')->group(function () {
     Route::post('/update/total', [FlightPaymentController::class, 'updateTotalPrice']);
     Route::get('/index/students', [StudentController::class, 'indexStudents']);
     Route::post('/index/students/filter', [FlightHistoryController::class, 'indexStudentsFilter']);
+    Route::get('/all/info/{id_flight}', [FlightHistoryController::class], 'getAllInfoReport');
 });
 
 Route::prefix('/prices')->group(function () {
@@ -208,4 +210,10 @@ Route::prefix('/calendars')->group(function () {
 
 Route::prefix('/tikets')->group(function () {
     Route::get('/flight/reservation', [PDFController::class, 'getReservationTiket']);
+});
+
+
+Route::prefix('/lessons')->group(function () {
+    Route::get('/index', [LessonController::class, 'index']);
+    Route::get('/index/{id_flight}', [LessonController::class, 'indexByFlight']);
 });

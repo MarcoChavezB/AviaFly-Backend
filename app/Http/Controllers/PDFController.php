@@ -46,5 +46,7 @@ class PDFController extends Controller
 
         return response()->json($tiketArray);
     }
+
+
 }
 

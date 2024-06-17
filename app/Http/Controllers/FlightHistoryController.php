@@ -466,8 +466,17 @@ class FlightHistoryController extends Controller
         return response()->json($flights);
     }
 
-
-    function getFLightReservationTiket(int $id_flight){
-
+    function getAllInfoReport(int $id_flight){
+        $flight = flightHistory::select('*');
     }
 }
+
+
+
+
+
+
+
+
+
+

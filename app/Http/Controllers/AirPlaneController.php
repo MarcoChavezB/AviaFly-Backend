@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Lesson;
+use App\Models\AirPlane;
 use Illuminate\Http\Request;
 
-class LessonController extends Controller
+class AirPlaneController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,23 +14,7 @@ class LessonController extends Controller
      */
     public function index()
     {
-        $lessons = Lesson::select('id', 'lesson_title')->get();
-        return response()->json($lessons, 200);
-    }
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function indexByFlight(int $id_flight)
-    {
-        $lessons = Lesson::select('lessons.id', 'lessons.lesson_title')
-                    ->join('flight_lessons', 'lesson_id', '=', 'lessons.id')
-                    ->join('flight_history', 'flight_lessons.flight_id', '=', 'flight_history.id')
-                    ->where('flight_history.id', $id_flight)
-                    ->get();
-        return response()->json($lessons, 200);
+        //
     }
 
     /**
@@ -57,10 +41,10 @@ class LessonController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Lesson  $lesson
+     * @param  \App\Models\AirPlane  $airPlane
      * @return \Illuminate\Http\Response
      */
-    public function show(Lesson $lesson)
+    public function show(AirPlane $airPlane)
     {
         //
     }
@@ -68,10 +52,10 @@ class LessonController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Lesson  $lesson
+     * @param  \App\Models\AirPlane  $airPlane
      * @return \Illuminate\Http\Response
      */
-    public function edit(Lesson $lesson)
+    public function edit(AirPlane $airPlane)
     {
         //
     }
@@ -80,10 +64,10 @@ class LessonController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Lesson  $lesson
+     * @param  \App\Models\AirPlane  $airPlane
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Lesson $lesson)
+    public function update(Request $request, AirPlane $airPlane)
     {
         //
     }
@@ -91,10 +75,10 @@ class LessonController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Lesson  $lesson
+     * @param  \App\Models\AirPlane  $airPlane
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Lesson $lesson)
+    public function destroy(AirPlane $airPlane)
     {
         //
     }

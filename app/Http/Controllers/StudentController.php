@@ -478,6 +478,7 @@ class StudentController extends Controller
             'installment_value' => 'nullable|numeric',
             'id_student' => 'required|numeric',
             'flight_payment_status' => 'required|string|in:pendiente,pagado,cancelado',
+            'flight_session' => 'required|string',
         ], [
             'id_student.required' => 'campo requerido',
             'id_instructor.exists' => 'Selecciona un instructor',
@@ -505,6 +506,7 @@ class StudentController extends Controller
             'maneuver.required' => 'campo requerido',
             'maneuver.in' => 'campo no válido',
             'hour_instructor_cost.numeric' => 'El costo de la hora de instructor no es válido',
+            'flight_session.required' => 'campo requerido'
         ]);
 
         if ($validator->fails()) {
@@ -528,7 +530,7 @@ class StudentController extends Controller
             }
         }
 
-        DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+        DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $request->id_student,           // id_student: INT
             Auth::user()->id,                         // id_employee: INT
             $request->id_instructor,                  // id_instructor: INT
@@ -544,7 +546,8 @@ class StudentController extends Controller
             $request->equipo,                         // equipo: ENUM('XBPDY', 'simulador', 'vuelo')
             $request->flight_category,                // flight_category: ENUM('VFR', 'IFR', 'IFR_nocturno')
             $request->maneuver,                       // maneuver: ENUM('local', 'ruta')
-            $request->hour_instructor_cost            // hour_instructor_cost: DECIMAL(8, 2)
+            $request->hour_instructor_cost,            // hour_instructor_cost: DECIMAL(8, 2)
+            $request->flight_session                  // session_id: INT
         ]);
 
         $message = $request->flight_payment_status == 'pending' ? 'Vuelo agendado, pendiente de pago' : 'Se agendo el vuelo';
@@ -803,7 +806,8 @@ class StudentController extends Controller
         return $query->isNotEmpty();
     }
 
-    function indexStudents(){
+    function indexStudents()
+    {
         $student = Student::select(
             'flight_history.id as id_flight',
             'flight_history.id',
@@ -813,16 +817,16 @@ class StudentController extends Controller
             'flight_history.type_flight',
             'flight_history.flight_category',
             'flight_history.flight_date',
-            'flight_history.total_horometer'
+            DB::raw('CAST(flight_history.total_horometer AS FLOAT) as total_horometer')
         )
-        ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
-        ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
-        ->where('flight_history.total_horometer', '>', 0)
-        ->groupBy('students.name', 'flight_history.total_horometer','students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight')
-        ->get();
+            ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
+            ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight')
+            ->get();
 
         return response()->json($student, 200);
     }
+
 
     public function getStudentMonthlyPayments(int $id)
     {
@@ -830,7 +834,7 @@ class StudentController extends Controller
             ->where('id_student', $id)
             ->get(['id', 'payment_date', 'amount', 'status', 'concept']);
 
-        return response()->json([ 'monthly_payments' => $monthly_payments], 200);
+        return response()->json(['monthly_payments' => $monthly_payments], 200);
     }
 
     public function getStudentAndOwedMonthlyPayments(int $id)
