@@ -25,11 +25,11 @@ class LessonController extends Controller
      */
     public function indexByFlight(int $id_flight)
     {
-        $lessons = Lesson::select('lessons.id', 'lessons.lesson_title')
-                    ->join('flight_lessons', 'lesson_id', '=', 'lessons.id')
-                    ->join('flight_history', 'flight_lessons.flight_id', '=', 'flight_history.id')
-                    ->where('flight_history.id', $id_flight)
-                    ->get();
+        $lessons = Lesson::select('lessons.id', 'lessons.lesson_title', 'flight_lessons.lesson_approved', 'flight_lessons.flight_id')
+            ->join('flight_lessons', 'lesson_id', '=', 'lessons.id')
+            ->join('flight_history', 'flight_lessons.flight_id', '=', 'flight_history.id')
+            ->where('flight_history.id', $id_flight)
+            ->get();
         return response()->json($lessons, 200);
     }
 

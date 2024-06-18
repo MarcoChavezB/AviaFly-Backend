@@ -129,7 +129,7 @@ class FlightHistoryController extends Controller
             'flight_history.final_tacometer',
             'flight_history.comment',
             'flight_history.hours',
-            'flight_history.equipo',
+            'info_flights.equipo as equipo',
             'students.name',
             'students.last_names',
             'students.flight_credit',
@@ -146,6 +146,7 @@ class FlightHistoryController extends Controller
             ->leftJoin('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
             ->leftJoin('students', 'students.id', '=', 'flight_payments.id_student')
             ->leftJoin('payments', 'flight_payments.id', '=', 'payments.id_flight')
+            ->leftJoin('info_flights', 'info_flights.id', '=', 'flight_history.id_equipo')
             ->where('flight_payments.id', $id_flight)
             ->groupBy(
                 'students.curp',
@@ -163,7 +164,7 @@ class FlightHistoryController extends Controller
                 'students.flight_credit',
                 'flight_history.flight_alone',
                 'flight_history.initial_horometer',
-                'flight_history.equipo',
+                'info_flights.equipo',
                 'flight_history.final_horometer',
                 'flight_history.total_horometer',
                 'flight_history.final_tacometer',
@@ -334,7 +335,7 @@ class FlightHistoryController extends Controller
             'flight_history.id',
             'students.name',
             'students.last_names',
-            'flight_history.equipo',
+            'info_flights.equipo as equipo',
             'flight_history.type_flight',
             'flight_history.flight_category',
             'flight_history.flight_date',
@@ -342,6 +343,7 @@ class FlightHistoryController extends Controller
         )
             ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
             ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->join('info_flights', 'info_flights.id', '=', 'flight_history.id_equipo')
             ->where('flight_history.total_horometer', '>', 0);
 
         $query->when($request->filled('student_name'), function ($query) use ($request) {
@@ -361,7 +363,7 @@ class FlightHistoryController extends Controller
         });
 
         $student = $query
-            ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight')
+            ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight')
             ->get();
 
         return response()->json($student, 200);
@@ -454,29 +456,48 @@ class FlightHistoryController extends Controller
 
             $end = $start->copy()->addHours($flight->hours);
 
-            return[
-                    'id' => $flight->id,
-                    'flight_status' => $flight->flight_status,
-                    'title' => $flight->type_flight,
-                    'start' => $start->toIso8601String(),
-                    'end' => $end->toIso8601String(),
-                ];
+            return [
+                'id' => $flight->id,
+                'flight_status' => $flight->flight_status,
+                'title' => $flight->type_flight,
+                'start' => $start->toIso8601String(),
+                'end' => $end->toIso8601String(),
+            ];
         });
 
         return response()->json($flights);
     }
 
-    function getAllInfoReport(int $id_flight){
-        $flight = flightHistory::select('*');
+    function getAllInfoReport(int $id_flight)
+    {
+        $flightReport = FlightPayment::select([
+            'flight_history.flight_date',
+            'flight_history.flight_hour',
+            'info_flights.equipo',
+            'flight_history.type_flight',
+            'sessions.session_title',
+            'employees.name',
+            'flight_history.maneuver',
+            'flight_history.flight_category',
+            'flight_history.initial_horometer',
+            'flight_history.final_horometer',
+            'flight_history.final_tacometer',
+            'flight_payments.hour_instructor_cost',
+            'flight_history.comment',
+            'flight_history.total_horometer',
+            'flight_history.flight_alone',
+            'flight_payments.total',
+            'flight_history.hours',
+            DB::raw('flight_payments.hour_instructor_cost * flight_history.hours AS total_payment_instructor'),
+            'info_flights.price',
+        ])
+            ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->join('employees', 'flight_payments.id_employee', '=', 'employees.id')
+            ->join('info_flights', 'flight_history.id_equipo', '=', 'info_flights.id')
+            ->join('sessions', 'flight_history.id_session', '=', 'sessions.id')
+            ->where('flight_history.id', $id_flight)
+            ->get();
+
+        return response()->json($flightReport, 200);
     }
 }
-
-
-
-
-
-
-
-
-
-

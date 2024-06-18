@@ -14,7 +14,8 @@ class SessionController extends Controller
      */
     public function index()
     {
-        //
+        $sessions = Session::select('id', 'session_title')->get();
+        return response()->json($sessions);
     }
 
     /**

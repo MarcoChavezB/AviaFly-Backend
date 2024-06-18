@@ -17,10 +17,10 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('flight_id');
             $table->unsignedBigInteger('lesson_id');
+            $table->boolean('lesson_approved')->default(false);
 
             $table->foreign('flight_id')->references('id')->on('flight_history');
             $table->foreign('lesson_id')->references('id')->on('lessons');
-            $table->boolean('lesson_approved')->default(false);
             $table->timestamps();
         });
     }
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('flight_lessons');
+        //
     }
 };

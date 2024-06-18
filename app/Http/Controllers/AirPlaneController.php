@@ -14,7 +14,8 @@ class AirPlaneController extends Controller
      */
     public function index()
     {
-        //
+        $aitplanes = AirPlane::select('id', 'model', 'limit_hours')->get();
+        return response()->json($aitplanes);
     }
 
     /**

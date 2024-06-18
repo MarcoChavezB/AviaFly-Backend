@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AirPlaneController;
 use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ContactController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\LessonController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SessionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,7 +99,7 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
         Route::delete('/delete/subject', [StudentController::class, 'deleteSubjectFromStudent']); // Esto puede hacerlo: root, admin
         Route::put('/change/instructor', [StudentController::class, 'changeInstructorFromStudentSubject']); // Esto puede hacerlo: root, admin
         Route::put('/update', [StudentController::class, 'update']); // Esto puede hacerlo: root, admin
-        Route::get('/student/monthly-payments/{id}', [StudentController::class, 'getStudentMonthlyPayments'])->where('id','[0-9]+'); // Esto puede hacerlo: root, admin
+        Route::get('/student/monthly-payments/{id}', [StudentController::class, 'getStudentMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
         Route::get('/student/owed-monthly-payments/{id}', [StudentController::class, 'getStudentAndOwedMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
     });
 });
@@ -193,7 +195,7 @@ Route::prefix('/reports')->group(function () {
     Route::post('/update/total', [FlightPaymentController::class, 'updateTotalPrice']);
     Route::get('/index/students', [StudentController::class, 'indexStudents']);
     Route::post('/index/students/filter', [FlightHistoryController::class, 'indexStudentsFilter']);
-    Route::get('/all/info/{id_flight}', [FlightHistoryController::class], 'getAllInfoReport');
+    Route::get('/all/info/{id_flight}', [FlightHistoryController::class, 'getAllInfoReport']);
 });
 
 Route::prefix('/prices')->group(function () {
@@ -216,4 +218,9 @@ Route::prefix('/tikets')->group(function () {
 Route::prefix('/lessons')->group(function () {
     Route::get('/index', [LessonController::class, 'index']);
     Route::get('/index/{id_flight}', [LessonController::class, 'indexByFlight']);
+});
+
+Route::prefix('/infoflights')->group(function () {
+    Route::get('/sessions/index', [SessionController::class, 'index']);
+    Route::get('/airplanes/index', [AirPlaneController::class, 'index']);
 });
