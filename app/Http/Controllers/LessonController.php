@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FlightLessons;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
 
@@ -83,9 +84,20 @@ class LessonController extends Controller
      * @param  \App\Models\Lesson  $lesson
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Lesson $lesson)
+    public function update(Request $request,int $id_flight)
     {
-        //
+        $lessons = $request->all();
+
+        foreach ($lessons as $lessonData) {
+            $id_lesson = $lessonData['id_lesson'];
+            $lesson_approved = $lessonData['lesson_approved'];
+
+            FlightLessons::where('flight_id', $id_flight)
+                        ->where('lesson_id', $id_lesson)
+                        ->update(['lesson_approved' => $lesson_approved]);
+        }
+
+        return response()->json(['message' => 'Lecciones actualizadas correctamente'], 200);
     }
 
     /**

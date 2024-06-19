@@ -255,8 +255,8 @@ class FlightHistoryController extends Controller
             'id_flight' => 'required|numeric',
             'horometroInicial' => 'required|numeric',
             'horometroFinal' => 'required|numeric',
-            'tacometro' => 'required|string',
-            'comments' => 'required|string',
+            'tacometro' => 'required',
+            'comments' => 'required',
             'flight_alone' => 'required|boolean',
             'total_horometro' => 'required|numeric',
         ], [
@@ -476,7 +476,7 @@ class FlightHistoryController extends Controller
             'info_flights.equipo',
             'flight_history.type_flight',
             'sessions.session_title',
-            'employees.name',
+            'employees.name as instructor_name',
             'flight_history.maneuver',
             'flight_history.flight_category',
             'flight_history.initial_horometer',
@@ -489,7 +489,7 @@ class FlightHistoryController extends Controller
             'flight_payments.total',
             'flight_history.hours',
             DB::raw('flight_payments.hour_instructor_cost * flight_history.hours AS total_payment_instructor'),
-            'info_flights.price',
+            'info_flights.price as hour_flight_price',
         ])
             ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->join('employees', 'flight_payments.id_employee', '=', 'employees.id')
