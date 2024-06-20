@@ -10,6 +10,9 @@ class flightHistory extends Model
 {
     use HasFactory;
     protected $table = 'flight_history';
+    protected $casts = [
+        'total_horometer' => 'float',
+    ];
     protected $fillable = [
         'hours',
         'type_flight',
@@ -20,6 +23,7 @@ class flightHistory extends Model
         'flight_category',
         'flight_hour',
         'flight_alone',
+        'has_report',
         'initial_horometer',
         'final_horometer',
         'total_horometer',

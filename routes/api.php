@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AirPlaneController;
 use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ContactController;
@@ -17,9 +18,11 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\InfoFlightController;
+use App\Http\Controllers\LessonController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SessionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -96,7 +99,7 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
         Route::delete('/delete/subject', [StudentController::class, 'deleteSubjectFromStudent']); // Esto puede hacerlo: root, admin
         Route::put('/change/instructor', [StudentController::class, 'changeInstructorFromStudentSubject']); // Esto puede hacerlo: root, admin
         Route::put('/update', [StudentController::class, 'update']); // Esto puede hacerlo: root, admin
-        Route::get('/student/monthly-payments/{id}', [StudentController::class, 'getStudentMonthlyPayments'])->where('id','[0-9]+'); // Esto puede hacerlo: root, admin
+        Route::get('/student/monthly-payments/{id}', [StudentController::class, 'getStudentMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
         Route::get('/student/owed-monthly-payments/{id}', [StudentController::class, 'getStudentAndOwedMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
         Route::get('/get/name-identification/{id}', [StudentController::class, 'getStudentNameAndIdentification'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
     });
@@ -178,6 +181,7 @@ Route::prefix('/employees')->group(function () {
 Route::prefix('/products')->middleware('auth:sanctum')->group(function () {
     Route::get('/index/{name?}', [ProductController::class, 'index']);
     Route::post('/store', [ProductController::class, 'store']);
+    Route::post('/update/{id_product}', [ProductController::class, 'update']);
 });
 
 Route::prefix('/enum/values')->group(function () {
@@ -191,8 +195,9 @@ Route::prefix('/reports')->group(function () {
     Route::post('/store', [FlightHistoryController::class, 'storeReport']);
     Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']);
     Route::post('/update/total', [FlightPaymentController::class, 'updateTotalPrice']);
-    Route::get('/index/students', [StudentController::class, 'indexStudents']);
+    Route::get('/index/students', [StudentController::class, 'indexStudentsReport']);
     Route::post('/index/students/filter', [FlightHistoryController::class, 'indexStudentsFilter']);
+    Route::get('/all/info/{id_flight}', [FlightHistoryController::class, 'getAllInfoReport']);
 });
 
 Route::prefix('/prices')->group(function () {
@@ -209,4 +214,16 @@ Route::prefix('/calendars')->group(function () {
 
 Route::prefix('/tikets')->group(function () {
     Route::get('/flight/reservation', [PDFController::class, 'getReservationTiket']);
+});
+
+
+Route::prefix('/lessons')->group(function () {
+    Route::get('/index', [LessonController::class, 'index']);
+    Route::get('/index/{id_flight}', [LessonController::class, 'indexByFlight']);
+    Route::post('/update/{id_flight}', [LessonController::class, 'update']);
+});
+
+Route::prefix('/infoflights')->group(function () {
+    Route::get('/sessions/index', [SessionController::class, 'index']);
+    Route::get('/airplanes/index', [AirPlaneController::class, 'index']);
 });

@@ -466,7 +466,7 @@ class StudentController extends Controller
             'id_instructor' => 'required|numeric|exists:employees,id',
             'flight_date' => 'required|string',
             'flight_hour' => 'required|string',
-            'equipo' => 'required|string|in:XBPDY,simulador,matricula',
+            'equipo' => 'required|string|exists:info_flights,id',
             'hours' => 'required|numeric',
             'flight_type' => 'required|string|in:simulador,vuelo',
             'flight_category' => 'required|string|in:VFR,IFR,IFR_nocturno',
@@ -478,7 +478,10 @@ class StudentController extends Controller
             'installment_value' => 'nullable|numeric',
             'id_student' => 'required|numeric',
             'flight_payment_status' => 'required|string|in:pendiente,pagado,cancelado',
+            'flight_session' => 'required|string',
+
         ], [
+            'flight_airplane' => 'required|string',
             'id_student.required' => 'campo requerido',
             'id_instructor.exists' => 'Selecciona un instructor',
             'id_instructor.required' => 'campo requerido',
@@ -505,6 +508,8 @@ class StudentController extends Controller
             'maneuver.required' => 'campo requerido',
             'maneuver.in' => 'campo no válido',
             'hour_instructor_cost.numeric' => 'El costo de la hora de instructor no es válido',
+            'flight_session.required' => 'campo requerido',
+            'flight_airplane.required' => 'campo requerido',
         ]);
 
         if ($validator->fails()) {
@@ -527,25 +532,27 @@ class StudentController extends Controller
                 return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
             }
         }
-
-        DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
-            $request->id_student,           // id_student: INT
-            Auth::user()->id,                         // id_employee: INT
-            $request->id_instructor,                  // id_instructor: INT
-            $request->flight_type,                    // flight_type: VARCHAR(50)
-            $request->flight_date,                    // flight_date: DATE
-            $request->flight_hour,                    // flight_hour: VARCHAR(10)
-            $request->flight_payment_status,          // flight_payment_status: VARCHAR(50)
-            $request->hours,                          // hours: INT
-            $request->total,                          // total: INT
-            $request->pay_method,                     // pay_method: VARCHAR(50)
-            $request->due_week,                       // due_week: INT
-            $request->installment_value,              // installment_value: DECIMAL(8, 2)
-            $request->equipo,                         // equipo: ENUM('XBPDY', 'simulador', 'vuelo')
-            $request->flight_category,                // flight_category: ENUM('VFR', 'IFR', 'IFR_nocturno')
-            $request->maneuver,                       // maneuver: ENUM('local', 'ruta')
-            $request->hour_instructor_cost            // hour_instructor_cost: DECIMAL(8, 2)
+        DB::statement('CALL agendarHorasSimulador(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+            $request->id_student,             // id_student: INT
+            Auth::user()->id,                 // id_employee: INT
+            $request->id_instructor,          // id_instructor: INT
+            $request->flight_type,            // flight_type: VARCHAR(50)
+            $request->flight_date,            // flight_date: DATE
+            $request->flight_hour,            // flight_hour: VARCHAR(10)
+            $request->flight_payment_status,  // flight_payment_status: VARCHAR(50)
+            $request->hours,                  // hours: INT
+            $request->total,                  // total: INT
+            $request->pay_method,             // pay_method: VARCHAR(50)
+            $request->due_week,               // due_week: INT
+            $request->installment_value,      // installment_value: DECIMAL(8, 2)
+            $request->flight_category,        // flight_category: ENUM('VFR', 'IFR', 'IFR_nocturno')
+            $request->maneuver,               // maneuver: ENUM('local', 'ruta')
+            $request->hour_instructor_cost,   // hour_instructor_cost: DECIMAL(8, 2)
+            $request->equipo,                 // equipo: ENUM('XBPDY', 'simulador', 'vuelo')
+            $request->flight_session,         // session_id: INT
+            $request->flight_airplane         // airplane_id: INT
         ]);
+
 
         $message = $request->flight_payment_status == 'pending' ? 'Vuelo agendado, pendiente de pago' : 'Se agendo el vuelo';
         return response()->json(["msg" => $message], 201);
@@ -803,26 +810,28 @@ class StudentController extends Controller
         return $query->isNotEmpty();
     }
 
-    function indexStudents(){
+    function indexStudentsReport()
+    {
         $student = Student::select(
             'flight_history.id as id_flight',
             'flight_history.id',
             'students.name',
             'students.last_names',
-            'flight_history.equipo',
+            'info_flights.equipo as equipo',
             'flight_history.type_flight',
             'flight_history.flight_category',
             'flight_history.flight_date',
-            'flight_history.total_horometer'
+            'flight_history.has_report',
         )
-        ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
-        ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
-        ->where('flight_history.total_horometer', '>', 0)
-        ->groupBy('students.name', 'flight_history.total_horometer','students.last_names', 'flight_history.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight')
-        ->get();
+            ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
+            ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->join('info_flights', 'flight_history.id_equipo', '=', 'info_flights.id')
+            ->groupBy('students.name','students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight', 'flight_history.has_report')
+            ->get();
 
         return response()->json($student, 200);
     }
+
 
     public function getStudentMonthlyPayments(int $id)
     {
@@ -830,7 +839,7 @@ class StudentController extends Controller
             ->where('id_student', $id)
             ->get(['id', 'payment_date', 'amount', 'status', 'concept']);
 
-        return response()->json([ 'monthly_payments' => $monthly_payments], 200);
+        return response()->json(['monthly_payments' => $monthly_payments], 200);
     }
 
     public function getStudentAndOwedMonthlyPayments(int $id)

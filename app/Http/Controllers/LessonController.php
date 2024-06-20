@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FlightLessons;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
 
@@ -14,7 +15,23 @@ class LessonController extends Controller
      */
     public function index()
     {
-        //
+        $lessons = Lesson::select('id', 'lesson_title')->get();
+        return response()->json($lessons, 200);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexByFlight(int $id_flight)
+    {
+        $lessons = Lesson::select('lessons.id', 'lessons.lesson_title', 'flight_lessons.lesson_approved', 'flight_lessons.flight_id')
+            ->join('flight_lessons', 'lesson_id', '=', 'lessons.id')
+            ->join('flight_history', 'flight_lessons.flight_id', '=', 'flight_history.id')
+            ->where('flight_history.id', $id_flight)
+            ->get();
+        return response()->json($lessons, 200);
     }
 
     /**
@@ -67,9 +84,20 @@ class LessonController extends Controller
      * @param  \App\Models\Lesson  $lesson
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Lesson $lesson)
+    public function update(Request $request,int $id_flight)
     {
-        //
+        $lessons = $request->all();
+
+        foreach ($lessons as $lessonData) {
+            $id_lesson = $lessonData['id_lesson'];
+            $lesson_approved = $lessonData['lesson_approved'];
+
+            FlightLessons::where('flight_id', $id_flight)
+                        ->where('lesson_id', $id_lesson)
+                        ->update(['lesson_approved' => $lesson_approved]);
+        }
+
+        return response()->json(['message' => 'Lecciones actualizadas correctamente'], 200);
     }
 
     /**

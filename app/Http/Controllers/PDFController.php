@@ -12,6 +12,10 @@ class PDFController extends Controller
 {
     function getReservationTiket()
     {
+        $pdf = PDF::loadView('tiket');
+        return response($pdf->output())
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="flightReservationTiket.pdf"');
         $tiket = FlightPayment::select(
             "flight_history.id",
             "flight_history.hours",
@@ -46,5 +50,7 @@ class PDFController extends Controller
 
         return response()->json($tiketArray);
     }
+
+
 }
 

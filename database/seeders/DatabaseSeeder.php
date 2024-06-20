@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+use App\Models\AirPlane;
 use Faker\Factory as Faker;
 use App\Models\Base;
 use App\Models\Career;
@@ -10,6 +12,7 @@ use App\Models\Employee;
 use App\Models\FlightLessons;
 use App\Models\InfoFlight;
 use App\Models\Lesson;
+use App\Models\Session;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\TeacherSubjectTurn;
@@ -27,7 +30,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-    // BASES SEEDER
+        // BASES SEEDER
         $bases = [
             'Torreón',
             'Querétaro',
@@ -36,10 +39,10 @@ class DatabaseSeeder extends Seeder
         foreach ($bases as $base) {
             Base::create(['name' => $base, 'location' => $base]);
         }
-    //
+        //
 
 
-    // CAREERS SEEDER
+        // CAREERS SEEDER
         // piloto privado id:1
 
         Career::create([
@@ -184,7 +187,7 @@ class DatabaseSeeder extends Seeder
         $start_date = new \DateTime('2024-01-01');
         $end_date = new \DateTime('2024-02-29');
 
-        foreach($sobrecargoCareerSubjectsIds as $careerSubjectId){
+        foreach ($sobrecargoCareerSubjectsIds as $careerSubjectId) {
             TeacherSubjectTurn::create([
                 'id_teacher' => 1,
                 'career_subject_id' => $careerSubjectId,
@@ -381,94 +384,76 @@ class DatabaseSeeder extends Seeder
 
         /// FlightLessons Seeders
 
-        Lesson::create([
-            "lesson_title" => "Inspección antes del vuelo",
-            "lesson_points" => 10,
-        ]);
 
-        Lesson::create([
-            "lesson_title" => "Inspección ",
-            "lesson_points" => 10,
-        ]);
+        $lessons = [
+            "Inspección antes del vuelo",
+            "Ubicación del Extinguidor",
+            "Puertas y Cinturones de Seguridad",
+            "Encendido del Motor",
+            "Rodaje",
+            "Revisión antes del Despegue y Prueba de Motor",
+            "Despegue Normal y Ascenso Inicial",
+            "Ascensos",
+            "Nivelar",
+            "Utilización de Compensador",
+            "Vuelo Recto y Nivelado",
+            "Tendencias de la Aeronave para Volar Recto y Nivelado",
+            "Virajes con Banqueo Medio",
+            "Virajes con Banqueo Medio",
+            "Descensos",
+            "Aproximación Normal y Aterrizaje",
+            "Procedimientos Después del Aterrizaje",
+            "Estacionamiento y Aseguramiento de la Aeronave",
+            "Procedimientos Posteriores al Vuelo"
+        ];
 
-        Lesson::create([
-            "lesson_title" => "Encendido del motor",
-            "lesson_points" => 10,
-        ]);
+        foreach ($lessons as $lesson) {
+            Lesson::create([
+                'lesson_title' => $lesson,
+                'lesson_points' => 10,
+            ]);
+        }
 
-        Lesson::create([
-            "lesson_title" => "Rodaje",
-            "lesson_points" => 10,
-        ]);
+        /// session Seeders
 
-        Lesson::create([
-            "lesson_title" => "Revisión antes del Despegue y Prueba de Motor",
-            "lesson_points" => 10,
-        ]);
+        $sessions = [
+            "Introducción al Vuelo",
+            "Controlando la Aeronave",
+            "Velocidad y el Aeropuerto",
+            "Desplomando la Aeronave",
+            "Correcciones por Viento",
+            "Conoce tus Instrumentos",
+            "Despegues y Aterrizajes",
+            "Emergencias",
+            "Repaso General",
+            "Evaluacion Etapa 1",
+            "Pistas Cortas Y Suaves",
+            "Utilizando Las Aerovias",
+            "Primer Vuelo Solo",
+            "Mejorando Tus Habilidades",
+            "Evaluacion Etapa 2",
+            "Vamos De Ruta",
+            "Nuevamente de Ruta",
+            "Tu Primer Ruta Solo",
+            "Nuevos Horizontes",
+            "Mejorando tus Habilidades",
+            "Evaluacion Etapa 3",
+            "Evaluado Por Tu Instructor",
+            "Preparacion Para Tu Examen",
+            "Evaluación Final"
+        ];
 
-        Lesson::create([
-            "lesson_title" => "Despegue Normal y Ascenso Inicial",
-            "lesson_points" => 10,
-        ]);
 
-        Lesson::create([
-            "lesson_title" => "Ascensos",
-            "lesson_points" => 10,
-        ]);
+        foreach ($sessions as $session) {
+            Session::create([
+                'session_title' => $session,
+            ]);
+        }
 
-        Lesson::create([
-            "lesson_title" => "Nivelar",
-            "lesson_points" => 10,
-        ]);
-
-        Lesson::create([
-            "lesson_title" => "Utilización de Compensador",
-            "lesson_points" => 10,
-        ]);
-
-        Lesson::create([
-            "lesson_title" => "Vuelo Recto y Nivelado",
-            "lesson_points" => 10,
-        ]);
-
-        Lesson::create([
-            "lesson_title" => "Tendencias de la Aeronave para Volar Recto y Nivelado",
-            "lesson_points" => 10,
-        ]);
-
-        Lesson::create([
-            "lesson_title" => "Virajes con Banqueo Medio",
-            "lesson_points" => 10,
-        ]);
-
-        Lesson::create([
-            "lesson_title" => "Virajes con Banqueo Medio",
-            "lesson_points" => 10,
-        ]);
-
-        Lesson::create([
-            "lesson_title" => "Descensos",
-            "lesson_points" => 10,
-        ]);
-
-        Lesson::create([
-            "lesson_title" => "Aproximación Normal y Aterrizaje",
-            "lesson_points" => 10,
-        ]);
-
-        Lesson::create([
-            "lesson_title" => "Procedimientos Después del Aterrizaje",
-            "lesson_points" => 10,
-        ]);
-
-        Lesson::create([
-            "lesson_title" => "Estacionamiento y Aseguramiento de la Aeronave",
-            "lesson_points" => 10,
-        ]);
-
-        Lesson::create([
-            "lesson_title" => "Procedimientos Posteriores al Vuelo",
-            "lesson_points" => 10,
+        // airplane Seeders
+        AirPlane::create([
+            'model' => 'CESSNA 172',
+            'limit_hours' => 50,
         ]);
     }
 }
