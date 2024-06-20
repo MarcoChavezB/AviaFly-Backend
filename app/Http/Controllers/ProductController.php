@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\OrderDetail;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +29,7 @@ class ProductController extends Controller
 
         return response()->json($products, 200);
     }
-    
+
     /**
         payload:{
             "name": "Product 1",
@@ -41,7 +40,7 @@ class ProductController extends Controller
     */
     function store(Request $request){
         $data = $request->all();
-        
+
         $validator = Validator::make($data, [
             'name' => 'required|string|max:255|unique:products',
             'price' => 'required|numeric',
@@ -59,14 +58,58 @@ class ProductController extends Controller
             'product_status.required' => 'Campo requerido',
             'product_status.in' => 'El campo debe ser activo o inactivo'
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
         }
-        
+
         $product = Product::create($data);
         $product->save();
-        
+
         return response()->json(["msg" => "Producto creado correctamente"], 201);
-    }    
+    }
+
+    /*
+ *      payload:{
+ *      "name": "Product 1",
+ *      "price": 100.00,
+ *      "stock": 10,
+ *      "product_status": "activo"
+ *      }
+     * */
+
+    function update(Request $request,$id_product){
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'stock' => 'required|integer',
+            'product_status' => 'required|in:activo,inactivo'
+        ], [
+            'name.required' => 'Campo requerido',
+            'name.string' => 'El campo debe ser de tipo texto',
+            'name.max' => 'El campo debe tener un máximo de 255 caracteres',
+            'price.required' => 'Campo requerido',
+            'price.numeric' => 'El campo debe ser de tipo numérico',
+            'stock.required' => 'Campo requerido',
+            'stock.integer' => 'El campo debe ser de tipo entero',
+            'product_status.required' => 'Campo requerido',
+            'product_status.in' => 'El campo debe ser activo o inactivo'
+        ]);
+
+        if($validator->fails()){
+            return response()->json(["errors" => $validator->errors()], 400);
+        }
+
+        $product = Product::find($id_product);
+
+        $product->name = $data['name'] ?? $product->name;
+        $product->price = $data['price'] ?? $product->price;
+        $product->stock = $data['stock'] ?? $product->stock;
+        $product->product_status = $data['product_status'] ?? $product->product_status;
+
+        $product->save();
+        return response()->json(["msg" => "Producto actualizado correctamente"], 200);
+    }
 }

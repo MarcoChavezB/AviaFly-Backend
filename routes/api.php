@@ -180,6 +180,7 @@ Route::prefix('/employees')->group(function () {
 Route::prefix('/products')->middleware('auth:sanctum')->group(function () {
     Route::get('/index/{name?}', [ProductController::class, 'index']);
     Route::post('/store', [ProductController::class, 'store']);
+    Route::post('/update/{id_product}', [ProductController::class, 'update']);
 });
 
 Route::prefix('/enum/values')->group(function () {
