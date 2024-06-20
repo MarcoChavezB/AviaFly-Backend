@@ -23,6 +23,7 @@ return new class extends Migration
             $table->date('flight_date');
             $table->string('flight_hour');
             $table->boolean('flight_alone')->default(false);
+            $table->boolean('has_report')->default(false);
             $table->decimal('initial_horometer', 8, 2);
             $table->decimal('final_horometer', 8, 2);
             $table->decimal('total_horometer', 8, 2);

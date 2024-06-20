@@ -193,7 +193,7 @@ Route::prefix('/reports')->group(function () {
     Route::post('/store', [FlightHistoryController::class, 'storeReport']);
     Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']);
     Route::post('/update/total', [FlightPaymentController::class, 'updateTotalPrice']);
-    Route::get('/index/students', [StudentController::class, 'indexStudents']);
+    Route::get('/index/students', [StudentController::class, 'indexStudentsReport']);
     Route::post('/index/students/filter', [FlightHistoryController::class, 'indexStudentsFilter']);
     Route::get('/all/info/{id_flight}', [FlightHistoryController::class, 'getAllInfoReport']);
 });

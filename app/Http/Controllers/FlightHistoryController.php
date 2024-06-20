@@ -282,6 +282,7 @@ class FlightHistoryController extends Controller
         $flight->total_horometer = $data['total_horometro'];
         $flight->final_tacometer = $data['tacometro'];
         $flight->comment = $data['comments'];
+        $flight->has_report = 1;
 
         $flight->save();
 
@@ -339,12 +340,12 @@ class FlightHistoryController extends Controller
             'flight_history.type_flight',
             'flight_history.flight_category',
             'flight_history.flight_date',
-            'flight_history.total_horometer'
+            'flight_history.total_horometer',
+            'flight_history.has_report',
         )
             ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
             ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
-            ->join('info_flights', 'info_flights.id', '=', 'flight_history.id_equipo')
-            ->where('flight_history.total_horometer', '>', 0);
+            ->join('info_flights', 'info_flights.id', '=', 'flight_history.id_equipo');
 
         $query->when($request->filled('student_name'), function ($query) use ($request) {
             $query->where(function ($query) use ($request) {
@@ -353,6 +354,15 @@ class FlightHistoryController extends Controller
                     ->orWhere('students.last_names', 'like', '%' . $studentName . '%');
             });
         });
+
+        $query->when($request->filled('report_status'), function ($query) use ($request) {
+            if($request->input('report_status') == '1'){
+                $query->where('flight_history.has_report', 1);
+            }else if($request->input('report_status') == '0'){
+                $query->where('flight_history.has_report', 0);
+            }
+        });
+
 
         $query->when($request->filled('flight_type'), function ($query) use ($request) {
             $query->where('flight_history.type_flight', $request->input('flight_type'));
@@ -363,7 +373,7 @@ class FlightHistoryController extends Controller
         });
 
         $student = $query
-            ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight')
+            ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight', 'flight_history.has_report')
             ->get();
 
         return response()->json($student, 200);

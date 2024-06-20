@@ -810,7 +810,7 @@ class StudentController extends Controller
         return $query->isNotEmpty();
     }
 
-    function indexStudents()
+    function indexStudentsReport()
     {
         $student = Student::select(
             'flight_history.id as id_flight',
@@ -821,12 +821,12 @@ class StudentController extends Controller
             'flight_history.type_flight',
             'flight_history.flight_category',
             'flight_history.flight_date',
-            DB::raw('CAST(flight_history.total_horometer AS FLOAT) as total_horometer')
+            'flight_history.has_report',
         )
             ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
             ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->join('info_flights', 'flight_history.id_equipo', '=', 'info_flights.id')
-            ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight')
+            ->groupBy('students.name','students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight', 'flight_history.has_report')
             ->get();
 
         return response()->json($student, 200);

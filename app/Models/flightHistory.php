@@ -23,6 +23,7 @@ class flightHistory extends Model
         'flight_category',
         'flight_hour',
         'flight_alone',
+        'has_report',
         'initial_horometer',
         'final_horometer',
         'total_horometer',
