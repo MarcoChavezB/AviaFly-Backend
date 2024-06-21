@@ -45,6 +45,7 @@ class AnalyticController extends Controller
         return response()->json($formattedResponse);
     }
 
+
 function getTotalDebt() {
     $students = DB::select("SELECT
     students.id,
