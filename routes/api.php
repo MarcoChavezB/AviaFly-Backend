@@ -71,6 +71,7 @@ Route::prefix('/analitics')->group(function () {
     Route::get('/get/principal', [AnalyticController::class, 'getCardData']);
     Route::get('/get/enrollments/year', [AnalyticController::class, 'getEnrollmentsYear']);
     Route::get('/get/activity/week', [AnalyticController::class, 'getWeekActivity']);
+    Route::get('/get/debt', [AnalyticController::class, 'getTotalDebt']);
 });
 
 Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {

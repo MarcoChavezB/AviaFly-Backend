@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->decimal('hours', 8, 2);
             $table->enum('type_flight', ['simulador', 'vuelo']);
+            $table->enum('reservation_type', ['academico', 'recreativo']);
             $table->enum('flight_status', ['proceso', 'cancelado', 'hecho']);
             $table->enum('maneuver', ['local', 'ruta']);
             $table->enum('flight_category', ['VFR', 'IFR', 'IFR_nocturno']);
