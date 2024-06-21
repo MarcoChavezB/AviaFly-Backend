@@ -107,7 +107,7 @@
                 <tbody>
                     @foreach($result as $item)
                     <tr>
-                        <td>{{ $item->number }}</td>
+                        <td>{{ $item->quantity }}</td>
                         <td>{{ $item->item }}</td>
                         <td>${{ $item->item_total }}</td>
                     </tr>
@@ -116,7 +116,7 @@
             </table>
         </div>
         <div class="payment-info">
-            <p><span>Forma de pago:</span> <span>Efectivo</span></p>
+            <p><span>Forma de pago:</span> <span>{{$result[0]->payment_method}}</span></p>
             <p><span>Subtotal:</span> <span>${{ $result[0]->subtotal }}</span></p>
             <p><span>IVA:</span> <span>${{ $result[0]->iva }}</span></p>
             <p><span>Total:</span> <span>${{ $result[0]->total }}</span></p>

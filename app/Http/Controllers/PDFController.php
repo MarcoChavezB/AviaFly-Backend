@@ -22,14 +22,15 @@ public function getReservationTiket($flightHistoryId)
         ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
         ->join('employees', 'employees.id', '=', 'flight_payments.id_employee')
         ->join('students', 'students.id', '=', 'flight_payments.id_student')
+        ->join('payments', 'payments.id_flight', '=', 'flight_history.id')
         ->select(
             'employees.name as authorized_by',
             'students.user_identification as student_identification',
             'students.name as student_name',
             'flight_history.type_flight as item',
-            'flight_history.hours as number',
+            'flight_history.hours as quantity',
             'flight_payments.total as item_total',
-            'flight_payments.payment_status as payment_status',
+            'payments.payment_method as payment_method',
             DB::raw('flight_payments.total as subtotal'),
             DB::raw('flight_payments.total * 0.16 as iva'),
             DB::raw('SUM(flight_payments.total) * 1.16 as total')
@@ -42,6 +43,7 @@ public function getReservationTiket($flightHistoryId)
             'flight_history.type_flight',
             'flight_history.hours',
             'flight_payments.total',
+            'payments.payment_method as payment_method',
             'flight_payments.payment_status'
         )
         ->get();
