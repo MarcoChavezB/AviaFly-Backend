@@ -2,20 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FlightPayment;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class PDFController extends Controller
 {
-    function getReservationTiket()
+    public function generateTiket($info)
     {
-        $pdf = PDF::loadView('tiket');
+        $pdf = PDF::loadView('tiket', ['tiketArray' => $info]);
         return response($pdf->output())
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="flightReservationTiket.pdf"');
+    }
+
+    public function getReservationTiket($flightHistoryId){
+        $result = DB::table('flight_payments')
+            ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->join('employees', 'employees.id', '=', 'flight_payments.id_employee')
+            ->join('students', 'students.id', '=', 'flight_payments.id_student')
+            ->select(
+                'employees.name as authorized_by',
+                'students.user_identification as student_identification',
+                'students.name as student_name',
+                'flight_history.type_flight as flight_type',
+                'flight_history.hours as flight_hours',
+                'flight_payments.total as flight_total',
+                'flight_payments.payment_status as payment_status',
+                DB::raw('flight_payments.total as subtotal'),
+                DB::raw('flight_payments.total * 0.16 as iva'),
+                DB::raw('SUM(flight_payments.total) * 1.16 as total')
+        )
+        ->where('flight_history.id', $flightHistoryId)
+        ->groupBy(
+            'employees.name',
+            'students.user_identification',
+            'students.name',
+            'flight_history.type_flight',
+            'flight_history.hours',
+            'flight_payments.total',
+            'flight_payments.payment_status'
+        )
+        ->get();
+        $this->generateTiket($result);
+    }
+}
+
+
+/**
+        // Obtener datos de la base de datos
         $tiket = FlightPayment::select(
             "flight_history.id",
             "flight_history.hours",
@@ -27,12 +61,12 @@ class PDFController extends Controller
             "flight_payments.due_week",
             "flight_payments.created_at"
         )
-            ->join("flight_history", "flight_history.id", "=", "flight_payments.id_flight")
-            ->join("students", "students.id", "=", "flight_payments.id_student")
-            ->join("payments", "payments.id_flight", "=", "flight_payments.id")
-            ->orderBy("flight_payments.created_at", "desc")
-            ->limit(1)
-            ->get();
+        ->join("flight_history", "flight_history.id", "=", "flight_payments.id_flight")
+        ->join("students", "students.id", "=", "flight_payments.id_student")
+        ->join("payments", "payments.id_flight", "=", "flight_payments.id")
+        ->orderBy("flight_payments.created_at", "desc")
+        ->limit(1)
+        ->get();
 
         $tiketArray = $tiket->toArray();
 
@@ -47,10 +81,5 @@ class PDFController extends Controller
                 ];
             })->toArray() : [];
         }
-
         return response()->json($tiketArray);
-    }
-
-
-}
-
+*/

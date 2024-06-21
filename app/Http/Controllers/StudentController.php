@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Base;
 use App\Models\Employee;
+use App\Models\flightHistory;
 use App\Models\InfoFlight;
 use App\Models\Student;
 use App\Models\StudentSubject;
@@ -462,6 +463,8 @@ class StudentController extends Controller
 */
     function storeFlight(Request $request)
     {
+        $user = Employee::where('user_identification', Auth::user()->user_identification)->first();
+
         $validator = Validator::make($request->all(), [
             'id_instructor' => 'required|numeric|exists:employees,id',
             'flight_date' => 'required|string',
@@ -534,7 +537,7 @@ class StudentController extends Controller
         }
         DB::statement('CALL storeAcademicFlight(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $request->id_student,             // id_student: INT
-            Auth::user()->id,                 // id_employee: INT
+            $user->id,                        // id_employee: INT
             $request->id_instructor,          // id_instructor: INT
             $request->flight_type,            // flight_type: VARCHAR(50)
             $request->flight_date,            // flight_date: DATE
@@ -553,9 +556,9 @@ class StudentController extends Controller
             $request->flight_airplane         // airplane_id: INT
         ]);
 
-
+        $last_id_insert = flightHistory::latest('id')->first();
         $message = $request->flight_payment_status == 'pending' ? 'Vuelo agendado, pendiente de pago' : 'Se agendo el vuelo';
-        return response()->json(["msg" => $message], 201);
+        return response()->json(["msg" => $message, "id" => $last_id_insert->id], 201);
     }
     /*
  *      payload : {

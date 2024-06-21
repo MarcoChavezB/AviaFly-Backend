@@ -22,15 +22,11 @@
             font-family: Arial, sans-serif;
         }
         .header {
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             margin-bottom: 20px;
         }
-        img{
-            width: 100px;
-            height: 100px;
+        img {
+            width: 100%;
+            height: 70px;
         }
         .items {
             flex-grow: 1;
@@ -39,22 +35,107 @@
             text-align: center;
             margin-top: 20px;
         }
+        .text {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        p, td {
+            font-size: 0.6rem;
+        }
+        th {
+            font-size: 0.7rem;
+        }
+        .products {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        table {
+            width: 100%;
+        }
+        td {
+            text-align: center;
+        }
+        .bonificacion {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bonificacion p {
+            font-size: 0.8rem;
+            font-style: bold;
+        }
+        .payment-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .payment-info p {
+        }
     </style>
 </head>
 <body>
     <main>
         <div class="header">
             <img src="https://sistema.aviafly.mx/IMG/logo_avia.png" alt="logo">
-            <p>Date: June 18, 2024</p>
         </div>
-        <div class="items">
-            <!-- Aquí irían los elementos del ticket como productos, precios, etc. -->
-            <p>Product A - $10.00</p>
-            <p>Product B - $15.00</p>
-            <p>Product C - $5.00</p>
+        <div class="text">
+            <p>AVIATRAINING AND<br>
+            TECHNOLOGY<br>
+            ATA100618L60<br>
+            {{ date('Y-m-d H:i:s') }}<br>
+            Blvd. Independencia 746 Ote<br>
+            Col. Nueva Los Angeles<br>
+            Torreón, Coahuila</p>
+        </div>
+        <div class="user">
+            <p>Autoriza: <span>Fernanda</span><br>
+            Fecha: {{ date('Y-m-d') }}<br>
+            Matrícula: <span>AT0551</span><br>
+            Nombre: <span>JONATAN BASSOCO LOPEZ</span><br>
+            </p>
+        </div>
+        <div class="products">
+            <table>
+                <thead>
+                    <tr>
+                        <th>C</th>
+                        <th>Concepto</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Piernera</td>
+                        <td>$772</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Piernera</td>
+                        <td>$772</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="payment-info">
+            <p><span>Forma de pago:</span> <span>Efectivo</span></p>
+            <p><span>Subtotal:</span> <span>$1000</span></p>
+            <p><span>IVA:</span> <span>$100</span></p>
+            <p><span>Total:</span> <span>$1100</span></p>
+        </div>
+        <div class="bonificacion">
+            <p>Bonificación $0.00</p>
         </div>
         <div class="footer">
-            <p>Total: $30.00</p>
+            <p>
+                Agradecemos tu confianza, es un placer atenderte. No hay devoluciones de pagos por ningún motivo.
+                La hora de vuelo se cobrará al costo del día en que se realizará dicho vuelo. El precio de los trámites se tendrá que cubrir al precio del día en que se realizarán ante la institución competente; si pagaste antes y/o hubo un cambio, se tendrá que pagar la diferencia para cubrir el pago. Los precios no incluyen transporte hacia ningún recinto para visitas o prácticas.
+                Los pagos por horas de vuelo, crédito de vuelo, colegiaturas, etc. no serán reembolsables.
+                Pagos únicamente por transferencia o en efectivo directamente en caja. Al momento de pagar pide tu recibo, de lo contrario, no nos hacemos responsables. Si necesitas facturar, es por transferencia y antes de que cierre cada mes; pídela al momento de pagar. Los requisitos y trámites por realizar están sujetos a cambios sin previo aviso, dependiendo de la entidad educativa competente. Si no te entregan tu recibo al hacer tu pago, se solicita tu cortesía.
+            </p>
         </div>
     </main>
 </body>
