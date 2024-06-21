@@ -101,6 +101,7 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
         Route::put('/update', [StudentController::class, 'update']); // Esto puede hacerlo: root, admin
         Route::get('/student/monthly-payments/{id}', [StudentController::class, 'getStudentMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
         Route::get('/student/owed-monthly-payments/{id}', [StudentController::class, 'getStudentAndOwedMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
+        Route::get('/get/name-identification/{id}', [StudentController::class, 'getStudentNameAndIdentification'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
     });
 });
 

@@ -855,4 +855,14 @@ class StudentController extends Controller
 
         return response()->json($student, 200);
     }
+
+    public function getStudentNameAndIdentification(int $id){
+        $student = Student::select('id', 'name', 'last_names', 'user_identification')->where('id', $id)->first();
+
+        if(!$student){
+            return response()->json(["error" => "Estudiante no encontrado"], 404);
+        }
+
+        return response()->json($student, 200);
+    }
 }
