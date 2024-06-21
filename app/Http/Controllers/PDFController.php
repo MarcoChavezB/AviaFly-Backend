@@ -26,9 +26,9 @@ public function getReservationTiket($flightHistoryId)
             'employees.name as authorized_by',
             'students.user_identification as student_identification',
             'students.name as student_name',
-            'flight_history.type_flight as flight_type',
-            'flight_history.hours as flight_hours',
-            'flight_payments.total as flight_total',
+            'flight_history.type_flight as item',
+            'flight_history.hours as number',
+            'flight_payments.total as item_total',
             'flight_payments.payment_status as payment_status',
             DB::raw('flight_payments.total as subtotal'),
             DB::raw('flight_payments.total * 0.16 as iva'),
@@ -91,3 +91,4 @@ public function getReservationTiket($flightHistoryId)
         }
         return response()->json($tiketArray);
 */
+

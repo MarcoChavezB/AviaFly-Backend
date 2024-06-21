@@ -107,9 +107,9 @@
                 <tbody>
                     @foreach($result as $item)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $item->flight_type }}</td>
-                        <td>${{ $item->flight_total }}</td>
+                        <td>{{ $item->number }}</td>
+                        <td>{{ $item->item }}</td>
+                        <td>${{ $item->item_total }}</td>
                     </tr>
                     @endforeach
                 </tbody>
