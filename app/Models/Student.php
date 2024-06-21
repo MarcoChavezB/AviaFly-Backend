@@ -29,6 +29,7 @@ class Student extends Model
         'id_history_flight',
         'id_career',
         'start_date',
+        'simulator_credit'
     ];
 
     public function career()

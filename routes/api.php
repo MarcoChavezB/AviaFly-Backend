@@ -4,6 +4,7 @@ use App\Http\Controllers\AirPlaneController;
 use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\IncomesController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TurnController;
@@ -130,6 +131,12 @@ Route::prefix('/careers')->group(function () {
     Route::get('/get-with-subjects', [CareerController::class, 'getCareersWithSubjects']);
 });
 
+Route::prefix('/incomes')->group(function (){
+    Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/tuition/create', [IncomesController::class, 'createTuitionIncome']);
+            Route::post('/flight-credit/create', [IncomesController::class, 'createFlightCreditIncome']);
+    });
+});
 
 
 Route::prefix('/subjects')->group(function () {

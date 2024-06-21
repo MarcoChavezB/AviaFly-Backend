@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('curp')->unique();
             $table->decimal('credit', 8, 2)->nullable()->default(0);
             $table->decimal('flight_credit', 8, 2)->nullable()->default(0);
+            $table->decimal('simulator_credit', 8, 2)->nullable()->default(0);
             $table->string('user_identification')->unique()->nullable();
             $table->string('emergency_contact');
             $table->string('emergency_phone');

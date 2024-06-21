@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('student_id');
             $table->unsignedBigInteger('employee_id');
             $table->date('payment_date');
+            $table->string('concept');
 
             $table->decimal('original_import', 8, 2);
             $table->decimal('discount', 8, 2);

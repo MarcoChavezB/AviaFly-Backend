@@ -21,6 +21,7 @@ class Income extends Model
         'bank_account',
         'original_import',
         'file_path',
-        'ticket_path'
+        'ticket_path',
+        'concept'
     ];
 }
