@@ -10,7 +10,7 @@ class PDFController extends Controller
     public function generateTiket($res)
     {
         $result = $res->toArray();
-        $pdf = PDF::loadView('tiket', ['result' => $result]);
+        $pdf = PDF::loadView('ticket', ['result' => $result]);
         return response($pdf->output())
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="flightReservationTiket.pdf"');
