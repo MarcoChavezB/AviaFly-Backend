@@ -65,14 +65,12 @@
         }
         .bonificacion p {
             font-size: 0.8rem;
-            font-style: bold;
+            font-weight: bold;
         }
         .payment-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        .payment-info p {
         }
     </style>
 </head>
@@ -91,10 +89,10 @@
             Torreón, Coahuila</p>
         </div>
         <div class="user">
-            <p>Autoriza: <span>Fernanda</span><br>
+            <p>Autoriza: <span>{{ $result[0]->authorized_by }}</span><br>
             Fecha: {{ date('Y-m-d') }}<br>
-            Matrícula: <span>AT0551</span><br>
-            Nombre: <span>JONATAN BASSOCO LOPEZ</span><br>
+            Matrícula: <span>{{ $result[0]->student_identification }}</span><br>
+            Nombre: <span>{{ $result[0]->student_name }}</span><br>
             </p>
         </div>
         <div class="products">
@@ -107,24 +105,21 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @foreach($result as $item)
                     <tr>
-                        <td>1</td>
-                        <td>Piernera</td>
-                        <td>$772</td>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $item->flight_type }}</td>
+                        <td>${{ $item->flight_total }}</td>
                     </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Piernera</td>
-                        <td>$772</td>
-                    </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
         <div class="payment-info">
             <p><span>Forma de pago:</span> <span>Efectivo</span></p>
-            <p><span>Subtotal:</span> <span>$1000</span></p>
-            <p><span>IVA:</span> <span>$100</span></p>
-            <p><span>Total:</span> <span>$1100</span></p>
+            <p><span>Subtotal:</span> <span>${{ $result[0]->subtotal }}</span></p>
+            <p><span>IVA:</span> <span>${{ $result[0]->iva }}</span></p>
+            <p><span>Total:</span> <span>${{ $result[0]->total }}</span></p>
         </div>
         <div class="bonificacion">
             <p>Bonificación $0.00</p>
