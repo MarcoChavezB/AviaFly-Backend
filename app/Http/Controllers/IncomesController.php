@@ -10,18 +10,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Controllers\PDFController;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class IncomesController extends Controller
 {
 
-
-
-    /**
-     * @param mixed $payment
-     * @param $employeeId
-     * @return void
-     */
     public function extracted(mixed $payment, $employeeId): void
     {
             $income = new Income();
@@ -39,7 +32,27 @@ class IncomesController extends Controller
             $income->save();
     }
 
-    public function CreateTuitionIncome(Request $request): JsonResponse
+    public function generateTicket($data, $studentData, $employeeName, $employeeLastNames) {
+
+        $pdf = PDF::loadView('income_ticket',
+            ['data' => $data, 'studentData' => $studentData, 'employeeName' => $employeeName, 'employeeLastNames' => $employeeLastNames]
+        );
+        return response($pdf->output())
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="generatedTicket.pdf"');
+    }
+
+    public function studentDataForTicket($data, $employeeName, $employeeLastNames): void
+    {
+        if(!empty($data) && isset($data[0]['student_id'])) {
+            $studentId = $data[0]['student_id'];
+            $studentDetails = Student::find($studentId);
+            $this->generateTicket($data, $studentDetails, $employeeName, $employeeLastNames);
+        }
+    }
+
+
+    public function createTuitionIncome(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'payments' => 'required|array',
@@ -54,7 +67,8 @@ class IncomesController extends Controller
         }
 
         $user = Auth::user();
-        $employeeId = Employee::where('user_identification', $user->user_identification)->first()->id;
+        $employee = Employee::where('user_identification', $user->user_identification)->first();
+        $this->studentDataForTicket($request->input('payments'), $employee->name, $employee->last_names);
 
         foreach ($request->input('payments') as $payment){
             $monthlyPayment = MonthlyPayment::find($payment['id']);
@@ -62,7 +76,7 @@ class IncomesController extends Controller
             $monthlyPayment->amount = $payment['status'] == 'paid' ? 0 : $monthlyPayment->amount-$payment['total'];
             $monthlyPayment->save();
 
-            $this->extracted($payment, $employeeId);
+            $this->extracted($payment, $employee->id);
         }
 
         return response()->json(['message' => 'ok'], 201);
@@ -83,7 +97,9 @@ class IncomesController extends Controller
         }
 
         $user = Auth::user();
-        $employeeId = Employee::where('user_identification', $user->user_identification)->first()->id;
+        $employee = Employee::where('user_identification', $user->user_identification)->first();
+
+        $this->studentDataForTicket($request->input('payments'), $employee->name, $employee->last_names);
 
         foreach ($request->input('payments') as $payment){
             $student = Student::find($payment['student_id']);
@@ -94,10 +110,9 @@ class IncomesController extends Controller
             }
             $student->save();
 
-            $this->extracted($payment, $employeeId);
+            $this->extracted($payment, $employee->id);
         }
 
         return response()->json(['message' => 'ok'], 201);
     }
-
 }

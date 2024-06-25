@@ -26,6 +26,9 @@ class AnalyticController extends Controller
             JOIN air_planes ON air_planes.id = flight_history.id_airplane
         ");
 
+
+
+
         // Extract total hours from the result
         $totalHours = !empty($airline_hours) ? $airline_hours[0]->total_hours : 0;
 
