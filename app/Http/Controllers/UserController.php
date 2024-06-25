@@ -37,7 +37,7 @@ class UserController extends Controller
 
         $token = $user->createToken('access_token')->plainTextToken;
 
-        $cookie = cookie('jwt', $token, 60*24);
+        $cookie = cookie('jwt', $token, 60*8);
 
         $response = response()->json([
             'message' => 'Se ha logeado correctamente',
