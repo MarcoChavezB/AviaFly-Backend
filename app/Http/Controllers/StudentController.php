@@ -535,6 +535,12 @@ class StudentController extends Controller
                 return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
             }
         }
+
+        if($this->checkLimitHoursPlane($request->flight_airplane, $request->hours) && $request->flight_type == 'vuelo'){
+            return response()->json(["errors" => ["No hay horas disponibles en el avión"]], 402);
+        }
+
+
         DB::statement('CALL storeAcademicFlight(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $request->id_student,             // id_student: INT
             $user->id,                        // id_employee: INT
@@ -957,4 +963,31 @@ class StudentController extends Controller
 
         return response()->json($student, 200);
     }
+
+
+    function checkLimitHoursPlane($id_airplane, $new_hours) {
+        // Obtener el límite de horas del avión y la suma de horas actuales de vuelo
+        $queryResult = DB::table('flight_history')
+            ->join('air_planes', 'air_planes.id', '=', 'flight_history.id_airplane')
+            ->select(
+                'air_planes.limit_hours',
+                DB::raw('SUM(flight_history.hours) as total_hours')
+            )
+            ->where('air_planes.id', $id_airplane)
+            ->groupBy('air_planes.limit_hours')
+            ->first();
+
+        if ($queryResult) {
+            $current_total_hours = $queryResult->total_hours;
+            $limit_hours = $queryResult->limit_hours;
+
+            if (($current_total_hours + $new_hours) > $limit_hours) {
+                // Se excede el límite de horas
+                return true;
+            }
+        }
+        // No se excede el límite de horas
+        return false;
+    }
+
 }

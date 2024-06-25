@@ -546,4 +546,25 @@ class FlightHistoryController extends Controller
 
         return response()->json($flightReport, 200);
     }
+
+
+    function checkLimitHoursPlane() {
+        $queryResult = DB::table('flight_history')
+            ->join('air_planes', 'air_planes.id', '=', 'flight_history.id_airplane')
+            ->select(
+                'air_planes.limit_hours',
+                DB::raw('SUM(flight_history.hours) as total_hours'),
+                DB::raw('CASE WHEN SUM(flight_history.hours) > air_planes.limit_hours THEN TRUE ELSE FALSE END as over_limit')
+            )
+            ->groupBy('air_planes.limit_hours')
+            ->get();
+
+        if($queryResult[0]->over_limit == 0){
+            // no se ha excedido el límite de horas
+            return false;
+        }
+        // se excedió el límite de horas
+        return false;
+    }
+
 }

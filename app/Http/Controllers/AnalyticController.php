@@ -19,16 +19,24 @@ class AnalyticController extends Controller
     function getCardData()
     {
         $totalStudents = User::where('user_type', 'student')->count();
-        $totalInstructors = Employee::where('user_type', 'instructor')->count();
-        $totalReportsPending = flightHistory::where('has_report', 0)->count();
+
+        $airline_hours = DB::select("SELECT
+                SUM(flight_history.hours) as total_hours
+            FROM flight_history
+            JOIN air_planes ON air_planes.id = flight_history.id_airplane
+        ");
+
+        // Extract total hours from the result
+        $totalHours = !empty($airline_hours) ? $airline_hours[0]->total_hours : 0;
+
+        $totalReportsPending = FlightHistory::where('has_report', 0)->count();
 
         return response()->json([
             'students' => $totalStudents,
-            'instructors' => $totalInstructors,
+            'airline_hours' => $totalHours,
             'pendings' => $totalReportsPending
         ]);
     }
-
     function getEnrollmentsYear()
     {
         $enrollmentsByMonth = Enrollment::select(DB::raw('MONTH(date) as month'), DB::raw('COUNT(*) as enrollments'))
