@@ -245,3 +245,8 @@ Route::prefix('/customers')->middleware('auth:sanctum')->group(function () {
     Route::post('/flight/reservation', [FlightCustomerController::class, 'storeReservationFlight']);
 });
 
+Route::prefix('/airplanes')->middleware('auth:sanctum')->group(function () {
+    Route::get('/flight/check/limit/hours', [FlightHistoryController::class, 'checkLimitHoursPlane']);
+});
+
+

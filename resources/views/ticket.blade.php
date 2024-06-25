@@ -84,13 +84,13 @@
             TECHNOLOGY<br>
             ATA100618L60<br>
             {{ date('Y-m-d H:i:s') }}<br>
-            {{ $result[0]->location }}</p>
+            {{$baseData->location}}
     </div>
     <div class="user">
-        <p>Autoriza: <span>{{ $result[0]->authorized_by }}</span><br>
+        <p>Autoriza: <span>{{ $employeeName }}  {{ $employeeLastNames  }}</span><br>
             Fecha: {{ date('Y-m-d') }}<br>
-            Matrícula: <span>{{ $result[0]->student_identification }}</span><br>
-            Nombre: <span>{{ $result[0]->student_name }}</span><br>
+            Matrícula: <span>{{ $studentData->user_identification }}</span><br>
+            Nombre: <span>{{ $studentData->name }}  {{ $studentData->last_names }}</span><br>
         </p>
     </div>
     <div class="products">
@@ -103,21 +103,20 @@
             </tr>
             </thead>
             <tbody>
-            @foreach($result as $item)
+            @foreach($data as $item)
                 <tr>
-                    <td>{{ $item->quantity }}</td>
-                    <td>{{ $item->item }}</td>
-                    <td>${{ $item->item_total }}</td>
+                    <td>{{$item['quantity'] >= 0 ? $item['quantity'] : '-'}}</td>
+                    <td>{{ $item['concept'] }}</td>
+                    <td>${{ $item['total'] }}</td>
                 </tr>
             @endforeach
             </tbody>
         </table>
     </div>
     <div class="payment-info">
-        <p><span>Forma de pago:</span> <span>{{$result[0]->payment_method}}</span></p>
-        <p><span>Subtotal:</span> <span>${{ $result[0]->subtotal }}</span></p>
-        <p><span>IVA:</span> <span>${{ $result[0]->iva }}</span></p>
-        <p><span>Total:</span> <span>${{ $result[0]->total }}</span></p>
+        <p><span>Forma de pago:</span> <span>{{$data[0]['payment_method']}}</span></p>
+        <p><span>Comision:</span> <span>${{ $data[0]['commission'] }}</span></p>
+        <p><span>Total:</span> <span>${{ $data[0]['totalAmount'] }}</span></p>
     </div>
     <div class="bonificacion">
         <p>Bonificación $0.00</p>
