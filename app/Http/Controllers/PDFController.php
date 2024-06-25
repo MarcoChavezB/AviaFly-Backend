@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class PDFController extends Controller
 {
-    public function generateTiket($res)
+    public function generateTicket($res)
     {
         $result = $res->toArray();
         $pdf = PDF::loadView('ticket', ['result' => $result]);
@@ -16,20 +16,21 @@ class PDFController extends Controller
             ->header('Content-Disposition', 'attachment; filename="flightReservationTiket.pdf"');
     }
 
-public function getReservationTiket($flightHistoryId)
+public function getReservationTicket($flightHistoryId)
 {
     $result = DB::table('flight_payments')
         ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
         ->join('employees', 'employees.id', '=', 'flight_payments.id_employee')
         ->join('students', 'students.id', '=', 'flight_payments.id_student')
+        ->join('payments', 'payments.id_flight', '=', 'flight_history.id')
         ->select(
             'employees.name as authorized_by',
             'students.user_identification as student_identification',
             'students.name as student_name',
             'flight_history.type_flight as item',
-            'flight_history.hours as number',
+            'flight_history.hours as quantity',
             'flight_payments.total as item_total',
-            'flight_payments.payment_status as payment_status',
+            'payments.payment_method as payment_method',
             DB::raw('flight_payments.total as subtotal'),
             DB::raw('flight_payments.total * 0.16 as iva'),
             DB::raw('SUM(flight_payments.total) * 1.16 as total')
@@ -42,6 +43,7 @@ public function getReservationTiket($flightHistoryId)
             'flight_history.type_flight',
             'flight_history.hours',
             'flight_payments.total',
+            'payments.payment_method',
             'flight_payments.payment_status'
         )
         ->get();
@@ -50,45 +52,6 @@ public function getReservationTiket($flightHistoryId)
         return redirect()->back()->withErrors(['error' => 'No data found for this flight history ID.']);
     }
 
-    return $this->generateTiket($result);
+    return $this->generateTicket($result);
+    }
 }
-
-}
-
-
-/**
-        // Obtener datos de la base de datos
-        $tiket = FlightPayment::select(
-            "flight_history.id",
-            "flight_history.hours",
-            "flight_history.flight_date",
-            "flight_history.type_flight",
-            "flight_payments.total",
-            "flight_payments.payment_status",
-            "payments.payment_method",
-            "flight_payments.due_week",
-            "flight_payments.created_at"
-        )
-        ->join("flight_history", "flight_history.id", "=", "flight_payments.id_flight")
-        ->join("students", "students.id", "=", "flight_payments.id_student")
-        ->join("payments", "payments.id_flight", "=", "flight_payments.id")
-        ->orderBy("flight_payments.created_at", "desc")
-        ->limit(1)
-        ->get();
-
-        $tiketArray = $tiket->toArray();
-
-        foreach ($tiketArray as &$item) {
-            $createdAt = Carbon::parse($item['created_at']);
-            $dueWeek = (int) $item['due_week'];
-
-            $item['payments'] = ($dueWeek > 0) ? collect(range(1, $dueWeek))->map(function ($week) use ($createdAt, $item, $dueWeek) {
-                return [
-                    'day' => $createdAt->copy()->addWeeks($week)->format('Y-m-d'),
-                    'amount' => number_format($item['total'] / $dueWeek, 2)
-                ];
-            })->toArray() : [];
-        }
-        return response()->json($tiketArray);
-*/
-

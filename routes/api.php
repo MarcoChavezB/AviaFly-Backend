@@ -16,6 +16,7 @@ use App\Http\Controllers\PendingController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\FlightCustomerController;
 use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\InfoFlightController;
@@ -189,7 +190,9 @@ Route::prefix('/employees')->group(function () {
 Route::prefix('/products')->middleware('auth:sanctum')->group(function () {
     Route::get('/index/{name?}', [ProductController::class, 'index']);
     Route::post('/store', [ProductController::class, 'store']);
-    Route::post('/update/{id_product}', [ProductController::class, 'update']);
+    Route::put('/update/{id_product}', [ProductController::class, 'update']);
+    Route::post('/filters', [ProductController::class, 'filters']);
+
 });
 
 Route::prefix('/enum/values')->group(function () {
@@ -208,12 +211,13 @@ Route::prefix('/reports')->group(function () {
     Route::get('/all/info/{id_flight}', [FlightHistoryController::class, 'getAllInfoReport']);
 });
 
+
 Route::prefix('/prices')->group(function () {
     Route::post('/flight', [FlightPaymentController::class, 'getFlightPrice']);
 });
 
 Route::prefix('/calendars')->group(function () {
-    Route::get('/flight/reservate', [FlightHistoryController::class, 'getFLightReservations']);
+    Route::get('/flight/reservate', [FlightHistoryController::class, 'getFlightReservations']);
     Route::get('/flight/types/{flight_type}', [FlightHistoryController::class, 'getFLightTypes']);
     Route::get('/flight/reservate/{id_student}', [FlightHistoryController::class, 'getFLightReservationsById']);
     Route::get('/flight/details/{id_flight}', [FlightHistoryController::class, 'getFlightDetails']);
@@ -221,7 +225,7 @@ Route::prefix('/calendars')->group(function () {
 
 
 Route::prefix('/tikets')->group(function () {
-    Route::get('/flight/reservation/{flightHistoryId}', [PDFController::class, 'getReservationTiket']);
+    Route::get('/flight/reservation/{flightHistoryId}', [PDFController::class, 'getReservationTicket']);
 });
 
 
@@ -235,3 +239,9 @@ Route::prefix('/infoflights')->group(function () {
     Route::get('/sessions/index', [SessionController::class, 'index']);
     Route::get('/airplanes/index', [AirPlaneController::class, 'index']);
 });
+
+
+Route::prefix('/customers')->middleware('auth:sanctum')->group(function () {
+    Route::post('/flight/reservation', [FlightCustomerController::class, 'storeReservationFlight']);
+});
+

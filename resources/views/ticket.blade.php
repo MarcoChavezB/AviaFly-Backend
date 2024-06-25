@@ -84,9 +84,7 @@
             TECHNOLOGY<br>
             ATA100618L60<br>
             {{ date('Y-m-d H:i:s') }}<br>
-            Blvd. Independencia 746 Ote<br>
-            Col. Nueva Los Angeles<br>
-            Torreón, Coahuila</p>
+            {{ $result[0]->location }}</p>
     </div>
     <div class="user">
         <p>Autoriza: <span>{{ $result[0]->authorized_by }}</span><br>

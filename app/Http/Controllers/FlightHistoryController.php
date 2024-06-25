@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FlightCustomer;
 use App\Models\flightHistory;
 use App\Models\FlightPayment;
 use App\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -296,28 +298,62 @@ class FlightHistoryController extends Controller
         start:fligt_dateTflight_hour
         end: fligt_dateTflight_hour + flight_hours
      */
-    function getFLightReservations()
+    public function getFlightReservations()
     {
-        $flights = FlightHistory::select('flight_history.flight_status', 'flight_history.id', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours')
-            ->groupBy('flight_history.flight_status', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours', 'flight_history.id')
+        // Consulta a la tabla FlightHistory
+        $flightHistories = FlightHistory::select('flight_status', 'id', 'type_flight', 'flight_date', 'flight_hour', 'hours')
+            ->groupBy('flight_status', 'type_flight', 'flight_date', 'flight_hour', 'hours', 'id')
             ->get();
 
-        $flights = $flights->map(function ($flight) {
-            $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
+        // Verifica si la colección está vacía y conviértela a una colección Eloquent
+        if ($flightHistories->isEmpty()) {
+            $flightHistories = new Collection();
+        } else {
+            $flightHistories = $flightHistories->map(function ($flight) {
+                $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
+                $end = $start->copy()->addHours($flight->hours);
 
-            $end = $start->copy()->addHours($flight->hours);
+                return [
+                    'id' => $flight->id,
+                    'flight_status' => $flight->flight_status,
+                    'title' => $flight->type_flight,
+                    'start' => $start->toIso8601String(),
+                    'end' => $end->toIso8601String(),
+                    'source' => 'flight_history'
+                ];
+            });
+        }
 
-            return [
-                'id' => $flight->id,
-                'flight_status' => $flight->flight_status,
-                'title' => $flight->type_flight,
-                'start' => $start->toIso8601String(),
-                'end' => $end->toIso8601String(),
-            ];
-        });
+        // Consulta a la tabla flight_customers
+        $flightCustomers = FlightCustomer::select('payment_status as flight_status', 'id', 'flight_type as type_flight', 'reservation_date as flight_date', 'reservation_hour as flight_hour', 'flight_hours as hours')
+            ->groupBy('payment_status', 'flight_type', 'reservation_date', 'reservation_hour', 'flight_hours', 'id')
+            ->get();
+
+        // Verifica si la colección está vacía y conviértela a una colección Eloquent
+        if ($flightCustomers->isEmpty()) {
+            $flightCustomers = new Collection();
+        } else {
+            $flightCustomers = $flightCustomers->map(function ($flight) {
+                $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
+                $end = $start->copy()->addHours($flight->hours);
+
+                return [
+                    'id' => $flight->id,
+                    'flight_status' => $flight->flight_status,
+                    'title' => $flight->type_flight,
+                    'start' => $start->toIso8601String(),
+                    'end' => $end->toIso8601String(),
+                    'source' => 'flight_customers'
+                ];
+            });
+        }
+
+        // Combinar los resultados de ambas consultas
+        $flights = $flightHistories->merge($flightCustomers);
 
         return response()->json($flights);
     }
+
 
     /**
         filtros para el reporte de vuelos
