@@ -10,7 +10,7 @@ class PDFController extends Controller
     public function generateTicket($res)
     {
         $result = $res->toArray();
-        $pdf = PDF::loadView('tiket', ['result' => $result]);
+        $pdf = PDF::loadView('ticket', ['result' => $result]);
         return response($pdf->output())
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="flightReservationTiket.pdf"');
@@ -43,7 +43,7 @@ public function getReservationTicket($flightHistoryId)
             'flight_history.type_flight',
             'flight_history.hours',
             'flight_payments.total',
-            'payments.payment_method as payment_method',
+            'payments.payment_method',
             'flight_payments.payment_status'
         )
         ->get();
@@ -52,6 +52,6 @@ public function getReservationTicket($flightHistoryId)
         return redirect()->back()->withErrors(['error' => 'No data found for this flight history ID.']);
     }
 
-    return $this->generateTiket($result);
+    return $this->generateTicket($result);
     }
 }

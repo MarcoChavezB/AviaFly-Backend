@@ -15,7 +15,7 @@ class ProductController extends Controller
             ->leftJoin('order_details', 'products.id', '=', 'order_details.id_product')
             ->select(
                 'products.id',
-                DB::raw('COALESCE(COUNT(order_details.id_product), 0) as quantity_sales'),
+                DB::raw('COALESCE(SUM(order_details.quantity), 0) as quantity_sales'),
                 'products.name',
                 'products.price',
                 'products.stock',
@@ -43,8 +43,8 @@ class ProductController extends Controller
 
         $validator = Validator::make($data, [
             'name' => 'required|string|max:255|unique:products',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
+            'price' => 'required|numeric|min:1',
+            'stock' => 'required|integer|min:1',
             'product_status' => 'required|in:activo,inactivo'
         ], [
             'name.required' => 'Campo requerido',
@@ -111,5 +111,69 @@ class ProductController extends Controller
 
         $product->save();
         return response()->json(["msg" => "Producto actualizado correctamente"], 200);
+    }
+
+
+    /*
+ *      Return
+ *      export interface Product{
+        id: number
+        quantity_sales: number;
+        name: string;
+        price: string;
+        stock: number;
+        product_status: string
+        created_at: string;
+        updated_at: string;
+}
+ * */
+    function filters(Request $request){
+     $products = DB::table('products')
+            ->leftJoin('order_details', 'products.id', '=', 'order_details.id_product')
+            ->select(
+                'products.id',
+                DB::raw('COALESCE(SUM(order_details.quantity), 0) as quantity_sales'),
+                'products.name',
+                'products.price',
+                'products.stock',
+                'products.product_status',
+                'products.created_at',
+                'products.updated_at'
+            );
+
+        // Filtro por estado del producto
+        if ($request->filled('status')) {
+            $products->where('products.product_status', $request->status);
+        }
+
+        // Filtro por ventas
+        if ($request->filled('ventas')) {
+            if ($request->ventas == 'mayor') {
+                $products->orderBy('quantity_sales', 'desc');
+            } elseif ($request->ventas == 'menor') {
+                $products->orderBy('quantity_sales', 'asc');
+            }
+        }
+
+        // Filtro de nombre del producto
+        if($request->filled('nombre')){
+            $products->where('products.name', 'like', '%'.$request->nombre.'%');
+        }
+
+        // Agrupación y obtención de resultados
+        $productsFilter = $products
+            ->groupBy(
+                'products.id',
+                'products.name',
+                'products.price',
+                'products.stock',
+                'products.product_status',
+                'products.created_at',
+                'products.updated_at'
+            )
+            ->get();
+
+        return response()->json($productsFilter, 200);
+
     }
 }
