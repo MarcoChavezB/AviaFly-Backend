@@ -93,6 +93,7 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/index/{name}', [StudentController::class, 'getStudentSimulatorByName']);
     Route::get('/flight/report/{id}', [StudentController::class, 'getInfoVueloAlumno']);
     Route::get('/flight/employees/bystudent/{id}', [StudentController::class, 'getEmployeesByStudent']);
+    Route::get('/index/syllabus', [StudentController::class, 'indexSyllabus']);
     Route::post('/flight/store', [StudentController::class, 'storeFlight']);
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -174,6 +175,7 @@ Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::post('/changeStatus', [FlightHistoryController::class, 'changeStatusFlight']);
     Route::get('/get/flight/report/{id_flight}', [FlightHistoryController::class, 'reportDataById']);
     Route::post('/already/date/reserved', [FlightHistoryController::class, 'isDateReserved']);
+    Route::get('/credit/students/index/{name?}', [FlightHistoryController::class, 'flightCreditStudent']);
 });
 
 Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {

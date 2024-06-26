@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FlightCustomer;
 use App\Models\flightHistory;
 use App\Models\FlightPayment;
+use App\Models\InfoFlight;
 use App\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -545,6 +546,41 @@ class FlightHistoryController extends Controller
             ->get();
 
         return response()->json($flightReport, 200);
+    }
+
+    function flightCreditStudent(string $name = null){
+        $students = Student::select(
+                'students.id',
+                'students.user_identification',
+                'students.name',
+                'students.last_names',
+                'students.flight_credit',
+                'students.simulator_credit',
+                'students.credit',
+                'students.cellphone'
+                )
+        ->where('students.name', 'like', '%' . $name . '%')
+        ->orWhere('students.last_names', 'like', '%' . $name . '%')
+        ->get();
+
+        $flight_hour_cost = InfoFlight::select('price')->where('equipo', 'XBPDY')->first();
+        $simulator_hour_cost = InfoFlight::select('price')->where('equipo', 'simulador')->first();
+
+        if (!$flight_hour_cost || !$simulator_hour_cost) {
+            return response()->json(['error' => 'Cost data not found'], 404);
+        }
+
+        $flight_hour_price = $flight_hour_cost->price;
+        $simulator_hour_price = $simulator_hour_cost->price;
+
+        $students->each(function ($student) use ($flight_hour_price, $simulator_hour_price) {
+            $student->flight_credit *= $flight_hour_price;
+            $student->simulator_credit *= $simulator_hour_price;
+            $student->total_credit = $student->flight_credit + $student->simulator_credit + $student->credit;
+        });
+
+
+        return response()->json($students, 200);
     }
 
 

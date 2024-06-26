@@ -964,6 +964,9 @@ class StudentController extends Controller
         return response()->json($student, 200);
     }
 
+    function indexSyllabus(){}
+
+
 
     function checkLimitHoursPlane($id_airplane, $new_hours) {
         // Obtener el límite de horas del avión y la suma de horas actuales de vuelo
