@@ -964,8 +964,40 @@ class StudentController extends Controller
         return response()->json($student, 200);
     }
 
-    function indexSyllabus(){}
+    public function indexSyllabus(string $name = null)
+    {
+        $studentsSyllabus = Student::select(
+            'students.id',
+            'students.user_identification',
+            'students.name',
+            'students.last_names',
+            'students.cellphone',
+            'flight_history.type_flight'
+        )
+        ->rightJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
+        ->rightJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+        ->where('students.name', 'like', "%$name%")
+        ->orWhere('students.last_names', 'like', "%$name%")
+        ->get();
 
+        $groupedSyllabus = $studentsSyllabus->groupBy('id')->map(function ($studentGroup) {
+            $student = $studentGroup->first();
+            $syllabus = $studentGroup->pluck('type_flight')->unique()->map(function ($type_flight) {
+                return ['type_flight' => $type_flight];
+            })->values()->toArray();
+
+            return [
+                'id' => $student->id,
+                'user_identification' => $student->user_identification,
+                'name' => $student->name,
+                'last_names' => $student->last_names,
+                'cellphone' => $student->cellphone,
+                'syllabus' => $syllabus
+            ];
+        })->values()->toArray();
+
+        return response()->json($groupedSyllabus, 200);
+    }
 
 
     function checkLimitHoursPlane($id_airplane, $new_hours) {

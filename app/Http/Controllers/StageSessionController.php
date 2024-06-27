@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Session;
+use App\Models\StageSession;
 use Illuminate\Http\Request;
 
-class SessionController extends Controller
+class StageSessionController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -41,10 +41,10 @@ class SessionController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Session  $session
+     * @param  \App\Models\StageSession  $stageSession
      * @return \Illuminate\Http\Response
      */
-    public function show(Session $session)
+    public function show(StageSession $stageSession)
     {
         //
     }
@@ -52,10 +52,10 @@ class SessionController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Session  $session
+     * @param  \App\Models\StageSession  $stageSession
      * @return \Illuminate\Http\Response
      */
-    public function edit(Session $session)
+    public function edit(StageSession $stageSession)
     {
         //
     }
@@ -64,10 +64,10 @@ class SessionController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Session  $session
+     * @param  \App\Models\StageSession  $stageSession
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Session $session)
+    public function update(Request $request, StageSession $stageSession)
     {
         //
     }
@@ -75,10 +75,10 @@ class SessionController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Session  $session
+     * @param  \App\Models\StageSession  $stageSession
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Session $session)
+    public function destroy(StageSession $stageSession)
     {
         //
     }

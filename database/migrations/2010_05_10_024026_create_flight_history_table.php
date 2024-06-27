@@ -30,10 +30,10 @@ return new class extends Migration
             $table->decimal('total_horometer', 8, 2);
             $table->decimal('final_tacometer', 8, 2);
             $table->string('comment')->nullable();
+
+
             $table->unsignedBigInteger('id_equipo');
             $table->foreign('id_equipo')->references('id')->on('info_flights');
-            $table->unsignedBigInteger('id_session');
-            $table->foreign('id_session')->references('id')->on('sessions');
             $table->unsignedBigInteger('id_airplane')->nullable();
             $table->foreign('id_airplane')->references('id')->on('air_planes')->nullable();
             $table->timestamps();

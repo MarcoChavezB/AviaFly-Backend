@@ -93,7 +93,6 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/index/{name}', [StudentController::class, 'getStudentSimulatorByName']);
     Route::get('/flight/report/{id}', [StudentController::class, 'getInfoVueloAlumno']);
     Route::get('/flight/employees/bystudent/{id}', [StudentController::class, 'getEmployeesByStudent']);
-    Route::get('/index/syllabus', [StudentController::class, 'indexSyllabus']);
     Route::post('/flight/store', [StudentController::class, 'storeFlight']);
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -240,6 +239,7 @@ Route::prefix('/lessons')->group(function () {
 Route::prefix('/infoflights')->group(function () {
     Route::get('/sessions/index', [SessionController::class, 'index']);
     Route::get('/airplanes/index', [AirPlaneController::class, 'index']);
+    Route::get('/index/syllabus/{name?}', [StudentController::class, 'indexSyllabus']);
 });
 
 
@@ -250,5 +250,7 @@ Route::prefix('/customers')->middleware('auth:sanctum')->group(function () {
 Route::prefix('/airplanes')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/check/limit/hours', [FlightHistoryController::class, 'checkLimitHoursPlane']);
 });
+
+
 
 
