@@ -13,13 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('flight_stages', function (Blueprint $table) {
+        Schema::create('student_lessons', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_flight');
-            $table->foreign('id_flight')->references('id')->on('flight_history');
+            $table->unsignedBigInteger('id_student');
+            $table->foreign('id_student')->references('id')->on('students');
 
-            $table->unsignedBigInteger('id_stage');
-            $table->foreign('id_stage')->references('id')->on('stages');
+            $table->unsignedBigInteger('id_lesson');
+            $table->foreign('id_lesson')->references('id')->on('lessons');
+            $table->boolean('passed')->default(false);
             $table->timestamps();
         });
     }
@@ -31,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('flight_stages');
+        Schema::dropIfExists('student_lessons');
     }
 };

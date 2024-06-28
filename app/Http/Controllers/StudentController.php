@@ -176,6 +176,12 @@ class StudentController extends Controller
                 }
             }
 
+            // Relacion con lecciones de vuelo
+            if($career->name == 'Piloto privado'){
+                DB::statement('CALL flight_information_data(?)', [$student->id]);
+            }
+
+
             return response()->json($student, 201);
         } catch (\Exception $e) {
             return response()->json(["error" => $e->getMessage()], 500);

@@ -237,9 +237,11 @@ Route::prefix('/lessons')->group(function () {
 });
 
 Route::prefix('/infoflights')->group(function () {
-    Route::get('/sessions/index', [SessionController::class, 'index']);
+    Route::get('/sessions/index/{id_student}', [SessionController::class, 'syllabus']);
+    Route::get('/syllabus/lessons/{id_student}', [SessionController::class, 'showLessons']);
     Route::get('/airplanes/index', [AirPlaneController::class, 'index']);
     Route::get('/index/syllabus/{name?}', [StudentController::class, 'indexSyllabus']);
+    Route::get('/syllabus', [StudentController::class, 'indexSyllabus']);
 });
 
 
