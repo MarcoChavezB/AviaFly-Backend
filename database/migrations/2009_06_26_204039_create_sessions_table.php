@@ -16,12 +16,14 @@ return new class extends Migration
         Schema::create('sessions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('session_objetive', 1999);
+            $table->string('approvation_standard', 1999);
             $table->timestamps();
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Reverse the migrations
      *
      * @return void
      */

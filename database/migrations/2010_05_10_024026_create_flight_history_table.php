@@ -35,8 +35,12 @@ return new class extends Migration
             $table->unsignedBigInteger('id_equipo');
             $table->foreign('id_equipo')->references('id')->on('info_flights');
             $table->unsignedBigInteger('id_airplane')->nullable();
+
             $table->foreign('id_airplane')->references('id')->on('air_planes')->nullable();
             $table->timestamps();
+
+            $table->unsignedBigInteger('id_session')->nullable();
+            $table->foreign('id_session')->references('id')->on('sessions')->nullable();
         });
     }
 

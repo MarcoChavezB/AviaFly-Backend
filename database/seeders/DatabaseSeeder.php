@@ -617,35 +617,134 @@ class DatabaseSeeder extends Seeder
         }
 
         $sessions = [
-            "Sesión 1 - Introducción al Vuelo",
-            "Sesión 2 - Controlando la Aeronave",
-            "Sesión 3 - Velocidad y el Aeropuerto",
-            "Sesión 4 - Desplomando la Aeronave",
-            "Sesión 5 - Correcciones por Viento",
-            "Sesión 6 - Conoce tus Instrumentos",
-            "Sesión 7 - Despegues y Aterrizajes",
-            "Sesión 8 - Emergencias",
-            "Sesión 9 - Repaso General",
-            "Sesión 10 - Evaluacion Etapa 1",
-            "Sesión 1 - Pistas Cortas Y Suaves",
-            "Sesión 2 - Utilizando Las Aerovias",
-            "Sesión 3 - Primer Vuelo Solo",
-            "Sesión 4 - Mejorando Tus Habilidades",
-            "Sesión 5 - Evaluacion Etapa 2",
-            "Sesión 1 - Vamos De Ruta",
-            "Sesión 2 - Nuevamente de Ruta",
-            "Sesión 3 - Tu Primer Ruta Solo",
-            "Sesión 4 - Nuevos Horizontes",
-            "Sesión 5 - Mejorando tus Habilidades",
-            "Sesión 6 - Evaluacion Etapa 3",
-            "Sesión 1 - Evaluado Por Tu Instructor",
-            "Sesión 2 - Preparacion Para Tu Examen",
-            "Sesión 3 - Evaluación Final"
+            [
+                'name' => 'Sesión 1 - Introducción al Vuelo',
+                'session_objetive' => 'En esta lección aprenderás a utilizar la lista de comprobación para realizar una inspección antes del vuelo y posteriormente realizar el proceso de arranque. Aprenderás a rodar la aeronave utilizando los pedales, acelerador y frenos para girar, controlar la velocidad y parar la aeronave. En el aire, aprenderás a utilizar los controles de vuelo para realizar un ascenso, descenso, virajes y vuelo recto y nivelado. Completado el vuelo en el aire aprenderás a cortar el motor y apagar los sistemas de la aeronave correctamente, mover el avión en tierra, asegurarlo y dejarlo listo para el siguiente vuelo.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas con ayuda de tu instructor, poner en marcha la aeronave y rodarla desde la plataforma hasta la pista y en vuelo, volar el avión desde el área de práctica hacia el aeropuerto de regreso.'
+            ],
+            [
+                'name' => 'Sesión 2 - Controlando la Aeronave',
+                'session_objetive' => 'En esta lección aprenderás en que momento el avión presentara tendencias de viraje hacia la izquierda y derecha y como controlarlas. También aprenderás a controlar la velocidad durante ascensos y descensos. Aplicarás lo aprendido para realizar ascensos y descensos con virajes. Aprenderás a utilizar los flaps para ayudar a incrementar el descenso sin aumentar la velocidad. Finalmente se te transmitirán puntos clave para identificar cuando la aeronave tenga poca velocidad.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas con ayuda de tu instructor, usar la lista de comprobación para realizar una inspección previa al vuelo, poner en marcha el motor, revisar los sistemas antes del despegue y apagar el motor posterior al vuelo, así como rodar la aeronave durante el movimiento terrestre. Con ayuda de tu instructor podrás controlar la aeronave desde el despegue hasta el aterrizaje, realizando virajes coordinados, ascensos, descensos y nivelar en vuelo recto. También serás capaz de volar en vuelo recto y nivelado utilizando referencias visuales exteriores.'
+            ],
+            [
+                'name' => 'Sesión 3 - Velocidad y el Aeropuerto',
+                'session_objetive' => 'En esta lección aprenderás maniobras para controlar la aeronave en referencia a la velocidad, inclusive a velocidades menores que la de crucero. Comenzarás a aprender los procedimientos en el aeropuerto y las situaciones que pudieran causar un desplome. También aprenderás a comparar los instrumentos con la vista afuera cuando se realiza una maniobra.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas realizar despegues sin ayuda de tu instructor; controlar la aeronave en los aterrizajes con ayuda de tu instructor; y demostrar comunicaciones y procedimientos en el circuito de transito correctos. Tolerancias serán: Altitud de +/- 200 ft para vuelo nivelado, rumbo +/- 20° para vuelo recto y velocidad de +10/-5 kts.'
+            ],
+            [
+                'name' => 'Sesión 4 - Desplomando la Aeronave',
+                'session_objetive' => 'En esta lección aprenderás el proceso de desplome de una aeronave, como detectarlo antes de que ocurra incluyendo el sonido, elementos visuales y sensaciones para poder recuperar la aeronave de regreso a vuelo normal.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas realizar una inspección antes del vuelo sin ayuda de tu instructor, utilizar la lista de comprobación para todas las operaciones terrestres y en vuelo y controlar la aeronave en todas las maniobras básicas con ayuda mínima de tu instructor. También serás capaz de reconocer cuando la aeronave se aproxima a un desplome y poder regresarla a vuelo recto y nivelado. Tendrás que mantener la altitud +/- 200 ft, rumbo +/- 15°, y en la velocidad mantener + 10 / - 5 kts mientras maniobras en vuelo lento. NOTA: A partir de esta lección todas las inspecciones antes y después del vuelo y procedimientos implicados tendrán mandatoriamente que ejecutarse por el alumno. Por ello después de esta lección no aparecerán contempladas en el contenido de la misma.'
+            ],
+            [
+                'name' => 'Sesión 5 - Correcciones por Viento',
+                'session_objetive' => 'En esta lección aprenderás como controlar la trayectoria de la aeronave con respecto a la Tierra corrigiendo por el viento para que pueda volar una trayectoria deseada. Para ello aprenderás a realizar diferentes maniobras con referencias terrestres que te ayudaran a cumplir el objetivo.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas controlar la aeronave para mantener una trayectoria con referencia a la Tierra corrigiendo por la deriva generada por el viento y puedas mantener la altitud +/- 200 ft y la velocidad +/- 10 kts durante vuelo recto y nivelado y virajes.'
+            ],
+            [
+                'name' => 'Sesión 6 - Conoce tus Instrumentos',
+                'session_objetive' => 'En esta lección aprenderás a controlar la aeronave utilizando los instrumentos abordo. Aprenderás como se siente y se ve la aeronave en virajes más pronunciados (45 grados). También aprenderás a incrementar el descenso en la aproximación sin utilizar los flaps y mantenerte alineado a la pista.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas controlar la aeronave con referencia a los instrumentos y mantener en estas maniobras +/- 200 ft la altitud, +/- 20° en el rumbo y la velocidad +/- 15 kts. Demostrar a tu instructor como realizar una inspección previa al vuelo de forma satisfactoria, utilizar las listas de comprobación de forma correcta para todas las fases de vuelo y controlar la aeronave en las maniobras básicas sin ayuda de tu instructor. Mantener durante un viraje pronunciado una altitud de +/- 200 ft, el ángulo de banqueo de 45°, +/- 10° y terminar la maniobra en el rumbo inicial +/- 20°. También serás capaz de aplicar los controles necesarios para entrar en un deslizamiento hacia el frente durante una aproximación para aterrizar y con ayuda de tu instructor ser capaz de mantener alineada la línea central de la pista durante despegues y aterrizajes con viento cruzado.'
+            ],
+            [
+                'name' => 'Sesión 7 - Despegues y Aterrizajes',
+                'session_objetive' => 'En esta lección aprenderás a controlar la aeronave en despegues y aterrizajes normales y con viento cruzado. También aprenderás el procedimiento para realizar una aproximación fallida.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando seas capaz de despegar, ascender inicialmente corrigiendo por la deriva del viento, incorporarte al circuito de tránsito, establecer una aproximación y aterrizar corrigiendo por la deriva del viento sin ayuda de tu instructor.'
+            ],
+            [
+                'name' => 'Sesión 8 - Emergencias',
+                'session_objetive' => 'En esta lección practicaras despegues y aterrizajes. Analizaras diferentes situaciones de emergencias simuladas y como aplicar los procedimientos aprendidos para poder resolverlas de forma segura. También aprenderás a aterrizar sin Velocímetro o Altímetro.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas aplicar correctamente los procedimientos utilizados durante una aproximación y aterrizaje de emergencia, logrando planear y llegar de manera segura hacia el punto de aterrizaje escogido, manteniendo tu velocidad de planeo +/- 10 kts.'
+            ],
+            [
+                'name' => 'Sesión 9 - Repaso General',
+                'session_objetive' => 'En esta lección el instructor revisara contigo lo que has aprendido hasta este punto y te ayudará en afinar tus habilidades necesarias para que todas las maniobras se realicen bajo los estándares prácticos de evaluación. Se discutirá la operación en los diferentes espacios aéreos y los requerimientos que se necesita para cada uno.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas demostrar a tu instructor controlar de manera segura la aeronave por ti mismo, en todas las fases del vuelo, utilizar procedimientos en tierra, de comunicación y de entrada y salida del circuito de transito correctos, esto para aeropuertos controlados y no controlados. Deberás de efectuar despegues, aterrizajes e idas al aire, así como todas las maniobras anteriormente aprendidas sin la asistencia de tu instructor.'
+            ],
+            [
+                'name' => 'Sesión 10 - Evaluacion Etapa 1',
+                'session_objetive' => 'En esta evaluación podrás demostrar tus habilidades en vuelo solo para que el instructor determine si se encuentra preparado para salir del circuito de tránsito en sus próximos vuelos solos.',
+                'approvation_standard' => 'La evaluación será satisfactoriamente completada cuando puedas completar de forma correcta las acciones necesarias antes del vuelo y los procedimientos necesarios para tener un vuelo solo seguro en el área de práctica. Tendrás que mantener una altitud de +/‐ 100 ft, rumbos +/‐ 10° y la velocidad de +10/‐5 kts.'
+            ],
+            [
+                'name' => 'Sesión 1 - Pistas Cortas Y Suaves',
+                'session_objetive' => 'En esta lección aprenderás los procedimientos para despegar y aterrizar en pistas cortas o de superficie suave, como pasto o tierra.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas reconocer los tipos de pistas en las que tiene que realizar un aterrizaje para pista corta o suave y los procedimientos que involucran cada una de las maniobras practicadas.'
+            ],
+            [
+                'name' => 'Sesión 2 - Utilizando Las Aerovias',
+                'session_objetive' => 'En esta lección practicaras la técnica de vuelo implicada en los aterrizajes para pistas cortas y de superficie suave con el propósito de que te sientas más confortable en dichas maniobras. Aprenderás a utilizar los instrumentos de Navegación para ubicarte y poder mantenerte en una aerovía. Aprenderás también a controlar el avión por medio de los instrumentos del avión durante una situación de emergencia.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas realizar los diferentes tipos de despegues y aterrizajes rotando a una velocidad correcta y manteniendo velocidad de ascenso correcta sin variar +10/‐5 kts; volar y mantener una velocidad correcta durante la aproximación estabilizada sin DUAL ‐ LOCAL variar +10/‐5 kts. Volaras una trayectoria correcta y mantendrás altitud +/‐100 ft.'
+            ],
+            [
+                'name' => 'Sesión 3 - Primer Vuelo Solo',
+                'session_objetive' => 'En esta lección habrá una parte dual y otra parte solo. En la parte dual tu instructor revisará los procedimientos de despegue y aterrizaje contigo para determinar si realmente te encuentras listo para tu primer vuelo solo. En la parte solo, realizaras tu primer vuelo solo supervisado desde tierra en un circuito de tránsito local.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando realices con éxito tu primer vuelo solo supervisado desde tierra'
+            ],
+            [
+                'name' => 'Sesión 4 - Mejorando Tus Habilidades',
+                'session_objetive' => 'En esta lección practicaras solo, las maniobras con las que ya te has familiarizado anteriormente para ganar confianza en ellas y mejorar tus habilidades para realizarlas.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando completes de forma segura el vuelo solo. Durante tus prácticas, tendrás que apegarte a los lineamientos estándares prácticos manteniendo una altitud de +/‐ 100 ft, rumbo de +/‐ 10° y la velocidad de +10/‐5 kts para las maniobras asignadas.'
+            ],
+            [
+                'name' => 'Sesión 5 - Evaluacion Etapa 2',
+                'session_objetive' => 'En esta evaluación aprenderás a utilizar tus instrumentos y radios para controlar el avión y navegar en caso de que no llegaras a ver el suelo. También podrás demostrar como realizas las maniobras previamente aprendidas y completarlas dentro de los parámetros estándares. Se recomienda que esta lección sea impartida por el Jefe de Instructores.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas completar despegues y aterrizajes seguros y suaves manteniendo buen control direccional. También utilices la técnica correcta para recuperar el avión de un desplome y de actitudes inusuales y que puedas iniciar ascensos y descensos DUAL ‐ LOCAL de emergencia con referencia en sus instrumentos utilizando radio comunicaciones, facilidades para navegar y servicios radar. La evaluación práctica será satisfactoria si eres capaz de recuperar el avión de un desplome y de actitudes inusuales y retornar a un vuelo recto y nivelado con referencia a los instrumentos. También seas capaz de interceptar y seguir una radial de un VOR. Las tolerancias durante las maniobras serán de altitud +/‐100 ft., rumbo +/‐10, y velocidad +/‐10 kts. Todas las aproximaciones deberán de ser estabilizadas y la velocidad no variar +10/‐5 kts durante la misma.'
+            ],
+            [
+                'name' => 'Sesión 1 - Vamos De Ruta',
+                'session_objetive' => 'En esta lección realizaras tu primer vuelo de ruta. Aprenderás los procedimientos correctos a seguir para abandonar el área local de entrenamiento y dirigirte a otro aeropuerto. Este es el inicio de preparación para que puedas realizar vuelos de ruta solo.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas volar de forma segura un vuelo de ruta, obtengas información meteorológica suficiente y tomes una decisión sobre volar o no volar, basado todo esto en tu planeación de ruta previamente realizada utilizando la metodología aprendida. Es indispensable presentarte al vuelo con el Log de Navegación hecho, así como con la información meteorológica necesaria.'
+            ],
+            [
+                'name' => 'Sesión 2 - Nuevamente de Ruta',
+                'session_objetive' => 'En esta lección realizaras tu segundo vuelo de ruta. Reafirmaras los procedimientos correctos a seguir para abandonar el área local de entrenamiento y dirigirte a otro aeropuerto, además de aprender los procedimientos que implican realizar un desvío a otro aeropuerto en caso de no poder continuar con tu vuelo de la forma que se había planeado.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas volar de forma segura tu vuelo de ruta, y poniendo énfasis la desviacion a otro aeropuerto. Es indispensable presentarte al vuelo con el Log de Navegación hecho, así como con la información meteorológica necesaria.'
+            ],
+            [
+                'name' => 'Sesión 3 - Tu Primer Ruta Solo',
+                'session_objetive' => 'En esta lección previo al vuelo, tu instructor realizará una discusión sobre la ruta que vayas a volar. Será tu primer vuelo de ruta solo. Esta experiencia aumentara tu nivel de habilidades, conocimiento y sobre todo confianza ante el vuelo. Esto es un paso necesario para poder convertirte en piloto privado. Este vuelo tendrá que incluir un aterrizaje en un aeropuerto que este al menos 50 NM del aeropuerto de salida.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando completes tu primer vuelo solo de ruta cumpliendo con la planeación realizada previa al mismo.'
+            ],
+            [
+                'name' => 'Sesión 4 - Nuevos Horizontes',
+                'session_objetive' => 'En este vuelo tendrás que utilizar tus habilidades adquiridas para planificar y volar una ruta solo. Esta experiencia te servirá para aumentar tu nivel de confianza en el camino para convertirte en un piloto privado. Este vuelo tendrá que ser mínimo de 150 millas con aterrizajes completos y mínimo 3 puntos. Uno de los segmentos del vuelo tendrá que ser una distancia mínima de 50 millas en línea recta.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando completes tu primer vuelo solo de ruta cumpliendo con su planeación previa al mismo. Al término del vuelo, tu instructor revisara tu log de navegación. La revisión de tiempos en cada punto, no deberá de variar en mas de +/‐5 minutos.'
+            ],
+            [
+                'name' => 'Sesión 5 - Mejorando tus Habilidades',
+                'session_objetive' => 'En este vuelo practicarás las maniobras con las que ya te has familiarizado anteriormente en tu segunda fase de instrucción, esto para ganar confianza en ellas y ajustar cualquier detalle que consideres conforme a los estándares prácticos. El propósito principal de esta lección es que puedas ajustar tus ETA’s calculados en tu planeación y realices con mayor seguridad tu desvío a otro aeropuerto.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando completes tu primer vuelo solo de ruta cumpliendo con su planeación previa al mismo. Al término del vuelo, tu instructor revisara tu log de navegación. La revisión de tiempos en cada punto, no deberá de variar en más de +/-5 minutos.'
+            ],
+            [
+                'name' => 'Sesión 6 - Evaluacion Etapa 3',
+                'session_objetive' => 'En esta evaluación podrás demostrar tu habilidad de planeación y conducción de un vuelo de ruta. Se recomienda que esta evaluación sea conducida por el instructor Jefe. Es indispensable que presentes cartas meteorológicas correspondientes y de navegación vigente, así como tu planeación de ruta previamente elaborada.',
+                'approvation_standard' => 'La evaluación será satisfactoriamente aprobada cuando demuestres que puedes conducir un vuelo de ruta correctamente y cuentes con el conocimiento necesario para realizar una correcta planeación previa, realizar un análisis meteorológico para la ruta y comprendas las diferentes publicaciones de información para la navegación. Durante el vuelo tendrás que demostrar el uso de los diferentes métodos de navegación, la habilidad para determinar tu posición en cualquier momento del vuelo, obtener ETA’s en menos de 5 minutos y de utilizar la técnica correcta para establecerte en un curso hacia un aeropuerto alterno durante una desviación.'
+            ],
+            [
+                'name' => 'Sesión 1 - Evaluado Por Tu Instructor',
+                'session_objetive' => 'En este vuelo tu instructor evaluara tu nivel de precisión y desempeño y determinara en que áreas pudieras necesitar más práctica para que puedas llegar a realizarlas cumpliendo con los lineamentos estándares para piloto privado.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando puedas realizar cada una de las maniobras de forma coordinada y fluida, conforme se especifican DUAL ‐ LOCAL en los lineamientos estándares para piloto privado. Si alguna maniobra no llegara a realizarse dentro de los mismos, necesitaras de entrenamiento adicional ya sea con tu instructor o en un vuelo solo.'
+            ],
+            [
+                'name' => 'Sesión 2 - Preparacion Para Tu Examen',
+                'session_objetive' => 'En este vuelo practicaras las distintas maniobras de vuelo aprendidas haciendo especial énfasis en corregir cualquier falla en preparación para tu examen de progreso final.',
+                'approvation_standard' => 'La lección será satisfactoriamente completada cuando hayas podido corregir los detalles en cada una de las maniobras que fueron detectados en la lección anterior.'
+            ],
+            [
+                'name' => 'Sesión 3 - Evaluación Final',
+                'session_objetive' => 'Esta es tu evaluación final, tu examen práctico de Piloto Privado. Estas a un paso de poder obtener tu licencia. Podrás demostrar en este vuelo tus habilidades como piloto privado y deberás de exhibir un buen juicio para tomar decisiones. El evaluador determinará al final del vuelo si tus habilidades son satisfactorias, y se apegan a estándares prácticos de evaluación. REFERENCIA: Utiliza tu manual de estándares prácticos, en donde podrás encontrar una guía de preparación para tu examen.',
+                'approvation_standard' => 'La evaluación será satisfactoriamente aprobada cuando demuestres una competencia que cumpla con los lineamientos estándares de evaluación descritos para tu evaluación práctica de Piloto Privado.'
+            ]
         ];
+
 
         foreach ($sessions as $session) {
             Session::create([
-                'name' => $session,
+                'name' => $session['name'],
+                'session_objetive' => $session['session_objetive'],
+                'approvation_standard' => $session['approvation_standard']
             ]);
         }
 

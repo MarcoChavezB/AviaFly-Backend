@@ -974,6 +974,7 @@ class StudentController extends Controller
     {
         $studentsSyllabus = Student::select(
             'students.id',
+            'flight_history.id as id_flight',
             'students.user_identification',
             'students.name',
             'students.last_names',
@@ -988,8 +989,11 @@ class StudentController extends Controller
 
         $groupedSyllabus = $studentsSyllabus->groupBy('id')->map(function ($studentGroup) {
             $student = $studentGroup->first();
-            $syllabus = $studentGroup->pluck('type_flight')->unique()->map(function ($type_flight) {
-                return ['type_flight' => $type_flight];
+            $syllabus = $studentGroup->pluck('type_flight', 'id_flight')->unique()->map(function ($type_flight, $id_flight) {
+                return [
+                    'id_flight' => $id_flight,
+                    'type_flight' => $type_flight
+                ];
             })->values()->toArray();
 
             return [
