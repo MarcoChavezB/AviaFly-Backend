@@ -182,40 +182,44 @@ class StudentController extends Controller
         }
     }
 
-    public function getStudents()
+    public function getStudents(Request $request)
     {
         try {
-
-
             $user = Auth::user();
+            $base = Base::where('id', $user->id_base)->first(['id', 'name']);
 
-            $employee = Employee::where('user_identification', $user->user_identification)
-                ->first();
+            $query = DB::table('students')
+                ->join('bases', 'students.id_base', '=', 'bases.id')
+                ->join('careers', 'students.id_career', '=', 'careers.id')
+                ->select('students.id', 'students.name', 'students.last_names', 'students.user_identification', 'careers.name as career_name', 'bases.name as base_name')
+                ->orderBy('students.id', 'desc');
 
-            $base = Base::where('id', $employee->id_base)
-                ->first(['id', 'name']);
-
-            if (!$base) {
-                return response()->json(["errors" => ["No hay bases creadas o no se encontro la base del usuario auth"]], 404);
+            if ($base->name != 'Torreón') {
+                $query->where('students.id_base', $user->id_base);
             }
 
-            if ($base->name == 'Torreón') {
-                $students = Student::with('base')->orderBy('id', 'desc')->get(['id', 'name', 'last_names', 'user_identification']);
-
-                if ($students->isEmpty()) {
-                    return response()->json(["errors" => ["No hay estudiantes creados"]], 404);
-                }
-
-                return response()->json(['students' => $students], 200);
-            } else {
-                $students = Student::where('id_base', $base->id)->with('base')->orderBy('id', 'desc')->get(['id', 'name', 'last_names', 'user_identification']);
-
-                if ($students->isEmpty()) {
-                    return response()->json(["errors" => ["No hay estudiantes creados"]], 400);
-                }
-
-                return response()->json(['students' => $students], 200);
+            $searchString = $request->input('searchStr');
+            if ($searchString) {
+                $query->where(function ($query) use ($searchString) {
+                    $query->where('students.name', 'like', '%' . $searchString . '%')
+                        ->orWhere('students.last_names', 'like', '%' . $searchString . '%')
+                        ->orWhere('students.user_identification', 'like', '%' . $searchString . '%');
+                });
             }
+
+            $students = $query->paginate(55);
+
+            $paginationData = [
+                'current_page' => $students->currentPage(),
+                'total_pages' => $students->lastPage(),
+                'has_next_page' => $students->hasMorePages(),
+                'on_this_page' => $students->count(),
+                ];
+
+            return response()->json([
+                'students' => $students->items(),
+                'pagination' => $paginationData
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(["message" => 'Internal Server Error'], 500);
         }
