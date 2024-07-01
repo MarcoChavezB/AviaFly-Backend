@@ -25,6 +25,9 @@ return new class extends Migration
             $table->unsignedBigInteger('id_session');
             $table->foreign('id_session')->references('id')->on('sessions');
 
+            $table->boolean('lesson_passed')->default(false);
+
+
             $table->timestamps();
         });
     }

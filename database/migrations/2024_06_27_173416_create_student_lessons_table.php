@@ -13,9 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('sessions', function (Blueprint $table) {
+        Schema::create('student_lessons', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->unsignedBigInteger('id_student');
+            $table->foreign('id_student')->references('id')->on('students');
+
+            $table->unsignedBigInteger('id_lesson');
+            $table->foreign('id_lesson')->references('id')->on('lessons');
             $table->timestamps();
         });
     }
@@ -27,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('student_lessons');
     }
 };

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FlightStage;
+use App\Models\studentLesson;
 use Illuminate\Http\Request;
 
-class FlightStageController extends Controller
+class StudentLessonController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -41,10 +41,10 @@ class FlightStageController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\FlightStage  $flightStage
+     * @param  \App\Models\studentLesson  $studentLesson
      * @return \Illuminate\Http\Response
      */
-    public function show(FlightStage $flightStage)
+    public function show(studentLesson $studentLesson)
     {
         //
     }
@@ -52,10 +52,10 @@ class FlightStageController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\FlightStage  $flightStage
+     * @param  \App\Models\studentLesson  $studentLesson
      * @return \Illuminate\Http\Response
      */
-    public function edit(FlightStage $flightStage)
+    public function edit(studentLesson $studentLesson)
     {
         //
     }
@@ -64,10 +64,10 @@ class FlightStageController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\FlightStage  $flightStage
+     * @param  \App\Models\studentLesson  $studentLesson
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, FlightStage $flightStage)
+    public function update(Request $request, studentLesson $studentLesson)
     {
         //
     }
@@ -75,10 +75,10 @@ class FlightStageController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\FlightStage  $flightStage
+     * @param  \App\Models\studentLesson  $studentLesson
      * @return \Illuminate\Http\Response
      */
-    public function destroy(FlightStage $flightStage)
+    public function destroy(studentLesson $studentLesson)
     {
         //
     }

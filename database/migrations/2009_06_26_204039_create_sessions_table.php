@@ -13,24 +13,22 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('flight_stages', function (Blueprint $table) {
+        Schema::create('sessions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_flight');
-            $table->foreign('id_flight')->references('id')->on('flight_history');
-
-            $table->unsignedBigInteger('id_stage');
-            $table->foreign('id_stage')->references('id')->on('stages');
+            $table->string('name');
+            $table->string('session_objetive', 1999);
+            $table->string('approvation_standard', 1999);
             $table->timestamps();
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Reverse the migrations
      *
      * @return void
      */
     public function down()
     {
-        Schema::dropIfExists('flight_stages');
+        Schema::dropIfExists('sessions');
     }
 };
