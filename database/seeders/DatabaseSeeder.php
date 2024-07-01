@@ -69,6 +69,14 @@ class DatabaseSeeder extends Seeder
             'monthly_fee' => 6720,
         ]);
 
+        //Oficial de Operaciones id:3
+        Career::create([
+            'name' => 'Piloto comercial',
+            'monthly_payments' => 12,
+            'registration_fee' => 4640,
+            'monthly_fee' => 6720,
+        ]);
+
         $subjects = [
             'Aerodinámica', //1
             'Meteorología', //2
@@ -385,7 +393,7 @@ class DatabaseSeeder extends Seeder
         // airplane Seeders
         AirPlane::create([
             'model' => 'CESSNA 172',
-            'limit_hours' => 50,
+            'limit_hours' => 48,
         ]);
 
         // lesson seerers

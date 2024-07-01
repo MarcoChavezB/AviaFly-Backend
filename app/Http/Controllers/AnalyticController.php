@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AirPlane;
 use App\Models\Employee;
 use App\Models\Enrollment;
 use App\Models\flightHistory;
@@ -26,10 +27,8 @@ class AnalyticController extends Controller
             JOIN air_planes ON air_planes.id = flight_history.id_airplane
         ");
 
+        $analiticTotalHour = AirPlane::select('limit_hours')->first();
 
-
-
-        // Extract total hours from the result
         $totalHours = !empty($airline_hours) ? $airline_hours[0]->total_hours : 0;
 
         $totalReportsPending = FlightHistory::where('has_report', 0)->count();
@@ -37,6 +36,7 @@ class AnalyticController extends Controller
         return response()->json([
             'students' => $totalStudents,
             'airline_hours' => $totalHours,
+            'airline_total_hours' => $analiticTotalHour->limit_hours,
             'pendings' => $totalReportsPending
         ]);
     }
