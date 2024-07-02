@@ -47,6 +47,8 @@ Route::any('/unauthorized', function () {
     ], 401);
 })->name('unauthorized');
 
+Route::any('/test', [UserController::class, 'test']);
+
 
 Route::prefix('/avia')->group(function () {
 

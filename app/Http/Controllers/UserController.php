@@ -13,6 +13,15 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
 
+
+    public function test(Request $request){
+        $test_req = $request->all();
+        return response()->json([
+            'message' => $test_req['message'],
+            'data' => $request->all()
+        ]);
+    }
+
     public function login(Request $request){
         $validator = Validator::make($request->all(), [
             'user_identification' => 'required|string',
