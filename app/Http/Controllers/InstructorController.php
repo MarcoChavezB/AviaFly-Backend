@@ -71,7 +71,7 @@ class InstructorController extends Controller
             $instructor->save();
 
             $base = Base::find($request->base);
-            $instructor->user_identification = strtoupper($instructor->user_type[0]) . $base->name[0] . $instructor->id;
+            $instructor->user_identification = 'E' . strtoupper($instructor->user_type[0]) . $base->name[0] . $instructor->id;
             $instructor->save();
 
             $user = new User();
@@ -81,7 +81,7 @@ class InstructorController extends Controller
             $user->id_base = $request->base;
             $user->save();
 
-            return response()->json($instructor->user_identification, 201);
+            return response()->json($user->user_identification, 201);
         }catch(\Exception $e){
             return response()->json(["error" => $e->getMessage()], 500);
         }
