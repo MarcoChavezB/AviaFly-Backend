@@ -370,7 +370,7 @@ class FlightHistoryController extends Controller
     {
         $query = Student::select(
             'flight_history.id as id_flight',
-            'flight_history.id',
+            'students.id as id_student',
             'students.name',
             'students.last_names',
             'info_flights.equipo as equipo',
@@ -410,7 +410,7 @@ class FlightHistoryController extends Controller
         });
 
         $student = $query
-            ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight', 'flight_history.has_report')
+            ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'students.id' , 'flight_history.type_flight', 'flight_history.has_report')
             ->get();
 
         return response()->json($student, 200);
@@ -521,8 +521,8 @@ class FlightHistoryController extends Controller
             'flight_history.flight_date',
             'flight_history.flight_hour',
             'info_flights.equipo',
+            'sessions.name as session_title',
             'flight_history.type_flight',
-            'sessions.session_title',
             'employees.name as instructor_name',
             'flight_history.maneuver',
             'flight_history.flight_category',
@@ -541,7 +541,7 @@ class FlightHistoryController extends Controller
             ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->join('employees', 'flight_payments.id_employee', '=', 'employees.id')
             ->join('info_flights', 'flight_history.id_equipo', '=', 'info_flights.id')
-            ->join('sessions', 'flight_history.id_session', '=', 'sessions.id')
+            ->join('sessions', 'sessions.id', '=', 'flight_history.id_session')
             ->where('flight_history.id', $id_flight)
             ->get();
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\FlightLessons;
 use App\Models\Lesson;
+use App\Models\LessonObjetiveSession;
 use Illuminate\Http\Request;
 
 class LessonController extends Controller
@@ -83,21 +84,34 @@ class LessonController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Lesson  $lesson
      * @return \Illuminate\Http\Response
+     * @payload {
+     *      "id_flight": number,
+     *      "id_student": number,
+     *      lessons: [
+     *          {
+     *              "id_lesson": number,
+     *              "lesson_approved": boolean
+     *          },
+     *          {
+     *          "id_lesson": number,
+     *          "lesson_approved": boolean
+     *          }
+     *      ]
+     * }
      */
-    public function update(Request $request,int $id_flight)
+    public function update(Request $request)
     {
-        $lessons = $request->all();
+        $data = $request->all();
 
-        foreach ($lessons as $lessonData) {
-            $id_lesson = $lessonData['id_lesson'];
-            $lesson_approved = $lessonData['lesson_approved'];
-
-            FlightLessons::where('flight_id', $id_flight)
-                        ->where('lesson_id', $id_lesson)
-                        ->update(['lesson_approved' => $lesson_approved]);
+        foreach ($data['lessons'] as $lesson) {
+            LessonObjetiveSession::where('id_lesson', $lesson['id_lesson'])
+                ->join('sessions', 'sessions.id', '=', 'lesson_objetive_sessions.id_session')
+                ->join('flight_history', 'sessions.id', '=', 'flight_history.id_session')
+                ->where('flight_history.id', $data['id_flight'])
+                ->update(['lesson_passed' => $lesson['lesson_approved']]);
         }
 
-        return response()->json(['message' => 'Lecciones actualizadas correctamente'], 200);
+        return response()->json(['message' => 'Lessons updated'], 200);
     }
 
     /**

@@ -233,7 +233,7 @@ Route::prefix('/tikets')->group(function () {
 Route::prefix('/lessons')->group(function () {
     Route::get('/index', [LessonController::class, 'index']);
     Route::get('/index/{id_flight}', [LessonController::class, 'indexByFlight']);
-    Route::post('/update/{id_flight}', [LessonController::class, 'update']);
+    Route::put('/update', [LessonController::class, 'update']);
 });
 
 Route::prefix('/infoflights')->group(function () {

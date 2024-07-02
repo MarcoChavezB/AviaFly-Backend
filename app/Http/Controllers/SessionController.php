@@ -38,7 +38,9 @@ class SessionController extends Controller
             "sessions.name as session_name",
             "sessions.session_objetive",
             "sessions.approvation_standard",
+            "lessons.id as lesson_id",
             "lessons.name as lesson_name",
+            "lessons.file as lesson_file",
             "lesson_objetive_sessions.lesson_passed as lesson_passed",
             "flight_objetives.name as flight_objetive_name",
             "flight_history.type_flight"
@@ -57,7 +59,7 @@ class SessionController extends Controller
             'stages.name', 'sessions.name', 'sessions.session_objetive',
             'sessions.approvation_standard', 'lessons.name',
             'lesson_objetive_sessions.lesson_passed', 'flight_objetives.name',
-            'flight_history.type_flight', 'stages.id'
+            'flight_history.type_flight', 'stages.id','lessons.file', 'lessons.id'
         );
 
         $sessions = $sessions->get()->sortBy(function ($session) {
@@ -79,9 +81,11 @@ class SessionController extends Controller
             $sessionApprovationStandard = $session->approvation_standard;
             $flightObjetiveName = $session->flight_objetive_name;
             $lessonName = $session->lesson_name;
+            $lessonFile = $session->lesson_file;
             $lessonPassed = $session->lesson_passed;
             $flightType = $session->type_flight;
             $stageSessionsCount = $sessionsCount[$stageName] ?? 0;
+
 
             if (!isset($result[$studentName])) {
                 $result[$studentName] = [
@@ -118,8 +122,10 @@ class SessionController extends Controller
             }
 
             $result[$studentName]['stages'][$stageName]['sessions'][$sessionName]['flight_objetive'][$flightObjetiveName]['lessons'][] = [
+                'lesson_id' => $session->lesson_id,
                 'lesson_name' => $lessonName,
-                'lesson_passed' => $lessonPassed
+                'lesson_passed' => $lessonPassed,
+                'lesson_file' => $lessonFile
             ];
         }
 
@@ -240,6 +246,7 @@ class SessionController extends Controller
                 'stages.name as stage_name',
                 'sessions.name as session_name',
                 'flight_objetives.name as flight_objetive_name',
+                'lessons.id as lesson_id',
                 'lessons.name as lesson_name',
                 'sessions.session_objetive as session_objetive',
                 'sessions.approvation_standard as approvation_standard',
@@ -267,6 +274,7 @@ class SessionController extends Controller
             $sessionObjetive = $session->session_objetive;
             $approvationStandard = $session->approvation_standard;
             $lessonPassed = $session->lesson_passed;
+            $lessonId = $session->lesson_id;
 
             if (!isset($result[$studentName])) {
                 $result[$studentName] = [
@@ -299,6 +307,7 @@ class SessionController extends Controller
             }
 
             $result[$studentName]['stages'][$stageName]['sessions'][$sessionName]['flight_objetive'][$flightObjetiveName]['lessons'][] = [
+                'lesson_id' => $lessonId,
                 'lesson_name' => $lessonName,
                 'lesson_passed' => $lessonPassed
             ];

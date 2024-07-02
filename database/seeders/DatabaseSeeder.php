@@ -618,10 +618,53 @@ class DatabaseSeeder extends Seeder
             "Virajes a Rumbos Específicos (RV‐RCI)",
             "Nuevamente de ruta"
         ];
+
+        $lessonsWithFiles = [
+            'Despegue Normal y Ascenso Inicial' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/007/original/tbo35ue56xh8?1501274429',
+            'Aproximación Normal y Aterrizaje' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/015/original/0oadorye3ui0?1501274429',
+            'Rodaje Con Viento Cruzado' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/041/original/9ec5ivbsnecp?1501274430',
+            'Maniobrando en Vuelo Lento' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/047/original/o38eikz2ipke?1501274430',
+            'Desplome Sin Potencia (Fase de Aproximación al Aterrizaje)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/066/original/c2wtecqpn60d?1501274431',
+            'Desplome Con Potencia (Despegue y Ascenso Inicial)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/067/original/sq5yg1my3in2?1501274431',
+            'Patrones Rectangulares' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/075/original/4kdf8pa4b1pw?1501274432',
+            'Deslizamiento hacia el Frente (Forward Slip)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/077/original/hnbiq5rsc0iw?1501274433',
+            'Virajes Sobre un Punto' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/077/original/hnbiq5rsc0iw?1501274433',
+            'Circuitos de Tránsito' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/081/original/bfincpsg9um4?1501274434',
+            'Virajes Pronunciados (Steep Turns)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/089/original/j2z4562zivfx?1501274435',
+            'Despegue y Ascenso con Viento Cruzado' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/103/original/kgtyyqbuvio2?1501274436',
+            'Aproximación y Aterrizaje con Viento Cruzado' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/104/original/20xs315ak1ak?1501274436',
+            'Aproximación y Aterrizaje Fallidos' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/105/original/zmvxwnt6jv6b?1501274436',
+            'Circuitos de Transito' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/112/original/kb6tcyahoqak?1501274437',
+            'Aproximación de emergencia y aterrizaje ' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/458/original/rnladvpvomra?1501274458',
+            'Despegue y Ascenso Inicial Normal / Con Viento Cruzado' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/115/original/f7u6jhi2j3uv?1501274437',
+            'Deslizamiento Hacia el Frente (Forward Slip)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/116/original/1w5653l0ec5l?1501274437',
+            'Aproximación y Aterrizaje Normal / Con Viento Cruzado' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/117/original/kj0i5bcym6t9?1501274437',
+            'Ida Al Aire' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/459/original/41p7p9kh0j91?1501274459',
+            'Maniobrando en Vuelo lento' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/141/original/6ketvmdgng48?1501274438',
+            'Patrones Rectangulares' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/146/original/3i8bibcf3tz3?1501274438',
+            'S’s Sobre el Camino (S‐Turns)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/147/original/g3fdvn51pfrn?1501274438',
+            'Aproximación y Aterrizaje de Emergencia' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/152/original/i3a16ofaqi8n?1501274439',
+            'Deslizamiento Hacia el Frente en el Aterrizaje' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/154/original/8fbx8akce7av?1501274440',
+            'Deslizamiento Hacia el Frente en el Aterrizaje (Forward Slip)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/425/original/uufnu7u6jhdy?1501274456',
+            'Despegue de Pista Corta y Ascenso' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/210/original/s8b43nr7eyiw?1501274442',
+            'Despegue de Pista Suave y Ascenso' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/211/original/jj2s5msb7cdj?1501274442',
+            'Aproximación y Aterrizaje a Pista Corta' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/212/original/4gy6w5ddg1hg?1501274442',
+            'Aproximación y Aterrizaje a Pista Suave' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/213/original/7pa1wwan1y02?1501274443',
+            'Desplome Sin Potencia (RCI)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/223/original/qr1m9o252vq2?1501274444',
+            'Desplome Con Potencia (RCI)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/224/original/ym27pg4lo0yq?1501274445',
+            'Forward Slip (Controles Cruzados)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/231/original/e06e6yzv0cj8?1501274446',
+            'Desplome con Potencia (RV‐RCI)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/322/original/roofmvxsal2d?1501274448',
+            'Desplome sin Potencia (RV‐RCI)' => 'https://tecblue.s3.amazonaws.com/tareas/imagenes/000/000/323/original/1u8zzpy3o0mm?1501274449',
+        ];
+
         foreach ($lessonsIntroduccion as $lesson) {
-            Lesson::create([
-                'name' => $lesson,
-            ]);
+            $data = ['name' => $lesson];
+
+            if (isset($lessonsWithFiles[$lesson])) {
+                $data['file'] = $lessonsWithFiles[$lesson];
+            }
+
+            Lesson::create($data);
         }
 
         $sessions = [

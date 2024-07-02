@@ -491,7 +491,6 @@ class StudentController extends Controller
             'installment_value' => 'nullable|numeric',
             'id_student' => 'required|numeric',
             'flight_payment_status' => 'required|string|in:pendiente,pagado,cancelado',
-            'flight_session' => 'required|string',
 
         ], [
             'flight_airplane' => 'required|string',
@@ -521,7 +520,6 @@ class StudentController extends Controller
             'maneuver.required' => 'campo requerido',
             'maneuver.in' => 'campo no válido',
             'hour_instructor_cost.numeric' => 'El costo de la hora de instructor no es válido',
-            'flight_session.required' => 'campo requerido',
             'flight_airplane.required' => 'campo requerido',
         ]);
 
@@ -922,7 +920,7 @@ class StudentController extends Controller
     {
         $student = Student::select(
             'flight_history.id as id_flight',
-            'flight_history.id',
+            'students.id as id_student',
             'students.name',
             'students.last_names',
             'info_flights.equipo as equipo',
@@ -934,7 +932,7 @@ class StudentController extends Controller
             ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
             ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->join('info_flights', 'flight_history.id_equipo', '=', 'info_flights.id')
-            ->groupBy('students.name','students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight', 'flight_history.has_report')
+            ->groupBy('students.name','students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight', 'flight_history.has_report','students.id' )
             ->get();
 
         return response()->json($student, 200);
