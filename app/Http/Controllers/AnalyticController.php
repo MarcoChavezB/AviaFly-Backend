@@ -72,7 +72,7 @@ LEFT JOIN (
         id_student,
         SUM(amount) AS total_inscription_debt
     FROM monthly_payments
-    WHERE status = 'pending' AND payment_date < CURDATE()
+    WHERE status = 'pending' AND payment_date = CURDATE() OR payment_date < CURDATE()
     GROUP BY id_student
 ) AS inscription ON inscription.id_student = students.id
 LEFT JOIN (
