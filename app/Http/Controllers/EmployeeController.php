@@ -18,12 +18,6 @@ class EmployeeController extends Controller
             ->orderBy('employees.id', 'desc')
             ->get();
 
-        if($employees->isEmpty()){
-            return response()->json([
-                'message' => 'No hay empleados registrados'
-            ], 404);
-        }
-
         return response()->json(['employees' => $employees]);
     }
 }

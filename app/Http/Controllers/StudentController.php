@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessStudentCreation;
 use App\Models\Base;
 use App\Models\Employee;
 use App\Models\flightHistory;
@@ -119,68 +120,7 @@ class StudentController extends Controller
             $user->id_base = $request->base;
             $user->save();
 
-            $career = DB::table('careers')->find($request->career);
-
-            $startDate = Carbon::parse($request->register_date);
-
-
-            DB::table('monthly_payments')->insert([
-                'id_student' => $student->id,
-                'payment_date' => $student->created_at,
-                'amount' => $career->registration_fee,
-                'concept' => 'Inscripción',
-                'status' => 'pending',
-            ]);
-
-            for ($i = 0; $i < $career->monthly_payments; $i++) {
-                $paymentDate = clone $startDate;
-                $paymentDate->addMonths($i + 1);
-
-                DB::table('monthly_payments')->insert([
-                    'id_student' => $student->id,
-                    'payment_date' => $paymentDate,
-                    'amount' => $career->monthly_fee,
-                    'concept' => 'Mensualidad',
-                    'status' => 'pending',
-                ]);
-            }
-
-            $careerSubjects = DB::table('career_subjects')
-                ->where('id_career', $request->career)
-                ->get();
-
-            if ($careerSubjects->isEmpty()) {
-                return response()->json(["message" => "Se inscribio el alumno pero no se le asignaron materias."], 202);
-            }
-
-            foreach ($careerSubjects as $careerSubject) {
-                $teacher = DB::table('teacher_subject_turns')
-                    ->where('career_subject_id', $careerSubject->id)
-                    ->where('id_turn', $request->turn)
-                    ->join('employees', 'teacher_subject_turns.id_teacher', '=', 'employees.id')
-                    ->where('employees.id_base', $student->id_base)
-                    ->first();
-
-                if ($teacher) {
-                    DB::table('student_subjects')->insert([
-                        'id_student' => $student->id,
-                        'id_subject' => $careerSubject->id_subject,
-                        'id_turn' => $request->turn,
-                        'id_teacher' => $teacher->id_teacher,
-                        'start_date' => $teacher->start_date,
-                        'end_date' => $teacher->end_date,
-                        'duration' => $teacher->duration,
-                    ]);
-                } else {
-                    return response()->json(["message" => "El estudiante fue inscrito pero no se completo la asociacion con las materias debido a que no se encontro un profesor en la materia con ID: " . $careerSubject->id_subject], 202);
-                }
-            }
-
-            // Relacion con lecciones de vuelo
-            if($career->name == 'Piloto privado'){
-                DB::statement('CALL flight_information_data(?)', [$student->id]);
-            }
-
+            ProcessStudentCreation::dispatch($student, $request->all());
 
             return response()->json($student, 201);
         } catch (\Exception $e) {
