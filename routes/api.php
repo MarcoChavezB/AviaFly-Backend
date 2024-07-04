@@ -25,6 +25,7 @@ use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SessionController;
+use App\Models\InfoFlight;
 
 /*
 |--------------------------------------------------------------------------
@@ -243,6 +244,9 @@ Route::prefix('/infoflights')->group(function () {
     Route::get('/airplanes/index', [AirPlaneController::class, 'index']);
     Route::get('/index/syllabus/{name?}', [StudentController::class, 'indexSyllabus']);
     Route::get('/syllabus', [StudentController::class, 'indexSyllabus']);
+    Route::get('/students/history/flight/{name?}', [InfoFlightController::class, 'studentsFlightHistory']);
+    Route::get('/history/flight/{id_student}', [InfoFlightController::class, 'flightHistory']);
+    Route::get('/get/flight/syllabus/data/{id_flight}', [InfoFlightController::class, 'getFlightSyllabusData']);
 });
 
 

@@ -31,17 +31,19 @@ class SessionController extends Controller
         ->pluck('sessions_count', 'stage_name');
 
         $sessions = studentLesson::select(
+            "stages.id as id_stage",
             "students.user_identification as student_identification",
             "students.id as id_student",
             "students.name as student_name",
             "stages.name as stage_name",
+            'sessions.id as id_session',
             "sessions.name as session_name",
             "sessions.session_objetive",
             "sessions.approvation_standard",
             "lessons.id as lesson_id",
             "lessons.name as lesson_name",
             "lessons.file as lesson_file",
-            "lesson_objetive_sessions.lesson_passed as lesson_passed",
+            "student_lessons.lesson_passed as lesson_passed",
             "flight_objetives.name as flight_objetive_name",
             "flight_history.type_flight"
         )->join('students', 'students.id', '=', 'student_lessons.id_student')
@@ -53,13 +55,13 @@ class SessionController extends Controller
         ->join('flight_objetives', 'flight_objetives.id', '=', 'lesson_objetive_sessions.id_flight_objetive')
         ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
         ->join('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
-        ->where('students.id', $id_student)
+        ->where('student_lessons.id_student', $id_student)
         ->groupBy(
             'students.user_identification', 'students.id', 'students.name',
             'stages.name', 'sessions.name', 'sessions.session_objetive',
-            'sessions.approvation_standard', 'lessons.name',
-            'lesson_objetive_sessions.lesson_passed', 'flight_objetives.name',
-            'flight_history.type_flight', 'stages.id','lessons.file', 'lessons.id'
+            'sessions.approvation_standard', 'lessons.name', 'sessions.id',
+            'student_lessons.lesson_passed', 'flight_objetives.name',
+            'flight_history.type_flight', 'stages.id','lessons.file', 'lessons.id', 'stages.id'
         );
 
         $sessions = $sessions->get()->sortBy(function ($session) {
@@ -85,6 +87,8 @@ class SessionController extends Controller
             $lessonPassed = $session->lesson_passed;
             $flightType = $session->type_flight;
             $stageSessionsCount = $sessionsCount[$stageName] ?? 0;
+            $id_stage = $session->id_stage;
+            $id_session = $session->id_session;
 
 
             if (!isset($result[$studentName])) {
@@ -99,6 +103,7 @@ class SessionController extends Controller
 
             if (!isset($result[$studentName]['stages'][$stageName])) {
                 $result[$studentName]['stages'][$stageName] = [
+                    'id_stage' => $id_stage,
                     'stage_name' => $stageName,
                     'sessions_count' => $stageSessionsCount,
                     'sessions' => [],
@@ -109,6 +114,7 @@ class SessionController extends Controller
                 $result[$studentName]['stages'][$stageName]['sessions'][$sessionName] = [
                     'session_objetive' => $sessionObjetive,
                     'approvation_standard' => $sessionApprovationStandard,
+                    'id_session' => $id_session,
                     'session_name' => $sessionName,
                     'flight_objetive' => []
                 ];
@@ -155,17 +161,19 @@ class SessionController extends Controller
 
     public function showLessons($id_student){
         $sessions = StageSession::select(
+            "students.name as student_name",
             "sessions.id as session_id",
             "stages.name as stage_name",
             "sessions.name as session_name",
-            "lesson_objetive_sessions.lesson_passed as session_passed"
+            "student_lessons.lesson_passed as session_passed"
         )->join('stages', 'stages.id', '=', 'stage_sessions.id_stage')
         ->join('sessions', 'sessions.id', '=', 'stage_sessions.id_session')
         ->join('lesson_objetive_sessions', 'lesson_objetive_sessions.id_session', '=', 'sessions.id')
         ->join('lessons', 'lessons.id', '=', 'lesson_objetive_sessions.id_lesson')
         ->join('student_lessons', 'student_lessons.id_lesson', '=', 'lessons.id')
+        ->join('students', 'students.id', '=', 'student_lessons.id_student')
         ->where('student_lessons.id_student', $id_student)
-        ->groupBy('stages.name', 'sessions.name', 'lesson_objetive_sessions.lesson_passed', 'sessions.id');
+        ->groupBy('stages.name', 'sessions.name', 'student_lessons.lesson_passed', 'sessions.id', 'students.name');
 
 
         $sessions = $sessions->get()->sortBy(function ($session) {
@@ -176,6 +184,7 @@ class SessionController extends Controller
         $stages = [];
 
         foreach ($sessions as $session) {
+            $studentName = $session->student_name;
             $sessionId = $session->session_id;
             $stageName = $session->stage_name;
             $sessionName = $session->session_name;
@@ -183,6 +192,7 @@ class SessionController extends Controller
 
             if (!isset($stages[$stageName])) {
                 $stages[$stageName] = [
+                    'student_name' => $studentName,
                     'stage_name' => $stageName,
                     'sessions' => []
                 ];
@@ -250,7 +260,7 @@ class SessionController extends Controller
                 'lessons.name as lesson_name',
                 'sessions.session_objetive as session_objetive',
                 'sessions.approvation_standard as approvation_standard',
-                'lesson_objetive_sessions.lesson_passed as lesson_passed',
+                'student_lessons.lesson_passed as lesson_passed',
             )
             ->join('sessions', 'sessions.id', '=', 'flight_history.id_session')
             ->join('stage_sessions', 'stage_sessions.id_session', '=', 'sessions.id')

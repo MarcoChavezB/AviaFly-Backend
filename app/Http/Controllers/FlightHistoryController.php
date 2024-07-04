@@ -429,6 +429,7 @@ class FlightHistoryController extends Controller
             'employees.name as instructor',
             'employees.last_names as instructor_last_name',
             'employees.phone as instructor_phone',
+            'students.id as id_student',
             'students.name as student_name',
             'students.last_names as student_last_name',
             'students.phone as student_phone'
@@ -448,6 +449,7 @@ class FlightHistoryController extends Controller
                 'employees.last_names',
                 'employees.phone',
                 'students.name',
+                'students.id',
                 'flight_history.flight_status',
                 'students.last_names',
                 'students.phone'

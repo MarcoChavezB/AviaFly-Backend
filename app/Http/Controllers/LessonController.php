@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FlightLessons;
 use App\Models\Lesson;
 use App\Models\LessonObjetiveSession;
+use App\Models\studentLesson;
 use Illuminate\Http\Request;
 
 class LessonController extends Controller
@@ -104,10 +105,8 @@ class LessonController extends Controller
         $data = $request->all();
 
         foreach ($data['lessons'] as $lesson) {
-            LessonObjetiveSession::where('id_lesson', $lesson['id_lesson'])
-                ->join('sessions', 'sessions.id', '=', 'lesson_objetive_sessions.id_session')
-                ->join('flight_history', 'sessions.id', '=', 'flight_history.id_session')
-                ->where('flight_history.id', $data['id_flight'])
+            studentLesson::where('id_student', $data['id_student'])
+                ->where('id_lesson', $lesson['id_lesson'])
                 ->update(['lesson_passed' => $lesson['lesson_approved']]);
         }
 
