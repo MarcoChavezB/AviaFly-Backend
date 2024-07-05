@@ -21,4 +21,9 @@ class Employee extends Model
         'user_type',
         'id_base',
     ];
+
+    public function base()
+    {
+        return $this->belongsTo(Base::class, 'id_base', 'id');
+    }
 }
