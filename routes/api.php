@@ -188,6 +188,7 @@ Route::prefix('/employees')->group(function () {
         Route::get('/index', [EmployeeController::class, 'index']);
         Route::get('/show/{id}', [EmployeeController::class, 'show'])->where('id', '[0-9]+');
         Route::put('/update/{id}', [EmployeeController::class, 'update'])->where('id', '[0-9]+');
+        Route::put('/update/password/{id}', [EmployeeController::class, 'updatePassword'])->where('id', '[0-9]+');
     });
 });
 

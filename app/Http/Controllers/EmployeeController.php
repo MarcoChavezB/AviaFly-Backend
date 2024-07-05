@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Base;
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -77,5 +78,39 @@ class EmployeeController extends Controller
         $employee->update($request->all());
 
         return response()->json(['message' => 'Empleado actualizado correctamente']);
+    }
+
+    public function updatePassword(Request $request, $id){
+        $employee = Employee::where('id', $id)->first();
+
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|string',
+            'password_confirmation' => 'required|string|same:password',
+        ],
+        [
+            'password.required' => 'El campo contraseña es requerida',
+            'password.string' => 'El campo contraseña debe ser una cadena de texto',
+            'password_confirmation.required' => 'La confirmación de contraseña es requerida',
+            'password_confirmation.string' => 'El campo confirmación de contraseña debe ser una cadena de texto',
+            'password_confirmation.same' => 'Las contraseñas no coinciden',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(["errors" => $validator->errors()], 400);
+        }
+
+        if(!$employee){
+            return response()->json(['message' => 'Empleado no encontrado'], 404);
+        }
+
+        $user = User::where('user_identification', $employee->user_identification)->first();
+
+        $user->update([
+            'password' => bcrypt($request->password)
+        ]);
+
+        $tokens = DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
+
+        return response()->json(['message' => 'Contraseña actualizada correctamente']);
     }
 }
