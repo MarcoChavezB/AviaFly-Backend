@@ -23,4 +23,9 @@ class Base extends Model
     {
         return $this->hasMany(User::class, 'id_base', 'id');
     }
+
+    public function Employees()
+    {
+        return $this->hasMany(Employee::class, 'id_base', 'id');
+    }
 }
