@@ -8,6 +8,7 @@ use App\Models\AirPlane;
 use Faker\Factory as Faker;
 use App\Models\Base;
 use App\Models\Career;
+use App\Models\Consumable;
 use App\Models\Employee;
 use App\Models\FlightObjetive;
 use App\Models\InfoFlight;
@@ -946,7 +947,18 @@ class DatabaseSeeder extends Seeder
         }
         echo "Lecciones de objetivos de vuelo creadas\n";
 
+
+
+        $consumables = [
+            "gasolina",
+            "aceite"
+        ];
+
+        foreach ($consumables as $consumable) {
+            Consumable::create([
+                'name' => $consumable,
+            ]);
+        }
+
     }
-
-
 }

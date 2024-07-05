@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\BaseController;
+use App\Http\Controllers\ConsumableController;
 use App\Http\Controllers\PendingController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
@@ -256,6 +257,12 @@ Route::prefix('/customers')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/airplanes')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/check/limit/hours', [FlightHistoryController::class, 'checkLimitHoursPlane']);
+});
+
+Route::prefix('/consumables')->middleware('auth:sanctum')->group(function () {
+    Route::get('/index', [ConsumableController::class, 'index']);
+    Route::post('/store', [ConsumableController::class, 'store']);
+    Route::post('/show', [ConsumableController::class, 'show']);
 });
 
 

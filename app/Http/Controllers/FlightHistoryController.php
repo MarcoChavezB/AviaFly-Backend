@@ -259,7 +259,6 @@ class FlightHistoryController extends Controller
             'horometroInicial' => 'required|numeric',
             'horometroFinal' => 'required|numeric',
             'tacometro' => 'required',
-            'comments' => 'required',
             'flight_alone' => 'required|boolean',
             'total_horometro' => 'required|numeric',
         ], [
@@ -268,7 +267,6 @@ class FlightHistoryController extends Controller
             'horoemtroInicial.numeric' => 'Dato incorrecto',
             'horometroFinal.numeric' => 'Dato incorrecto',
             'tacometro.required' => 'Campo requerido',
-            'comments.required' => 'Campo requerido',
             'flight_alone.required' => 'Campo requerido',
             'total_horometro.required' => 'Campo requerido',
         ]);
@@ -572,12 +570,7 @@ class FlightHistoryController extends Controller
             return response()->json(['error' => 'Cost data not found'], 404);
         }
 
-        $flight_hour_price = $flight_hour_cost->price;
-        $simulator_hour_price = $simulator_hour_cost->price;
-
-        $students->each(function ($student) use ($flight_hour_price, $simulator_hour_price) {
-            $student->flight_credit *= $flight_hour_price;
-            $student->simulator_credit *= $simulator_hour_price;
+        $students->each(function ($student) {
             $student->total_credit = $student->flight_credit + $student->simulator_credit + $student->credit;
         });
 

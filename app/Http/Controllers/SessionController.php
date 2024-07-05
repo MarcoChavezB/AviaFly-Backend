@@ -127,12 +127,15 @@ class SessionController extends Controller
                 ];
             }
 
-            $result[$studentName]['stages'][$stageName]['sessions'][$sessionName]['flight_objetive'][$flightObjetiveName]['lessons'][] = [
-                'lesson_id' => $session->lesson_id,
-                'lesson_name' => $lessonName,
-                'lesson_passed' => $lessonPassed,
-                'lesson_file' => $lessonFile
-            ];
+            $lessonKey = $lessonName . '-' . $lessonFile;
+            if (!array_key_exists($lessonKey, $result[$studentName]['stages'][$stageName]['sessions'][$sessionName]['flight_objetive'][$flightObjetiveName]['lessons'])) {
+                $result[$studentName]['stages'][$stageName]['sessions'][$sessionName]['flight_objetive'][$flightObjetiveName]['lessons'][$lessonKey] = [
+                    'lesson_id' => $session->lesson_id,
+                    'lesson_name' => $lessonName,
+                    'lesson_passed' => $lessonPassed,
+                    'lesson_file' => $lessonFile
+                ];
+            }
         }
 
         // Convertir el resultado a un array indexado
@@ -144,6 +147,8 @@ class SessionController extends Controller
                 foreach ($stage['sessions'] as $session) {
                     $flightObjectives = [];
                     foreach ($session['flight_objetive'] as $flightObjective) {
+                        $lessons = array_values($flightObjective['lessons']);
+                        $flightObjective['lessons'] = $lessons;
                         $flightObjectives[] = $flightObjective;
                     }
                     $session['flight_objetive'] = $flightObjectives;
@@ -159,7 +164,9 @@ class SessionController extends Controller
         return response()->json($finalResult);
     }
 
+
     public function showLessons($id_student){
+
         $sessions = StageSession::select(
             "students.name as student_name",
             "sessions.id as session_id",
@@ -174,6 +181,8 @@ class SessionController extends Controller
         ->join('students', 'students.id', '=', 'student_lessons.id_student')
         ->where('student_lessons.id_student', $id_student)
         ->groupBy('stages.name', 'sessions.name', 'student_lessons.lesson_passed', 'sessions.id', 'students.name');
+
+
 
 
         $sessions = $sessions->get()->sortBy(function ($session) {
@@ -209,6 +218,7 @@ class SessionController extends Controller
         $result = array_values($stages);
 
         return response()->json($result);
+
     }
 
 
