@@ -873,6 +873,7 @@ class StudentController extends Controller
             ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->join('info_flights', 'flight_history.id_equipo', '=', 'info_flights.id')
             ->groupBy('students.name','students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight', 'flight_history.has_report','students.id' )
+            ->orderBy('flight_history.created_at', 'desc')
             ->get();
 
         return response()->json($student, 200);

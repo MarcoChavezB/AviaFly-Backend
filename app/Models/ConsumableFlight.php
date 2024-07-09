@@ -8,8 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class ConsumableFlight extends Model
 {
     use HasFactory;
-    protected $fillable =
-['id_consumable', 'id_flight', 'date', 'liters', 'comments'];
+    protected $fillable =[
+        'id_consumable',
+        'id_flight',
+        'date',
+        'hour',
+        'liters',
+        'comments',
+        'id_employee'
+    ];
 
     public function consumable()
     {

@@ -16,15 +16,16 @@ return new class extends Migration
         Schema::create('consumable_flights', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_consumable');
-            $table->unsignedBigInteger('id_flight');
+            $table->unsignedBigInteger('id_plane');
             $table->unsignedBigInteger('id_employee');
             $table->foreign('id_consumable')->references('id')->on('consumables');
-            $table->foreign('id_flight')->references('id')->on('flight_history');
+            $table->foreign('id_plane')->references('id')->on('air_planes');
             $table->foreign('id_employee')->references('id')->on('employees');
 
             $table->date('date');
+            $table->string('hour');
             $table->integer('liters');
-            $table->integer('comments');
+            $table->string('comments');
             $table->timestamps();
         });
     }

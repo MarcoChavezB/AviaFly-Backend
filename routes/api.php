@@ -265,7 +265,8 @@ Route::prefix('/airplanes')->middleware('auth:sanctum')->group(function () {
 Route::prefix('/consumables')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [ConsumableController::class, 'index']);
     Route::post('/store', [ConsumableController::class, 'store']);
-    Route::post('/show', [ConsumableController::class, 'show']);
+    Route::get('/show', [ConsumableController::class, 'show']);
+    Route::put('/update', [ConsumableController::class, 'update']);
 });
 
 
