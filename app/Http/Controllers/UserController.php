@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -79,5 +80,11 @@ class UserController extends Controller
         return response()->json([
             "employes" => $users
         ]);
+    }
+
+    public function getClientId($clientId){
+        $userIdentification = User::select('user_identification')->where('id', $clientId)->first();
+        $employeId = Employee::select('id')->where('user_identification', $userIdentification->user_identification)->first()->id;
+        return $employeId;
     }
 }

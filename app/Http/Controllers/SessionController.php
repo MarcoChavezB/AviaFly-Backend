@@ -165,62 +165,58 @@ class SessionController extends Controller
     }
 
 
-    public function showLessons($id_student){
-
-        $sessions = StageSession::select(
+public function showLessons($id_student)
+{
+    $sessions = StageSession::select(
             "students.name as student_name",
             "sessions.id as session_id",
             "stages.name as stage_name",
             "sessions.name as session_name",
-            "student_lessons.lesson_passed as session_passed"
-        )->join('stages', 'stages.id', '=', 'stage_sessions.id_stage')
+            DB::raw("MIN(student_lessons.lesson_passed) as session_passed") // MIN será 1 solo si todas las lecciones están aprobadas
+        )
+        ->join('stages', 'stages.id', '=', 'stage_sessions.id_stage')
         ->join('sessions', 'sessions.id', '=', 'stage_sessions.id_session')
         ->join('lesson_objetive_sessions', 'lesson_objetive_sessions.id_session', '=', 'sessions.id')
         ->join('lessons', 'lessons.id', '=', 'lesson_objetive_sessions.id_lesson')
         ->join('student_lessons', 'student_lessons.id_lesson', '=', 'lessons.id')
         ->join('students', 'students.id', '=', 'student_lessons.id_student')
         ->where('student_lessons.id_student', $id_student)
-        ->groupBy('stages.name', 'sessions.name', 'student_lessons.lesson_passed', 'sessions.id', 'students.name');
-
-
-
-
-        $sessions = $sessions->get()->sortBy(function ($session) {
+        ->groupBy('stages.name', 'sessions.id', 'sessions.name', 'students.name')
+        ->get()
+        ->sortBy(function ($session) {
             preg_match('/\d+/', $session->session_name, $matches);
             return (int) $matches[0];
         });
 
-        $stages = [];
+    $stages = [];
 
-        foreach ($sessions as $session) {
-            $studentName = $session->student_name;
-            $sessionId = $session->session_id;
-            $stageName = $session->stage_name;
-            $sessionName = $session->session_name;
-            $sessionPassed = $session->session_passed;
+    foreach ($sessions as $session) {
+        $studentName = $session->student_name;
+        $sessionId = $session->session_id;
+        $stageName = $session->stage_name;
+        $sessionName = $session->session_name;
+        $sessionPassed = $session->session_passed;
 
-            if (!isset($stages[$stageName])) {
-                $stages[$stageName] = [
-                    'student_name' => $studentName,
-                    'stage_name' => $stageName,
-                    'sessions' => []
-                ];
-            }
-
-            $stages[$stageName]['sessions'][] = [
-                'session_id' => $sessionId,
-                'session_name' => $sessionName,
-                'session_passed' => $sessionPassed
+        if (!isset($stages[$stageName])) {
+            $stages[$stageName] = [
+                'student_name' => $studentName,
+                'stage_name' => $stageName,
+                'sessions' => []
             ];
         }
 
-        // Extraer solo las etapas y convertirlo en un array
-        $result = array_values($stages);
-
-        return response()->json($result);
-
+        $stages[$stageName]['sessions'][] = [
+            'session_id' => $sessionId,
+            'session_name' => $sessionName,
+            'session_passed' => (int)$sessionPassed // Convertir a entero para mayor claridad
+        ];
     }
 
+    // Extraer solo las etapas y convertirlo en un array
+    $result = array_values($stages);
+
+    return response()->json($result);
+}
 
     /**
      * Show the form for creating a new resource.
@@ -262,12 +258,14 @@ class SessionController extends Controller
      */
     public function IndexEditSyllabus(int $id_flight, int $id_student)
     {
+
         $sessionQuery = flightHistory::select('students.name as student_name',
                 'stages.name as stage_name',
                 'sessions.name as session_name',
                 'flight_objetives.name as flight_objetive_name',
                 'lessons.id as lesson_id',
                 'lessons.name as lesson_name',
+                'lessons.file as lesson_file',
                 'sessions.session_objetive as session_objetive',
                 'sessions.approvation_standard as approvation_standard',
                 'student_lessons.lesson_passed as lesson_passed',
@@ -295,6 +293,7 @@ class SessionController extends Controller
             $approvationStandard = $session->approvation_standard;
             $lessonPassed = $session->lesson_passed;
             $lessonId = $session->lesson_id;
+
 
             if (!isset($result[$studentName])) {
                 $result[$studentName] = [
@@ -325,7 +324,6 @@ class SessionController extends Controller
                     'lessons' => []
                 ];
             }
-
             $result[$studentName]['stages'][$stageName]['sessions'][$sessionName]['flight_objetive'][$flightObjetiveName]['lessons'][] = [
                 'lesson_id' => $lessonId,
                 'lesson_name' => $lessonName,
