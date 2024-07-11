@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('bank_account', 50)->nullable();
             $table->string('file_path', 255)->nullable();
             $table->string('ticket_path', 255)->nullable();
+            $table->decimal('total', 8, 2);
+            $table->date('payment_date');
             $table->timestamps();
 
             $table->foreign('employee_id')->references('id')->on('employees');

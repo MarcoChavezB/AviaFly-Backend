@@ -15,7 +15,6 @@ return new class extends Migration
     {
         Schema::create('incomes', function (Blueprint $table) {
             $table->id();
-            $table->date('payment_date');
             $table->string('concept');
             $table->decimal('original_import', 8, 2);
             $table->decimal('discount', 8, 2);

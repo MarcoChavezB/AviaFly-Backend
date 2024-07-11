@@ -10,7 +10,6 @@ class Income extends Model
     use HasFactory;
 
     protected $fillable = [
-        'payment_date',
         'iva',
         'discount',
         'total',

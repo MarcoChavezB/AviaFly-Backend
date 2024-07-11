@@ -11,11 +11,13 @@ class IncomeDetails extends Model
 
     protected $fillable = [
         'employee_id',
+        'payment_date',
         'student_id',
         'commission',
         'payment_method',
         'bank_account',
         'file_path',
         'ticket_path',
+        'total',
     ];
 }
