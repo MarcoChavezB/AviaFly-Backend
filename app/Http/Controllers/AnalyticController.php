@@ -15,28 +15,22 @@ class AnalyticController extends Controller
     /*
     - numero de reportes con estado sin reporte
     - cantidad de alumnos
-    - cantidad de instructores
- */
+    - Desgaste de aerolinea
+     */
     function getCardData()
     {
         $totalStudents = User::where('user_type', 'student')->count();
 
-        $airline_hours = DB::select("SELECT
-                SUM(flight_history.hours) as total_hours
-            FROM flight_history
-            JOIN air_planes ON air_planes.id = flight_history.id_airplane
-        ");
-
+        $airline_hours = AirPlane::select('tacometer')->first();
         $analiticTotalHour = AirPlane::select('limit_hours')->first();
-
-        $totalHours = !empty($airline_hours) ? $airline_hours[0]->total_hours : 0;
+        $totalHours = $airline_hours ? $airline_hours->tacometer : 0;
 
         $totalReportsPending = FlightHistory::where('has_report', 0)->count();
 
         return response()->json([
             'students' => $totalStudents,
             'airline_hours' => $totalHours,
-            'airline_total_hours' => $analiticTotalHour->limit_hours,
+            'airline_total_hours' => $analiticTotalHour ? $analiticTotalHour->limit_hours : 0,
             'pendings' => $totalReportsPending
         ]);
     }

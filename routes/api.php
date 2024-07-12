@@ -22,6 +22,7 @@ use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\NewSletterController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
@@ -272,6 +273,12 @@ Route::prefix('/consumables')->middleware('auth:sanctum')->group(function () {
     Route::post('/store', [ConsumableController::class, 'store']);
     Route::get('/show', [ConsumableController::class, 'show']);
     Route::put('/update', [ConsumableController::class, 'update']);
+});
+
+Route::prefix('/newsletters')->middleware('auth:sanctum')->group(function () {
+    Route::get('/index', [NewSletterController::class, 'index']);
+    Route::post('/store', [NewSletterController::class, 'store']);
+    Route::get('/mark/read/{id_new_sletter}', [NewSletterController::class, 'markAsRead']);
 });
 
 

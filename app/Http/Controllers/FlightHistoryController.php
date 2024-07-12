@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AirPlane;
 use App\Models\FlightCustomer;
 use App\Models\flightHistory;
 use App\Models\FlightPayment;
@@ -277,6 +278,42 @@ class FlightHistoryController extends Controller
 
         $flight = flightHistory::find($data['id_flight']);
 
+        $airplane = AirPlane::find($flight->id_airplane);
+
+        if ($data['horometroInicial'] < $flight->initial_horometer) {
+            return response()->json([
+                'msg' => 'El horómetro inicial no puede ser menor al horómetro inicial del vuelo'
+            ], 400);
+        }
+
+
+        $tacometer_difference = DB::select("
+            WITH LastValidRecords AS (
+                SELECT
+                    final_tacometer,
+                    ROW_NUMBER() OVER (ORDER BY id DESC) AS row_num
+                FROM
+                    flight_history
+                WHERE
+                    final_tacometer != 0
+            )
+            SELECT
+                (SELECT final_tacometer FROM LastValidRecords WHERE row_num = 1) -
+                (SELECT final_tacometer FROM LastValidRecords WHERE row_num = 2) AS tacometer_difference
+        ");
+
+        $actual_tacometer = $airplane->tacometer;
+
+        if (!empty($tacometer_difference) && isset($tacometer_difference[0]->tacometer_difference)) {
+            $actual_tacometer = $airplane->tacometer;
+
+            // Obtener el valor de tacometer_difference del resultado de la consulta
+            $difference = $tacometer_difference[0]->tacometer_difference;
+
+            // Sumar la diferencia al tacómetro actual
+            $airplane->tacometer = $actual_tacometer + $difference;
+        }
+
         $flight->flight_alone = $data['flight_alone'];
         $flight->initial_horometer = $data['horometroInicial'];
         $flight->final_horometer = $data['horometroFinal'];
@@ -286,6 +323,7 @@ class FlightHistoryController extends Controller
         $flight->has_report = 1;
 
         $flight->save();
+        $airplane->save();
 
         return response()->json([
             'msg' => "El reporte se ha guardado correctamente"
@@ -537,13 +575,18 @@ class FlightHistoryController extends Controller
             'flight_history.hours',
             DB::raw('flight_payments.hour_instructor_cost * flight_history.hours AS total_payment_instructor'),
             'info_flights.price as hour_flight_price',
+            'air_planes.tacometer' // Añadido el campo tacometer
         ])
-            ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
-            ->join('employees', 'flight_payments.id_employee', '=', 'employees.id')
-            ->join('info_flights', 'flight_history.id_equipo', '=', 'info_flights.id')
-            ->join('sessions', 'sessions.id', '=', 'flight_history.id_session')
-            ->where('flight_history.id', $id_flight)
-            ->get();
+        ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+        ->join('employees', 'flight_payments.id_employee', '=', 'employees.id')
+        ->join('info_flights', 'flight_history.id_equipo', '=', 'info_flights.id')
+        ->join('sessions', 'sessions.id', '=', 'flight_history.id_session')
+        ->join('air_planes', 'air_planes.id', '=', 'flight_history.id_airplane')
+        ->where('flight_history.id', $id_flight)
+        ->orderBy('flight_history.flight_date', 'desc') // Ordenar por fecha de vuelo descendente
+        ->orderBy('flight_history.flight_hour', 'desc') // Ordenar por hora de vuelo descendente
+        ->limit(1) // Limitar a un solo registro
+        ->get();
 
         return response()->json($flightReport, 200);
     }

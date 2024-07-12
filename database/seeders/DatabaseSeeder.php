@@ -395,6 +395,8 @@ class DatabaseSeeder extends Seeder
         AirPlane::create([
             'model' => 'CESSNA 172',
             'limit_hours' => 48,
+            'limit_wheight' => 2300,
+            'limit_passengers' => 4,
         ]);
 
         // lesson seerers
