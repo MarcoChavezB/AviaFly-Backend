@@ -978,4 +978,16 @@ class StudentController extends Controller
         return false;
     }
 
+    public function studentInfo(){
+
+        $user = Auth::user();
+        $student = Student::where('user_identification', $user->user_identification)->first();
+
+        if(!$student){
+            return response()->json(["error" => "Estudiante no encontrado"], 404);
+        }
+
+        return response()->json($student, 200);
+    }
+
 }
