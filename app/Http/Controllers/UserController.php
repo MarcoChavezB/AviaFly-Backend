@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -84,7 +85,11 @@ class UserController extends Controller
 
     public function getClientId($clientId){
         $userIdentification = User::select('user_identification')->where('id', $clientId)->first();
-        $employeId = Employee::select('id')->where('user_identification', $userIdentification->user_identification)->first()->id;
+        try{
+            $employeId = Employee::select('id')->where('user_identification', $userIdentification->user_identification)->first()->id;
+        }catch(\Exception $e){
+            $employeId = Student::select('id')->where('user_identification', $userIdentification->user_identification)->first()->id;
+        }
         return $employeId;
     }
 }

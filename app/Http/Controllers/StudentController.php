@@ -608,7 +608,7 @@ class StudentController extends Controller
     function getEmployeesByStudent(int $id)
     {
         $employees = DB::select("
-        select
+        select DISTINCT
             employees.id,
             employees.name as instructor
         FROM students
