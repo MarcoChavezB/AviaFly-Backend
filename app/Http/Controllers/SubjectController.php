@@ -130,6 +130,38 @@ class SubjectController extends Controller
         return response()->json($results, 200);
     }
 
+    public function getSubjectsEndingSoon(){ //para administrador y root
+
+        $today = date('Y-m-d');
+        $oneDayFromNow = date('Y-m-d', strtotime($today . ' + 1 days'));
+        $twoDaysFromNow = date('Y-m-d', strtotime($today . ' + 2 days'));
+
+        $subjects = DB::table('teacher_subject_turns')
+            ->join('career_subjects', 'teacher_subject_turns.career_subject_id', '=', 'career_subjects.id')
+            ->join('subjects', 'career_subjects.id_subject', '=', 'subjects.id')
+            ->join('careers', 'career_subjects.id_career', '=', 'careers.id')
+            ->join('employees', 'teacher_subject_turns.id_teacher', '=', 'employees.id')
+            ->join('bases', 'employees.id_base', '=', 'bases.id')
+            ->join('turns', 'teacher_subject_turns.id_turn', '=', 'turns.id')
+            ->select('subjects.name', 'bases.name as base', 'teacher_subject_turns.end_date', 'turns.name as turn', 'careers.name as career')
+            ->whereIn('teacher_subject_turns.end_date', [$today, $oneDayFromNow, $twoDaysFromNow])
+            ->get();
+
+        $formattedSubjects = $subjects->map(function ($subject) use ($today) {
+            $daysLeft = (strtotime($subject->end_date) - strtotime($today)) / (60 * 60 * 24);
+            $status = $daysLeft >= 0 ? $daysLeft . ' dia(s)' : 'Expirada';
+            return [
+                'name' => $subject->name,
+                'base' => $subject->base,
+                'daysToExpire' => $status,
+                'turn' => $subject->turn,
+                'career' => $subject->career
+            ];
+        });
+
+        return response()->json(['subjects' => $formattedSubjects], 200);
+    }
+
 }
 
 

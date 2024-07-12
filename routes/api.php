@@ -150,6 +150,7 @@ Route::prefix('/subjects')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/create', [SubjectController::class, 'create']); // Esto puede hacerlo: root, admin
         Route::delete('/destroy', [SubjectController::class, 'destroy']); // Esto puede hacerlo: root, admin
+        Route::get('/ending-soon', [SubjectController::class, 'getSubjectsEndingSoon']); // Esto puede hacerlo: root, admin
     });
 });
 
