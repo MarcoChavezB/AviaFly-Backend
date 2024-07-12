@@ -113,6 +113,14 @@ class StudentController extends Controller
             $student->user_identification = 'A' . $base->name[0] . $student->id;
             $student->save();
 
+            $baseName = strtolower($base->name);
+            $baseName = str_replace(['á', 'é', 'í', 'ó', 'ú'], ['a', 'e', 'i', 'o', 'u'], $baseName);
+            $folderPath = public_path("bases/{$baseName}/{$student->user_identification}");
+
+            if (!file_exists($folderPath)) {
+                mkdir($folderPath, 0777, true);
+            }
+
             $user = new User();
             $user->user_identification = $student->user_identification;
             $user->password = bcrypt($student->curp);
