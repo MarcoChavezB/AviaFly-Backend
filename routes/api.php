@@ -217,6 +217,7 @@ Route::prefix('/reports')->group(function () {
     Route::get('/index/students', [StudentController::class, 'indexStudentsReport']);
     Route::post('/index/students/filter', [FlightHistoryController::class, 'indexStudentsFilter']);
     Route::get('/all/info/{id_flight}', [FlightHistoryController::class, 'getAllInfoReport']);
+    Route::get('/index/schedule', [FlightHistoryController::class, 'getSchedule']);
 });
 
 
