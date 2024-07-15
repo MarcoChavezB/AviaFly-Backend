@@ -114,9 +114,9 @@
         </table>
     </div>
     <div class="payment-info">
-        <p><span>Forma de pago:</span> <span>{{$data[0]['payment_method']}}</span></p>
-        <p><span>Comision:</span> <span>${{ $data[0]['commission'] }}</span></p>
-        <p><span>Total:</span> <span>${{ $data[0]['totalAmount'] }}</span></p>
+        <p><span>Forma de pago:</span> <span>{{ $incomeDetails->payment_method }}</span></p>
+        <p><span>Comision:</span> <span>${{ $incomeDetails->commission }}</span></p>
+        <p><span>Total:</span> <span>${{ $incomeDetails->total }}</span></p>
     </div>
     <div class="bonificacion">
         <p>Bonificación $0.00</p>

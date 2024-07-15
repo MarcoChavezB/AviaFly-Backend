@@ -116,9 +116,13 @@ class StudentController extends Controller
             $baseName = strtolower($base->name);
             $baseName = str_replace(['á', 'é', 'í', 'ó', 'ú'], ['a', 'e', 'i', 'o', 'u'], $baseName);
             $folderPath = public_path("bases/{$baseName}/{$student->user_identification}");
+            $vouchersPath = $folderPath . '/vouchers';
+            $ticketsPath = $folderPath . '/tickets';
 
             if (!file_exists($folderPath)) {
                 mkdir($folderPath, 0777, true);
+                mkdir($vouchersPath, 0777, true);
+                mkdir($ticketsPath, 0777, true);
             }
 
             $user = new User();
