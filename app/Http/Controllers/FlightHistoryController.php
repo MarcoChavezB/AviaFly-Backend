@@ -305,12 +305,11 @@ class FlightHistoryController extends Controller
         $actual_tacometer = $airplane->tacometer;
 
         if (!empty($tacometer_difference) && isset($tacometer_difference[0]->tacometer_difference)) {
+
             $actual_tacometer = $airplane->tacometer;
 
-            // Obtener el valor de tacometer_difference del resultado de la consulta
             $difference = $tacometer_difference[0]->tacometer_difference;
 
-            // Sumar la diferencia al tacómetro actual
             $airplane->tacometer = $actual_tacometer + $difference;
         }
 
@@ -575,7 +574,7 @@ class FlightHistoryController extends Controller
             'flight_history.hours',
             DB::raw('flight_payments.hour_instructor_cost * flight_history.hours AS total_payment_instructor'),
             'info_flights.price as hour_flight_price',
-            'air_planes.tacometer' // Añadido el campo tacometer
+            'air_planes.tacometer'
         ])
         ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
         ->join('employees', 'flight_payments.id_employee', '=', 'employees.id')
@@ -619,6 +618,50 @@ class FlightHistoryController extends Controller
 
 
         return response()->json($students, 200);
+    }
+
+
+    function getSchedule(){
+        $flightHistoryData = FlightHistory::select(
+                'flight_history.id',
+                'flight_history.created_at',
+                'students.name as student_name',
+                'employees.name as instructor_name',
+                'flight_history.initial_horometer as hr_inicial',
+                'flight_history.final_horometer as hr_final',
+                'flight_history.final_tacometer as tacometro_total'
+            )
+            ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->join('students', 'students.id', '=', 'flight_payments.id_student')
+            ->join('employees', 'employees.id', '=', 'flight_payments.id_instructor')
+            ->orderByDesc('flight_history.id')
+            ->get();
+
+        // Now calculate additional fields in PHP
+        $prevTacometro = null;
+        $prevHorometro = null;
+
+        foreach ($flightHistoryData as $flight) {
+            $flight->horometro_total = $flight->hr_final - $flight->hr_inicial;
+
+            if ($prevTacometro === null) {
+                $flight->prev_tacometro_total = 0;
+            } else {
+                $flight->prev_tacometro_total = $prevTacometro - $flight->tacometro_total;
+            }
+
+            if ($prevHorometro === null) {
+                $flight->prev_horometro_total = 0;
+            } else {
+                $flight->prev_horometro_total = $prevHorometro - $flight->horometro_total;
+            }
+
+            $prevTacometro = $flight->tacometro_total;
+            $prevHorometro = $flight->horometro_total;
+
+            $flight->diferencia = $flight->prev_tacometro_total;
+        }
+        return response()->json($flightHistoryData, 200);
     }
 
 

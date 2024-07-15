@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\NewSletter;
 use Illuminate\Http\Request;
 use App\Http\Controllers\UserController;
-use App\Models\NewSletterStudentsEmployee;
+use App\Models\Employee;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class NewSletterController extends Controller
 {
@@ -21,43 +23,76 @@ class NewSletterController extends Controller
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
+     * @param $request: request
+     * @Documentation: este metodo primero obtiene el usuario autenticado
+     *  luego obtiene el tipo de usuario
      */
     public function index()
     {
         $user = Auth::user();
         $user_type = $user->user_type;
+        $base = $this->userController->getBaseAuth($user);
 
+        // Query to get newsletters with the necessary joins
         $newSlettersQuery = NewSletter::select(
-                'new_sletter_students_employees.id as id_new_sletter',
+                'new_sletters.id as id_newsletter',
+                'new_sletters.id_base',
+                'new_sletters.is_active',
+                'new_sletters.created_by as created_by_id',
+                'employees.name as created_by',
                 'new_sletters.title',
                 'new_sletters.content',
-                'employees.name as created_by',
                 'new_sletters.direct_to',
                 'new_sletters.file',
-                'new_sletter_students_employees.is_read',
-                'new_sletters.start_at',
-                'new_sletters.expired_at',
-                'new_sletters.created_at'
+                'new_sletters.start_at as start_date',
+                'new_sletters.expired_at as expired_date',
+                'new_sletters.created_at as created_date',
             )
-            ->join('new_sletter_students_employees', 'new_sletter_students_employees.id_new_sletter', '=', 'new_sletters.id')
-            ->leftJoin('students', 'students.id', '=', 'new_sletter_students_employees.id_student')
-            ->leftJoin('employees', 'employees.id', '=', 'new_sletter_students_employees.id_employee');
+            ->leftJoin('employees', 'employees.id', '=', 'new_sletters.created_by')
+            ->OrderBy('new_sletters.created_at', 'desc');
 
+        // Apply filters based on user type
         if ($user_type !== 'root') {
             switch ($user_type) {
                 case 'student':
-                    $newSlettersQuery->where('new_sletters.direct_to', 'estudiantes');
+                    $newSlettersQuery->where('new_sletters.direct_to', 'estudiantes')
+                        ->orWhere('new_sletters.direct_to', 'todos');
                     break;
                 case 'employee':
-                    $newSlettersQuery->where('new_sletters.direct_to', 'empleados');
+                    $newSlettersQuery
+                        ->where('new_sletters.direct_to', 'empleados')
+                        ->orWhere('new_sletters.direct_to', 'todos');
                     break;
                 case 'instructor':
-                    $newSlettersQuery->where('new_sletters.direct_to', 'instructores');
+                    $newSlettersQuery->where('new_sletters.direct_to', 'instructores')
+                        ->orWhere('new_sletters.direct_to', 'todos');
                     break;
             }
         }
 
+        // Apply base filter
+        $newSlettersQuery->whereExists(function ($query) use ($base) {
+            $query->select(DB::raw(1))
+                  ->from('employees as e')
+                  ->whereRaw('e.id = new_sletters.created_by')
+                  ->where('e.id_base', $base->id);
+        });
+
         $newSletters = $newSlettersQuery->get();
+        $client_id = $this->userController->getIdEmploye($user->user_identification);
+
+        // is ownser of the newsletter
+        $newSletters = $newSletters->map(function ($newsletter) use ($client_id) {
+            $newsletter->is_owner = $newsletter->created_by_id == $client_id;
+            return $newsletter;
+        });
+
+        // Transform is_active from 0/1 to false/true
+        $newSletters = $newSletters->map(function ($newsletter) {
+            $newsletter->is_active = $newsletter->is_active == 1;
+            return $newsletter;
+        });
+
         return response()->json($newSletters);
     }
 
@@ -68,81 +103,133 @@ class NewSletterController extends Controller
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
+     * @param $request: request-
+     * @Payload: {
+     *      "title": "string",
+     *      "content": "string",
+     *      "start_date": "string",
+     *      "expired_date": "string",
+     *      "direct_to": enum('todos', 'empleados', 'instructores', 'estudiantes),
+     *      "base_id": "number",
+     *      "file": "file"
+     * }
      */
     public function create(Request $request)
     {
         $data = $request->all();
+
+        $validator = Validator::make($data, [
+            'title' => 'required|string',
+            'content' => 'required|string',
+            'start_date' => 'required|date',
+            'expired_date' => 'required|date',
+            'direct_to' => 'required|in:todos,empleados,instructores,estudiantes',
+            'base_id' => 'required|numeric',
+        ], [
+            'title.required' => 'El título es requerido.',
+            'content.required' => 'El contenido es requerido.',
+            'start_date.required' => 'La fecha de inicio es requerida.',
+            'expired_date.required' => 'La fecha de expiración es requerida.',
+            'direct_to.required' => 'El destinatario es requerido.',
+            'base_id.required' => 'La base es requerida.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $created_by = Employee::where('user_identification', Auth::user()->user_identification)->first();
+        $newSletter = new NewSletter();
+
+        $newSletter->title = $data['title'];
+        $newSletter->content = $data['content'];
+        $newSletter->start_at = $data['start_date'];
+        $newSletter->expired_at = $data['expired_date'];
+        $newSletter->direct_to = $data['direct_to'];
+        $newSletter->id_base = $data['base_id'];
+        $newSletter->created_by = $created_by->id;
+
+        $newSletter->save();
+        return response()->json(['message' => 'Se ha creado el boletin correctamente.']);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $data = $request->all();
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\NewSletter  $newSletter
-     * @return \Illuminate\Http\Response
-     */
-    public function show(NewSletter $newSletter)
-    {
-        //
-    }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\NewSletter  $newSletter
      * @return \Illuminate\Http\Response
-     */
-    public function edit(NewSletter $newSletter)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
+     * @param $request: request
+     * @Payload: {
+     *      "id_newsletter": number,
+            "id_base": number,
+            "is_active": string,
+            "created_by_id": number,
+            "created_by": string,
+            "title": string,
+            "content": string,
+            "direct_to": enum('todos', 'empleados', 'instructores', 'estudiantes'),
+            "file": null,
+            "start_date": string,
+            "expired_date": string,
+            "created_date": string,
+            "is_owner": boolean
+        }
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\NewSletter  $newSletter
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, NewSletter $newSletter)
+    public function edit(Request $request)
     {
-        //
-    }
+        $data = $request->all();
+        $userId = $this->userController->getIdEmploye(Auth::user()->user_identification);
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\NewSletter  $newSletter
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(NewSletter $newSletter)
-    {
-        //
-    }
+        $validator = Validator::make($data, [
+            'id_newsletter' => 'numeric|exists:new_sletters,id',
+            'id_base' => 'numeric|exists:bases,id',
+            'created_by_id' => 'numeric|exists:employees,id',
+            'created_by' => 'string',
+            'title' => 'string',
+            'content' => 'string',
+            'direct_to' => 'in:todos,empleados,instructores,estudiantes',
+            'file' => 'nullable',
+            'start_date' => 'date',
+            'expired_date' => 'date',
+            'created_date' => 'date',
+        ], [
+            'id_base.numeric' => 'La base debe ser un número.',
+            'id_base.exists' => 'La base no existe.',
+            'created_by_id.numeric' => 'El creador debe ser un número.',
+            'created_by_id.exists' => 'El creador no existe.',
+            'created_by.string' => 'El creador debe ser un string.',
+            'title.string' => 'El título debe ser un string.',
+            'content.string' => 'El contenido debe ser un string.',
+            'direct_to.in' => 'El destinatario debe ser uno de los siguientes: todos, empleados, instructores, estudiantes.',
+            'file.nullable' => 'El archivo debe ser nulo.',
+            'start_date.date' => 'La fecha de inicio debe ser una fecha.',
+            'expired_date.date' => 'La fecha de expiración debe ser una fecha.',
+            'created_date.date' => 'La fecha de creación debe ser una fecha.',
+        ]);
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\NewSletter  $newSletter
-     * @return \Illuminate\Http\Response
-     * @param $id_new_sletter: number
-     */
-    public function markAsRead($id_new_sletter)
-    {
-        $newSletter = NewSletterStudentsEmployee::find($id_new_sletter);
-        $newSletter->is_read = 1;
+        if($validator->fails()){
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $newSletter = NewSletter::find($data['id_newsletter']);
+
+        if($newSletter->created_by != $userId){
+            return response()->json(['errors' => ['No tienes permisos para editar este boletin.']], 403);
+        }
+
+        $newSletter->id_base = $data['id_base'] ?? $newSletter->id_base;
+        $newSletter->is_active = $data['is_active'] ?? $newSletter->is_active;
+        $newSletter->title = $data['title'] ?? $newSletter->title;
+        $newSletter->content = $data['content'] ?? $newSletter->content;
+        $newSletter->direct_to = $data['direct_to'] ?? $newSletter->direct_to;
+        $newSletter->file = $data['file'] ?? $newSletter->file;
+        $newSletter->start_at = $data['start_date'] ?? $newSletter->start_at;
+        $newSletter->expired_at = $data['expired_date'] ?? $newSletter->expired_at;
+        $newSletter->created_at = $data['created_date'] ?? $newSletter->created_at;
+
         $newSletter->save();
 
-        return response()->json(['message' => 'Se ha marcado como leído correctamente.']);
+        return response()->json(['message' => 'Se ha actualizado el boletin correctamente.']);
     }
 }

@@ -24,8 +24,13 @@ class ProductController extends Controller
                 'products.updated_at'
             )
             ->where('products.name', 'like', '%'.$name.'%')
-            ->groupBy('products.id', 'products.name', 'products.price', 'products.stock', 'products.product_status', 'products.created_at', 'products.updated_at')
-            ->get();
+            ->groupBy('products.id', 'products.name', 'products.price', 'products.stock', 'products.product_status', 'products.created_at', 'products.updated_at');
+
+        if($name != null){
+            $products->where('products.product_status', 'activo');
+        }
+
+        $products = $products->get();
 
         return response()->json($products, 200);
     }
