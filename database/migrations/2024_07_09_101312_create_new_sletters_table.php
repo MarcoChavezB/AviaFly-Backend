@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('new_sletters', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('content');
-            $table->string('file');
+            $table->string('content', 1999);
+            $table->string('file')->nullable();
 
             $table->enum('direct_to', ['todos', 'empleados', 'instructores', 'estudiantes']);
             $table->date('start_at');
@@ -27,6 +27,10 @@ return new class extends Migration
 
             $table->unsignedBigInteger('created_by');
             $table->foreign('created_by')->references('id')->on('employees');
+
+            $table->unsignedBigInteger('id_base');
+            $table->foreign('id_base')->references('id')->on('bases');
+
             $table->timestamps();
         });
     }

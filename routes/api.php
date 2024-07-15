@@ -278,8 +278,8 @@ Route::prefix('/consumables')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/newsletters')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [NewSletterController::class, 'index']);
-    Route::post('/store', [NewSletterController::class, 'store']);
-    Route::get('/mark/read/{id_new_sletter}', [NewSletterController::class, 'markAsRead']);
+    Route::post('/store', [NewSletterController::class, 'create']);
+    Route::post('/edit', [NewSletterController::class, 'edit']);
 });
 
 

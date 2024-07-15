@@ -92,4 +92,17 @@ class UserController extends Controller
         }
         return $employeId;
     }
+
+    function getBaseAuth(User $user){
+        $user_identification = $user->user_identification;
+        $base = User::where('user_identification', $user_identification)->first()->base;
+        return $base;
+    }
+
+
+    function getIdEmploye(string $user_identification){
+        $employeId = Employee::select('id')->where('user_identification', $user_identification)->first()->id;
+        return $employeId;
+    }
+
 }

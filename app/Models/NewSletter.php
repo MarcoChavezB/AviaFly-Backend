@@ -16,6 +16,7 @@ class NewSletter extends Model
         'start_at',
         'expired_at',
         'is_active',
+        'id_base',
         'created_by'
     ];
 
