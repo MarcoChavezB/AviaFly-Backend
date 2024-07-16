@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('discount', 8, 2);
             $table->decimal('iva', 8, 2);
             $table->decimal('total', 8, 2);
+            $table->integer('quantity');
             $table->unsignedBigInteger('income_details_id');
             $table->timestamps();
 

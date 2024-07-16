@@ -130,9 +130,13 @@ class StudentController extends Controller
             $baseName = strtolower($base->name);
             $baseName = str_replace(['á', 'é', 'í', 'ó', 'ú'], ['a', 'e', 'i', 'o', 'u'], $baseName);
             $folderPath = public_path("bases/{$baseName}/{$student->user_identification}");
+            $vouchersPath = $folderPath . '/vouchers';
+            $ticketsPath = $folderPath . '/tickets';
 
             if (!file_exists($folderPath)) {
                 mkdir($folderPath, 0777, true);
+                mkdir($vouchersPath, 0777, true);
+                mkdir($ticketsPath, 0777, true);
             }
 
             $user = new User();
@@ -1011,4 +1015,30 @@ class StudentController extends Controller
 
         return response()->json($student, 200);
     }
+
+    public function getStudentSubjectsAsStudent()
+    {
+        $user = Auth::user();
+        $student = Student::where('user_identification', $user->user_identification)->first();
+
+        $student_subjects = DB::table('student_subjects')
+            ->where('id_student', $student->id)
+            ->join('subjects', 'student_subjects.id_subject', '=', 'subjects.id')
+            ->join('employees', 'student_subjects.id_teacher', '=', 'employees.id')
+            ->select(
+                'subjects.name as subject_name',
+                'subjects.id as subject_id',
+                DB::raw('CONCAT(employees.name, " ", employees.last_names) as teacher_full_name'),
+                'employees.id as teacher_id',
+                'student_subjects.final_grade',
+                'student_subjects.status',
+                'student_subjects.id as student_subject_id',
+                'student_subjects.start_date',
+                'student_subjects.end_date',
+            )
+            ->get();
+
+        return response()->json(['student_subjects' => $student_subjects], 200);
+    }
+
 }

@@ -16,5 +16,6 @@ class Income extends Model
         'original_import',
         'concept',
         'income_details_id',
+        'quantity',
     ];
 }
