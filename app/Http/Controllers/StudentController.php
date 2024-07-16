@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Validator;
 class StudentController extends Controller
 {
 
-    function index(string $name = null)
+    function index(string $identificator = null)
     {
         $client = Auth::user();
         $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
@@ -28,13 +28,27 @@ class StudentController extends Controller
             ->leftJoin('careers', 'students.id_career', '=', 'careers.id')
             ->where('careers.name', 'Piloto privado')
             ->where('students.id_base', $id_base)
-            ->where('students.name', 'like', "%$name%")
+            ->where('students.name', 'like', "%$identificator%")
             ->groupBy('students.id', 'students.name', 'students.last_names', 'students.curp', 'students.flight_credit', 'careers.name')
             ->get();
 
         return response()->json($studens, 200);
     }
-    function indexByName(string $name)
+
+
+    function indexId(string $identificator)
+    {
+        $student = Student::select('id', 'name', 'last_names', 'email', 'phone', 'curp', 'credit', 'flight_credit', 'user_identification', 'emergency_direction')
+                          ->where('id', $identificator)
+                          ->first();
+
+        if ($student) {
+            return response()->json([$student], 200);
+        } else {
+            return response()->json(['error' => 'Student not found'], 404);
+        }
+    }
+   function indexByName(string $name)
     {
         return $this->index($name);
     }

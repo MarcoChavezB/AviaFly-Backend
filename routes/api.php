@@ -87,7 +87,8 @@ Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [StudentController::class, 'index']);
-    Route::get('/index/{name}', [StudentController::class, 'indexByName']);
+    Route::get('/index/{identificator}', [StudentController::class, 'indexByName']);
+    Route::get('/indexId/{id_student}', [StudentController::class, 'indexId']);
     Route::post('/enroll', [CourseController::class, 'create']);
     Route::post('/create', [StudentController::class, 'create']); // Esto puede hacerlo: root, admin
     Route::get('/show/{id}', [StudentController::class, 'show'])->where('id', '[0-9]+');
