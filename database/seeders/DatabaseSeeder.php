@@ -4,16 +4,20 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+use App\Http\Controllers\PaymentMethodController;
 use App\Models\AirPlane;
 use Faker\Factory as Faker;
 use App\Models\Base;
 use App\Models\Career;
 use App\Models\Consumable;
+use App\Models\Discount;
 use App\Models\Employee;
 use App\Models\FlightObjetive;
 use App\Models\InfoFlight;
 use App\Models\Lesson;
 use App\Models\LessonObjetiveSession;
+use App\Models\PaymentMethod;
+use App\Models\Payments;
 use App\Models\Session;
 use App\Models\Stage;
 use App\Models\StageSession;
@@ -947,10 +951,9 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
-        echo "Lecciones de objetivos de vuelo creadas\n";
 
 
-
+        echo "Creando consumibles...\n";
         $consumables = [
             "gasolina",
             "aceite"
@@ -962,5 +965,67 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        echo "Creando descuentos...\n";
+
+        $discounts = [];
+
+        for ($i = 5; $i <= 50; $i += 5) {
+            $discounts[] = [
+                'name' => 'Descuento ' . $i . '%',
+                'discount' => $i,
+                'status' => 1,
+            ];
+        }
+
+        $discounts[] = [
+            'name' => 'Descuento 100%',
+            'discount' => 100,
+            'status' => 1,
+        ];
+
+        foreach ($discounts as $discount) {
+            Discount::create($discount);
+        }
+
+        echo "Creando métodos de pago...\n";
+
+        $paymentMethods = [
+            [
+                'type' => 'Efectivo',
+                'commission' => 0,
+                'status' => true,
+            ],
+            [
+                'type' => 'transferencia',
+                'commission' => 0,
+                'status' => true,
+            ],
+            [
+                'type' => 'tarjeta CLIP',
+                'commission' => 1.04716,
+                'status' => true,
+            ],
+            [
+                'type' => 'credito vuelo',
+                'commission' => 0,
+                'status' => true,
+            ],
+            [
+                'type' => 'inbursa CREDITO',
+                'commission' => 1.01566,
+                'status' => true,
+            ],
+            [
+                'type' => 'inbursa DEBITO',
+                'commission' => 1.01218,
+                'status' => true,
+            ],
+        ];
+
+        foreach ($paymentMethods as $paymentMethod) {
+            PaymentMethod::create($paymentMethod);
+        }
+
     }
+
 }

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\BaseController;
 use App\Http\Controllers\ConsumableController;
+use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\PendingController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\NewSletterController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
@@ -285,5 +287,11 @@ Route::prefix('/newsletters')->middleware('auth:sanctum')->group(function () {
 });
 
 
+Route::prefix('/payment_methods')->middleware('auth:sanctum')->group(function () {
+    Route::get('/index', [PaymentMethodController::class, 'index']);
+});
 
+Route::prefix('/discounts')->middleware('auth:sanctum')->group(function () {
+    Route::get('/index', [DiscountController::class, 'index']);
+});
 

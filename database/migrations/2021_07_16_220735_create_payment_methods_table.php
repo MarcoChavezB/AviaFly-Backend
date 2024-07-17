@@ -13,12 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('product_payments', function (Blueprint $table) {
+        Schema::create('payment_methods', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_order');
-            $table->foreign('id_order')->references('id')->on('orders');
-            $table->enum('payment_method', ['efectivo', 'tarjeta', 'abonos']);
-            $table->decimal('amount', 8, 2);
+            $table->enum('type', ['Efectivo', 'transferencia', 'tarjeta CLIP', 'credito vuelo', 'inbursa CREDITO', 'inbursa DEBITO']);
+            $table->decimal('commission', 8, 2)->default(0.00);
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('product_payments');
+        Schema::dropIfExists('payment_methods');
     }
 };
