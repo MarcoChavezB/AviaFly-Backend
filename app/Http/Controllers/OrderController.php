@@ -16,14 +16,15 @@ class OrderController extends Controller
 {
 
     private $userController;
+    private $payment_method_controller;
 
-    public $abonos = 7;
-    public $credit = 3;
 
-    public function __construct(UserController $userController)
+    public function __construct(UserController $userController, PaymentMethodController $payment_method_controller)
     {
         $this->userController = $userController;
+        $this->payment_method_controller = $payment_method_controller;
     }
+
     /**
      * Display a listing of the resource.
      *
@@ -196,7 +197,7 @@ class OrderController extends Controller
 
         $product_payment = new ProductPayment();
 
-        if($data['id_payment_method'] != $this->abonos){
+        if($data['id_payment_method'] != $this->payment_method_controller->getAbonosId()){
             $product_payment->amount = $data['total_price'];
         }
         $product_payment->amount = $data['amountment'];
@@ -299,7 +300,7 @@ class OrderController extends Controller
         $orderPayments = ProductPayment::where('id_order', $data['id_order'])->get();
 
         // Verificar si el tipo de pago de la orden admite abonos
-        if($order->id_payment_method != $this->abonos){
+        if($order->id_payment_method != $this->payment_method_controller->getAbonosId()){
             return response()->json(['message' => 'El tipo de pago de la orden no admite abonos'], 400);
         }
 
@@ -317,7 +318,7 @@ class OrderController extends Controller
         }
 
         // Verificar el crédito del estudiante si aplica
-        if($order->id_client && $data['id_payment_method'] == $this->credit){
+        if($order->id_client && $data['id_payment_method'] == $this->payment_method_controller->getCreditId()){
             $student = Student::find($order->id_client);
             if($data['installment'] > $student->credit){
                 return response()->json(['message' => 'El abono excede el crédito del estudiante'], 400);

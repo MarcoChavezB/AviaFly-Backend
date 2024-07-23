@@ -384,12 +384,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         InfoFlight::create([
-            "equipo" => "matricula",
-            "price" => 0,
-            "min_credit_hours_required" => 2,
-            "min_hours_required" => 20,
-        ]);
-        InfoFlight::create([
             "equipo" => "XBPDY",
             "price" => 3100,
             "min_credit_hours_required" => 2,
@@ -1026,7 +1020,11 @@ class DatabaseSeeder extends Seeder
                 'commission' => 0,
                 'status' => true,
             ],
-
+            [
+                'type' => 'Credito vuelo',
+                'commission' => 0,
+                'status' => true,
+            ],
         ];
 
         foreach ($paymentMethods as $paymentMethod) {

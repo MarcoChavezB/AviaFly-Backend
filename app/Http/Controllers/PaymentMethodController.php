@@ -7,6 +7,15 @@ use Illuminate\Http\Request;
 
 class PaymentMethodController extends Controller
 {
+
+    public $efectivo = 1;
+    public $transferencia = 2;
+    public $credit = 3;
+    public $tarjeta_clip = 4;
+    public $inbursa_credito = 5;
+    public $inbursa_debito = 6;
+    public $abonos = 7;
+    public $credito_vuelo = 8;
     /**
      * Display a listing of the resource.
      *
@@ -16,6 +25,39 @@ class PaymentMethodController extends Controller
     {
         $paymentMethods = PaymentMethod::all();
         return response()->json($paymentMethods);
+    }
+
+
+    public function getEfectivoId(){
+        return $this->efectivo;
+    }
+
+    public function getTransferenciaId(){
+        return $this->transferencia;
+    }
+
+    public function getCreditId(){
+        return $this->credit;
+    }
+
+    public function getTarjetaClipId(){
+        return $this->tarjeta_clip;
+    }
+
+    public function getInbursaCreditoId(){
+        return $this->inbursa_credito;
+    }
+
+    public function getInbursaDebitoId(){
+        return $this->inbursa_debito;
+    }
+
+    public function getAbonosId(){
+        return $this->abonos;
+    }
+
+    public function getCreditoVueloId(){
+        return $this->credito_vuelo;
     }
 
     /**

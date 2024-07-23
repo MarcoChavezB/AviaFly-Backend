@@ -269,6 +269,7 @@ Route::prefix('/infoflights')->group(function () {
 
 Route::prefix('/customers')->middleware('auth:sanctum')->group(function () {
     Route::post('/flight/reservation', [FlightCustomerController::class, 'storeReservationFlight']);
+    Route::get('/flight/index', [FlightCustomerController::class, 'index']);
 });
 
 Route::prefix('/airplanes')->middleware('auth:sanctum')->group(function () {

@@ -9,9 +9,10 @@ class InfoFlight extends Model
 {
     use HasFactory;
     protected $fillable = [
-    'flight_type', 
-    'price', 
-    'min_credit_hours_required',
-    'min_hours_required'
+        'equipo',
+        'price',
+        'min_credit_hours_required',
+        'min_hours_required',
+        'max_weight'
     ];
 }

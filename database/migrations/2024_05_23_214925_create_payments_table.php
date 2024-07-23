@@ -16,8 +16,10 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->decimal('amount')->default(0);
-            $table->enum('payment_method', ['efectivo','abonos', 'tarnsferencia', 'credito_vuelo']);
-            
+
+            $table->bigInteger('id_payment_method')->unsigned();
+            $table->foreign('id_payment_method')->references('id')->on('payment_methods');
+
             $table->unsignedBigInteger('id_flight');
             $table->foreign('id_flight')->references('id')->on('flight_payments');
             $table->timestamps();

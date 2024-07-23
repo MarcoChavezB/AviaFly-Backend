@@ -15,10 +15,11 @@ return new class extends Migration
     {
         Schema::create('info_flights', function (Blueprint $table) {
             $table->id();
-            $table->enum('equipo', ['XBPDY', 'matricula', 'simulador'])->nullable();
+            $table->string('equipo')->nullable();
             $table->decimal('price', 10, 2)->nullable();
             $table->decimal('min_credit_hours_required', 10, 2)->nullable();
             $table->decimal('min_hours_required', 10, 2)->nullable();
+            $table->decimal('max_weight', 10, 2)->nullable();
             $table->timestamps();
         });
     }
