@@ -24,6 +24,8 @@ use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\NewSletterController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderDetailController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
@@ -294,4 +296,12 @@ Route::prefix('/payment_methods')->middleware('auth:sanctum')->group(function ()
 Route::prefix('/discounts')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [DiscountController::class, 'index']);
 });
+
+Route::prefix('/shops')->middleware('auth:sanctum')->group(function () {
+    Route::post('/store', [OrderController::class, 'store']);
+    Route::get('/index/{id_student?}', [OrderController::class, 'index']);
+    Route::post('/edit', [OrderController::class, 'edit']);
+    Route::post('/store/installment', [OrderController::class, 'storeInstallment']);
+});
+
 

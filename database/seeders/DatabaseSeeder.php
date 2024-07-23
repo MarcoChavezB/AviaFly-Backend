@@ -24,6 +24,7 @@ use App\Models\StageSession;
 use App\Models\Subject;
 use App\Models\TeacherSubjectTurn;
 use App\Models\Turn;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -996,36 +997,61 @@ class DatabaseSeeder extends Seeder
                 'status' => true,
             ],
             [
-                'type' => 'transferencia',
+                'type' => 'Transferencia',
                 'commission' => 0,
                 'status' => true,
             ],
             [
-                'type' => 'tarjeta CLIP',
+                'type' => 'Credito',
+                'commission' => 0,
+                'status' => true,
+            ],
+            [
+                'type' => 'Tarjeta CLIP',
                 'commission' => 1.04716,
                 'status' => true,
             ],
             [
-                'type' => 'credito vuelo',
-                'commission' => 0,
-                'status' => true,
-            ],
-            [
-                'type' => 'inbursa CREDITO',
+                'type' => 'Inbursa CREDITO',
                 'commission' => 1.01566,
                 'status' => true,
             ],
             [
-                'type' => 'inbursa DEBITO',
+                'type' => 'Inbursa DEBITO',
                 'commission' => 1.01218,
                 'status' => true,
             ],
+            [
+                'type' => 'Abonos',
+                'commission' => 0,
+                'status' => true,
+            ],
+
         ];
 
         foreach ($paymentMethods as $paymentMethod) {
             PaymentMethod::create($paymentMethod);
         }
 
+        Employee::create([
+            'name' => 'root',
+            'last_names' => 'root',
+            'email' => 'marco1102004@gmail.com',
+            'company_email' => 'marco1102004@gmail.com',
+            'phone' => '1234567890',
+            'cellphone' => '1234567890',
+            'curp' => 'AAMM110200HDFLRR00',
+            'user_identification' => '1234567890',
+            'user_type' => 'root',
+            'id_base' => 1,
+        ]);
+
+        User::create([
+            'user_identification' => '1234567890',
+            'user_type' => 'root',
+            'password' => bcrypt('1234567890'),
+            'id_base' => 1,
+        ]);
     }
 
 }

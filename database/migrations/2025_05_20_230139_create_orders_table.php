@@ -29,7 +29,10 @@ return new class extends Migration
             $table->foreign('id_discount')->references('id')->on('discounts')->nullOnDelete();
 
             $table->unsignedBigInteger('id_employe');
-            $table->foreign('id_employe')->references('id')->on('users');
+            $table->foreign('id_employe')->references('id')->on('employees');
+
+            $table->unsignedBigInteger('id_payment_method');
+            $table->foreign('id_payment_method')->references('id')->on('payment_methods');
 
             $table->timestamps();
         });

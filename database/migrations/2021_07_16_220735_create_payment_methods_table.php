@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('payment_methods', function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['Efectivo', 'transferencia', 'tarjeta CLIP', 'credito vuelo', 'inbursa CREDITO', 'inbursa DEBITO']);
+            $table->enum('type', ['Efectivo', 'Transferencia', 'Tarjeta CLIP', 'Credito', 'Inbursa CREDITO', 'Inbursa DEBITO', 'Abonos']);
             $table->decimal('commission', 8, 2)->default(0.00);
             $table->boolean('status')->default(true);
             $table->timestamps();
