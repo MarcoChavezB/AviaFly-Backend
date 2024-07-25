@@ -8,7 +8,6 @@ use App\Models\Income;
 use App\Models\IncomeDetails;
 use App\Models\MonthlyPayment;
 use App\Models\Student;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -35,8 +34,17 @@ class IncomesController extends Controller
 
     private function sanitizeName(string $name): string
     {
-        return str_replace(['á', 'é', 'í', 'ó', 'ú'], ['a', 'e', 'i', 'o', 'u'], $name);
+        $search = ['á', 'é', 'í', 'ó', 'ú'];
+        $replace = ['a', 'e', 'i', 'o', 'u'];
+        return str_replace($search, $replace, $name);
     }
+
+    private function generateFileName(string $baseName, string $userIdentification, string $type, ?string $extension = 'pdf'): string
+    {
+        $prefix = ($type === 'tickets') ? 'ticket_' : 'voucher_';
+        return "bases/{$baseName}/{$userIdentification}/{$type}/{$prefix}" . time() . '.' . $extension;
+    }
+
 
     public function generateTicket(array $data, string $employeeName, string $employeeLastNames, int $employeeBaseId, int $incomeDetailsId, int $studentID): string
     {
@@ -47,7 +55,7 @@ class IncomesController extends Controller
         $pdf = PDF::loadView('income_ticket', compact('data', 'studentData', 'employeeName', 'employeeLastNames', 'baseData', 'incomeDetails'));
 
         $baseName = $this->sanitizeName($baseData->name);
-        $fileName = "bases/{$baseName}/{$studentData->user_identification}/tickets/ticket_" . time() . '.pdf';
+        $fileName = $this->generateFileName($baseName, $studentData->user_identification, 'tickets');
         $pdf->save(public_path($fileName));
 
         $incomeDetails->update(['ticket_path' => url($fileName)]);
@@ -61,59 +69,124 @@ class IncomesController extends Controller
         $student = Student::findOrFail($studentId);
 
         $baseName = $this->sanitizeName($base->name);
-
-        $fileName = "bases/{$baseName}/{$student->user_identification}/vouchers/voucher_" . time() . '.' . $file->getClientOriginalExtension();
-        $file->save(public_path($fileName));
+        $extension = $file->getClientOriginalExtension();
+        $fileName = $this->generateFileName($baseName, $student->user_identification, 'vouchers', $extension);
+        $file->move(public_path(dirname($fileName)), basename($fileName));
 
         return url($fileName);
     }
 
 
-    public function createFlightCreditIncome(Request $request)
+    public function createIncomes(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $this->validateRequest($request);
+
+        $employee = $this->getAuthenticatedEmployee();
+        $voucherPath = $this->handleFileUpload($request, $employee->id_base, $request->input('student_id'));
+
+        $paymentDetails = $this->extractPaymentDetails($request, $voucherPath);
+        $incomeDetailsId = $this->saveIncomeDetails($paymentDetails, $employee->id);
+
+        $this->saveIncomeEntries($request->input('payments'), $incomeDetailsId, $request->input('student_id'));
+
+        $ticketUrl = $this->generateTicket($request->input('payments'), $employee->name,
+            $employee->last_names, $employee->id_base, $incomeDetailsId, $request->input('student_id'));
+
+        return response()->json(['message' => 'ok', 'ticketUrl' => $ticketUrl], 201);
+    }
+
+    private function validateRequest(Request $request)
+    {
+        $request->merge(['payments' => json_decode($request->input('payments'), true)]);
+
+        Validator::make($request->all(), [
             'payments' => 'required|array',
             'payment_date' => 'required|date',
             'student_id' => 'required|integer',
-            'commission' => 'required|numeric',
+            'commission' => 'sometimes|numeric',
             'payment_method' => 'required|string',
-            'bank_account' => 'required|string',
-            'file' => 'sometimes|file|mimes:jpg, jpeg, png',
+            'bank_account' => 'nullable|string',
+            'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
             'total' => 'required|numeric',
-        ]);
+        ], [
+            'payments.required' => 'Debe ingresar al menos un pago',
+            'payments.array' => 'El pago debe ser un arreglo',
+            'payment_date.required' => 'Debe ingresar la fecha de pago',
+            'payment_date.date' => 'La fecha de pago debe ser una fecha válida',
+            'student_id.required' => 'Debe ingresar el id del estudiante',
+            'student_id.integer' => 'El id del estudiante debe ser un número entero',
+            'commission.numeric' => 'La comisión debe ser un número',
+            'payment_method.required' => 'Debe ingresar el método de pago',
+            'payment_method.string' => 'El método de pago debe ser una cadena',
+            'bank_account.string' => 'La cuenta bancaria debe ser una cadena',
+            'file.file' => 'El archivo debe ser un archivo',
+            'file.mimes' => 'El archivo debe ser una imagen o un pdf',
+            'total.required' => 'Debe ingresar el total',
+            'total.numeric' => 'El total debe ser un número',
+        ])->validate();
+    }
 
-        if($validator->fails()){
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
-
+    private function getAuthenticatedEmployee(): Employee
+    {
         $user = Auth::user();
-        $employee = Employee::where('user_identification', $user->user_identification)->first();
-        $voucherPath = null;
+        return Employee::where('user_identification', $user->user_identification)->first();
+    }
 
-        if($request->hasFile('file')){
-            $voucherPath = $this->saveVoucher($request->file('file'), $employee->id_base, $request->input('student_id'));
+    private function handleFileUpload(Request $request, int $baseId, int $studentId): ?string
+    {
+        if ($request->hasFile('file')) {
+            return $this->saveVoucher($request->file('file'), $baseId, $studentId);
         }
+        return null;
+    }
 
+    private function extractPaymentDetails(Request $request, ?string $voucherPath): array
+    {
         $paymentDetails = $request->only(['payment_date', 'student_id', 'commission', 'payment_method', 'bank_account', 'total']);
         $paymentDetails['file_path'] = $voucherPath;
-        $incomeDetailsId = $this->saveIncomeDetails($paymentDetails, $employee->id);
+        return $paymentDetails;
+    }
 
+    private function saveIncomeEntries(array $payments, int $incomeDetailsId, $studentId)
+    {
+        foreach ($payments as $payment) {
+            Income::create([
+                'iva' => $payment['iva'],
+                'discount' => $payment['discount'],
+                'total' => $payment['total'],
+                'original_import' => $payment['original_import'],
+                'concept' => $payment['concept'],
+                'quantity' => $payment['quantity'],
+                'income_details_id' => $incomeDetailsId,
+            ]);
 
-        foreach ($request->input('payments') as $payment){
-            $income = new Income();
-            $income->iva = $payment['iva'];
-            $income->discount = $payment['discount'];
-            $income->total = $payment['total'];
-            $income->original_import = $payment['original_import'];
-            $income->concept = $payment['concept'];
-            $income->income_details_id = $incomeDetailsId;
-            $income->save();
+             if($payment['its_simulator_or_flight']){
+                    $this->updateStudentCredits($studentId, $payment['quantity'], $payment['concept']);
+             }else if($payment['its_monthly_payment']){
+                 $this->updateStudentMonthlyPayments($payment['monthly_payment_id'], $payment['new_status_for_monthly_payment'], $payment['total']);
+             }
         }
+    }
 
-        $ticketUrl = $this->generateTicket($request->input('payments'), $employee->name,
-            $employee->last_names, $employee->id_base, $incomeDetailsId, $request->input('student_id') );
+    private function updateStudentCredits($studentId, $credit, $type){
+        $student = Student::find($studentId);
+        if($type == 'Credito de vuelo'){
+            $student->flight_credit += $credit;
+        }else{
+            $student->simulator_credit += $credit;
+        }
+        $student->save();
+    }
 
-        return response()->json(['message' => 'ok', 'ticketUrl' => $ticketUrl], 201);
+    private function updateStudentMonthlyPayments($monthlyPaymentId, $newStatus, $amount){
+        $monthlyPayment = MonthlyPayment::find($monthlyPaymentId);
+        $monthlyPayment->status = $newStatus;
+        if ($newStatus == 'paid') {
+            $monthlyPayment->amount = 0;
+        } else {
+            $monthlyPayment->amount = $monthlyPayment->amount - $amount;
+        }
+        $monthlyPayment->save();
     }
 
 
@@ -125,33 +198,34 @@ class IncomesController extends Controller
 
 
 
-   /* public function createTuitionIncome(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'payments' => 'required|array',
-        ],
-            [
-                'payments.required' => 'Debe ingresar al menos un pago',
-                'payments.array' => 'El pago debe ser un arreglo',
-            ]);
 
-        if($validator->fails()){
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
+    /* public function createTuitionIncome(Request $request): JsonResponse
+     {
+         $validator = Validator::make($request->all(), [
+             'payments' => 'required|array',
+         ],
+             [
+                 'payments.required' => 'Debe ingresar al menos un pago',
+                 'payments.array' => 'El pago debe ser un arreglo',
+             ]);
 
-        $user = Auth::user();
-        $employee = Employee::where('user_identification', $user->user_identification)->first();
-        $this->studentDataForTicket($request->input('payments'), $employee->name, $employee->last_names);
+         if($validator->fails()){
+             return response()->json(['errors' => $validator->errors()], 400);
+         }
 
-        foreach ($request->input('payments') as $payment){
-            $monthlyPayment = MonthlyPayment::find($payment['id']);
-            $monthlyPayment->status = $payment['status'];
-            $monthlyPayment->amount = $payment['status'] == 'paid' ? 0 : $monthlyPayment->amount-$payment['total'];
-            $monthlyPayment->save();
+         $user = Auth::user();
+         $employee = Employee::where('user_identification', $user->user_identification)->first();
+         $this->studentDataForTicket($request->input('payments'), $employee->name, $employee->last_names);
 
-            $this->extracted($payment, $employee->id);
-        }
+         foreach ($request->input('payments') as $payment){
+             $monthlyPayment = MonthlyPayment::find($payment['id']);
+             $monthlyPayment->status = $payment['status'];
+             $monthlyPayment->amount = $payment['status'] == 'paid' ? 0 : $monthlyPayment->amount-$payment['total'];
+             $monthlyPayment->save();
 
-        return response()->json(['message' => 'ok'], 201);
-    }*/
+             $this->extracted($payment, $employee->id);
+         }
+
+         return response()->json(['message' => 'ok'], 201);
+     }*/
 }

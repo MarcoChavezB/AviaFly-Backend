@@ -161,9 +161,11 @@ class StudentController extends Controller
                 $query->where(function ($query) use ($searchString) {
                     $query->where('students.name', 'like', '%' . $searchString . '%')
                         ->orWhere('students.last_names', 'like', '%' . $searchString . '%')
-                        ->orWhere('students.user_identification', 'like', '%' . $searchString . '%');
+                        ->orWhere('students.user_identification', 'like', '%' . $searchString . '%')
+                        ->orWhere(DB::raw("CONCAT(students.name, ' ', students.last_names)"), 'like', '%' . $searchString . '%');
                 });
             }
+
 
             $students = $query->paginate(55);
 
