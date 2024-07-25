@@ -128,6 +128,8 @@ Route::prefix('/bases')->group(function () {
 
 Route::prefix('/instructors')->group(function () {
     Route::post('/create', [InstructorController::class, 'create']);
+    Route::get('/index', [InstructorController::class, 'index']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']); // Esto puede hacerlo: instructor
         Route::get('/get/subjects', [InstructorController::class, 'getInstructorSubjects']); // Esto puede hacerlo: instructor

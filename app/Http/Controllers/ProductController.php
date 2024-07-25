@@ -24,7 +24,8 @@ class ProductController extends Controller
                 'products.updated_at'
             )
             ->where('products.name', 'like', '%'.$name.'%')
-            ->groupBy('products.id', 'products.name', 'products.price', 'products.stock', 'products.product_status', 'products.created_at', 'products.updated_at');
+            ->groupBy('products.id', 'products.name', 'products.price', 'products.stock', 'products.product_status', 'products.created_at', 'products.updated_at')
+            ->orderBy('products.created_at', 'asc');
 
         if($name != null){
             $products->where('products.product_status', 'activo');
