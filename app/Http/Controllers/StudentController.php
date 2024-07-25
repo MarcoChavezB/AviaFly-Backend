@@ -19,7 +19,14 @@ use Illuminate\Support\Facades\Validator;
 class StudentController extends Controller
 {
 
-    function index(string $name = null)
+    private $payment_method_controller;
+
+    public function __construct(PaymentMethodController $payment_method_controller)
+    {
+        $this->payment_method_controller = new PaymentMethodController();
+    }
+
+    function index(string $identificator = null)
     {
         $client = Auth::user();
         $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
@@ -28,13 +35,27 @@ class StudentController extends Controller
             ->leftJoin('careers', 'students.id_career', '=', 'careers.id')
             ->where('careers.name', 'Piloto privado')
             ->where('students.id_base', $id_base)
-            ->where('students.name', 'like', "%$name%")
+            ->where('students.name', 'like', "%$identificator%")
             ->groupBy('students.id', 'students.name', 'students.last_names', 'students.curp', 'students.flight_credit', 'careers.name')
             ->get();
 
         return response()->json($studens, 200);
     }
-    function indexByName(string $name)
+
+
+    function indexId(string $identificator)
+    {
+        $student = Student::select('id', 'name', 'last_names', 'email', 'phone', 'curp', 'credit', 'flight_credit', 'user_identification', 'emergency_direction')
+                          ->where('id', $identificator)
+                          ->first();
+
+        if ($student) {
+            return response()->json([$student], 200);
+        } else {
+            return response()->json(['error' => 'Student not found'], 404);
+        }
+    }
+   function indexByName(string $name)
     {
         return $this->index($name);
     }
@@ -440,7 +461,7 @@ class StudentController extends Controller
             'maneuver' => 'required|string|in:local,ruta',
             'total' => 'required|numeric',
             'hour_instructor_cost' => 'required|numeric',
-            'pay_method' => 'required|string|in:efectivo,abonos,transferencia,credito_vuelo',
+            'id_pay_method' => 'required|string|exists:payment_methods,id',
             'due_week' => 'nullable|numeric',
             'installment_value' => 'nullable|numeric',
             'id_student' => 'required|numeric',
@@ -463,8 +484,7 @@ class StudentController extends Controller
             'hours.numeric' => 'Las horas de vuelo no son válidas',
             'total.required' => 'campo requerido',
             'total.numeric' => 'campo requerido',
-            'pay_method.required' => 'campo requerido',
-            'pay_method.in' => 'El método de pago no es válido',
+            'id_pay_method.required' => 'campo requerido',
             'due_week.numeric' => 'La semana de vencimiento no es válida',
             'installment_value.numeric' => 'El valor de la mensualidad no es válido',
             'equipo.required' => 'El equipo es requerido',
@@ -491,7 +511,7 @@ class StudentController extends Controller
         }
 
         $student = Student::find($request->id_student);
-        if ($request->pay_method == 'credit') {
+        if ($request->id_pay_method == $this->payment_method_controller->getCreditoVueloId()) {
             $hoursCredit = $this->getPriceFly($request->flight_type) * $request->hours;
             if ($student->flight_credit < $hoursCredit) {
                 return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
@@ -513,7 +533,7 @@ class StudentController extends Controller
             $request->flight_payment_status,  // flight_payment_status: VARCHAR(50)
             $request->hours,                  // hours: INT
             $request->total,                  // total: INT
-            $request->pay_method,             // pay_method: VARCHAR(50)
+            $request->id_pay_method,          // pay_method: VARCHAR(50)
             $request->due_week,               // due_week: INT
             $request->installment_value,      // installment_value: DECIMAL(8, 2)
             $request->flight_category,        // flight_category: ENUM('VFR', 'IFR', 'IFR_nocturno')

@@ -9,17 +9,34 @@ class FlightCustomer extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'id_employee',
         'name',
         'email',
         'phone',
-        'flight_type',
         'flight_hours',
-        'reservation_hour',
         'reservation_date',
+        'reservation_hour',
+        'weight',
+        'number_of_passengers',
         'payment_status',
-        'payment_method',
         'flight_status',
-        'total'
+        'total',
+        'id_employee',
+        'id_flight',
+        'id_payment_method'
     ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'id_employee');
+    }
+
+    public function flight()
+    {
+        return $this->belongsTo(InfoFlight::class, 'id_flight');
+    }
+
+    public function paymentMethod()
+    {
+        return $this->belongsTo(PaymentMethod::class, 'id_payment_method');
+    }
 }

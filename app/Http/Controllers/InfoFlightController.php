@@ -128,6 +128,7 @@ class InfoFlightController extends Controller
                 'students.name',
                 'flight_history.flight_status'
             )
+            ->orderBy('flight_history.created_at', 'desc')
             ->get();
 
         $result = [];

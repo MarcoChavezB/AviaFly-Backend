@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
 use App\Models\Employee;
-use App\Models\Student;
 use App\Models\StudentSubject;
 use App\Models\TeacherSubjectTurn;
 use App\Models\User;
@@ -16,6 +14,12 @@ use App\Models\Base;
 
 class InstructorController extends Controller
 {
+
+    public function index(){
+        $employees = Employee::where('user_type', 'instructor')->get();
+        return response()->json($employees, 200);
+    }
+
     public function create(Request $request)
     {
         try{

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\BaseController;
 use App\Http\Controllers\ConsumableController;
+use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\PendingController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
@@ -23,6 +24,9 @@ use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\NewSletterController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderDetailController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
@@ -87,7 +91,8 @@ Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [StudentController::class, 'index']);
-    Route::get('/index/{name}', [StudentController::class, 'indexByName']);
+    Route::get('/index/{identificator}', [StudentController::class, 'indexByName']);
+    Route::get('/indexId/{id_student}', [StudentController::class, 'indexId']);
     Route::post('/enroll', [CourseController::class, 'create']);
     Route::post('/create', [StudentController::class, 'create']); // Esto puede hacerlo: root, admin
     Route::get('/show/{id}', [StudentController::class, 'show'])->where('id', '[0-9]+');
@@ -123,6 +128,8 @@ Route::prefix('/bases')->group(function () {
 
 Route::prefix('/instructors')->group(function () {
     Route::post('/create', [InstructorController::class, 'create']);
+    Route::get('/index', [InstructorController::class, 'index']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']); // Esto puede hacerlo: instructor
         Route::get('/get/subjects', [InstructorController::class, 'getInstructorSubjects']); // Esto puede hacerlo: instructor
@@ -264,6 +271,7 @@ Route::prefix('/infoflights')->group(function () {
 
 Route::prefix('/customers')->middleware('auth:sanctum')->group(function () {
     Route::post('/flight/reservation', [FlightCustomerController::class, 'storeReservationFlight']);
+    Route::get('/flight/index', [FlightCustomerController::class, 'index']);
 });
 
 Route::prefix('/airplanes')->middleware('auth:sanctum')->group(function () {
@@ -284,5 +292,19 @@ Route::prefix('/newsletters')->middleware('auth:sanctum')->group(function () {
 });
 
 
+Route::prefix('/payment_methods')->middleware('auth:sanctum')->group(function () {
+    Route::get('/index', [PaymentMethodController::class, 'index']);
+});
+
+Route::prefix('/discounts')->middleware('auth:sanctum')->group(function () {
+    Route::get('/index', [DiscountController::class, 'index']);
+});
+
+Route::prefix('/shops')->middleware('auth:sanctum')->group(function () {
+    Route::post('/store', [OrderController::class, 'store']);
+    Route::get('/index/{id_student?}', [OrderController::class, 'index']);
+    Route::post('/edit', [OrderController::class, 'edit']);
+    Route::post('/store/installment', [OrderController::class, 'storeInstallment']);
+});
 
 

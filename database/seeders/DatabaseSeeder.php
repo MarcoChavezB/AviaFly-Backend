@@ -4,22 +4,27 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+use App\Http\Controllers\PaymentMethodController;
 use App\Models\AirPlane;
 use Faker\Factory as Faker;
 use App\Models\Base;
 use App\Models\Career;
 use App\Models\Consumable;
+use App\Models\Discount;
 use App\Models\Employee;
 use App\Models\FlightObjetive;
 use App\Models\InfoFlight;
 use App\Models\Lesson;
 use App\Models\LessonObjetiveSession;
+use App\Models\PaymentMethod;
+use App\Models\Payments;
 use App\Models\Session;
 use App\Models\Stage;
 use App\Models\StageSession;
 use App\Models\Subject;
 use App\Models\TeacherSubjectTurn;
 use App\Models\Turn;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -378,12 +383,6 @@ class DatabaseSeeder extends Seeder
             "min_hours_required" => 12,
         ]);
 
-        InfoFlight::create([
-            "equipo" => "matricula",
-            "price" => 0,
-            "min_credit_hours_required" => 2,
-            "min_hours_required" => 20,
-        ]);
         InfoFlight::create([
             "equipo" => "XBPDY",
             "price" => 3100,
@@ -947,10 +946,9 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
-        echo "Lecciones de objetivos de vuelo creadas\n";
 
 
-
+        echo "Creando consumibles...\n";
         $consumables = [
             "gasolina",
             "aceite"
@@ -962,5 +960,96 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        echo "Creando descuentos...\n";
+
+        $discounts = [];
+
+        for ($i = 5; $i <= 50; $i += 5) {
+            $discounts[] = [
+                'name' => 'Descuento ' . $i . '%',
+                'discount' => $i,
+                'status' => 1,
+            ];
+        }
+
+        $discounts[] = [
+            'name' => 'Descuento 100%',
+            'discount' => 100,
+            'status' => 1,
+        ];
+
+        foreach ($discounts as $discount) {
+            Discount::create($discount);
+        }
+
+        echo "Creando métodos de pago...\n";
+
+        $paymentMethods = [
+            [
+                'type' => 'Efectivo',
+                'commission' => 0,
+                'status' => true,
+            ],
+            [
+                'type' => 'Transferencia',
+                'commission' => 0,
+                'status' => true,
+            ],
+            [
+                'type' => 'Credito',
+                'commission' => 0,
+                'status' => true,
+            ],
+            [
+                'type' => 'Tarjeta CLIP',
+                'commission' => 1.04716,
+                'status' => true,
+            ],
+            [
+                'type' => 'Inbursa CREDITO',
+                'commission' => 1.01566,
+                'status' => true,
+            ],
+            [
+                'type' => 'Inbursa DEBITO',
+                'commission' => 1.01218,
+                'status' => true,
+            ],
+            [
+                'type' => 'Abonos',
+                'commission' => 0,
+                'status' => true,
+            ],
+            [
+                'type' => 'Credito vuelo',
+                'commission' => 0,
+                'status' => true,
+            ],
+        ];
+
+        foreach ($paymentMethods as $paymentMethod) {
+            PaymentMethod::create($paymentMethod);
+        }
+
+        Employee::create([
+            'name' => 'root',
+            'last_names' => 'root',
+            'email' => 'marco1102004@gmail.com',
+            'company_email' => 'marco1102004@gmail.com',
+            'phone' => '1234567890',
+            'cellphone' => '1234567890',
+            'curp' => 'AAMM110200HDFLRR00',
+            'user_identification' => '1234567890',
+            'user_type' => 'root',
+            'id_base' => 1,
+        ]);
+
+        User::create([
+            'user_identification' => '1234567890',
+            'user_type' => 'root',
+            'password' => bcrypt('1234567890'),
+            'id_base' => 1,
+        ]);
     }
+
 }

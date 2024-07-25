@@ -13,13 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('info_flights', function (Blueprint $table) {
+        Schema::create('order_details', function (Blueprint $table) {
             $table->id();
-            $table->string('equipo')->nullable();
-            $table->decimal('price', 10, 2)->nullable();
-            $table->decimal('min_credit_hours_required', 10, 2)->nullable();
-            $table->decimal('min_hours_required', 10, 2)->nullable();
-            $table->decimal('max_weight', 10, 2)->nullable();
+            $table->integer('quantity');
+
+            $table->unsignedBigInteger('id_order');
+            $table->foreign('id_order')->references('id')->on('orders');
+
+            $table->unsignedBigInteger('id_product');
+            $table->foreign('id_product')->references('id')->on('products');
+
             $table->timestamps();
         });
     }
@@ -31,6 +34,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('info_flights');
+        Schema::dropIfExists('order_details');
     }
 };
