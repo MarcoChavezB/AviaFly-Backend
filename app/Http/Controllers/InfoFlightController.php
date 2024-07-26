@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AirPlane;
 use App\Models\flightHistory;
 use App\Models\FlightPayment;
 use App\Models\InfoFlight;
+use Carbon\Carbon;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class InfoFlightController extends Controller
 {
+
     public function index()
     {
         return InfoFlight::all();
@@ -175,4 +178,97 @@ class InfoFlightController extends Controller
 
         return response()->json($results);
     }
+
+
+    /*
+     *
+     * Función que retorna los vuelos reservados en un rango de horas
+     * @Return boolean
+     * @Param flight_date: string
+     * @Param flight_hour: string
+     * @Param hours: number
+     * @Param flight_type: string
+     *
+     * */
+
+    function OtherFlightReserved($flight_date, $flight_hour, $hours, $id_equipo)
+    {
+        $startTime = Carbon::createFromFormat('Y-m-d H:i', "$flight_date $flight_hour");
+        $endTime = $startTime->copy()->addHours($hours);
+
+        $start_time_str = $startTime->format('H:i:s');
+        $end_time_str = $endTime->format('H:i:s');
+
+        // buscar en flight history
+        $query = DB::table('flight_history')
+            ->leftJoin('flight_payments', 'flight_history.id', '=', 'flight_payments.id_flight')
+            ->where('flight_history.flight_date', $flight_date)
+            ->where('flight_history.flight_status', 'proceso')
+            ->where('flight_history.id_equipo', $id_equipo)
+            ->where(function ($q) use ($start_time_str, $end_time_str) {
+                $q->whereBetween('flight_history.flight_hour', [$start_time_str, $end_time_str])
+                    ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$start_time_str])
+                    ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$end_time_str]);
+            })
+            ->get();
+
+        // buscar en customer_flights
+        $queryCustomer = DB::table('flight_customers')
+            ->where('reservation_date', $flight_date)
+            ->where('flight_status', 'pendiente')
+            ->where('id_flight', $id_equipo)
+                ->where(function ($q) use ($start_time_str, $end_time_str) {
+                    $q->whereBetween('reservation_hour', [$start_time_str, $end_time_str])
+                        ->orWhereRaw('? BETWEEN reservation_hour AND ADDTIME(flight_customers.reservation_hour, SEC_TO_TIME(flight_customers.flight_hours * 3600))', [$start_time_str])
+                        ->orWhereRaw('? BETWEEN reservation_hour AND ADDTIME(flight_customers.reservation_hour, SEC_TO_TIME(flight_customers.flight_hours * 3600))', [$end_time_str]);
+                })
+            ->get();
+
+        return $query->count() > 0 || $queryCustomer->count() > 0;
+    }
+
+    function getTypeFlightById(int $id_flight) {
+        $query = InfoFlight::select('equipo')->where('id', $id_flight)->first();
+        return $query->equipo;
+    }
+
+    /*
+     *
+     *
+     * @Return :
+     * [
+     *      "flights" => [
+     *          {
+                  id: number;
+                  equipo: string;
+                  price: number;
+                  created_at: string;
+                  updated_at: string;
+
+     *          }...
+     *      ]
+     *      "aiplanes" => [
+     *          {
+                  id: number
+                  model: string
+                  limit_hours: number
+                  limit_weight: number
+                  limit_passengers: number
+                  tacometer: number
+                }...
+            ]
+     * ]
+     *
+     **/
+
+    public function AirplaneFlightIndex(){
+        $flights = InfoFlight::all();
+        $airplanes = AirPlane::all();
+
+        return response()->json([
+            'flights' => $flights,
+            'airplanes' => $airplanes
+        ], 200);
+    }
+
 }

@@ -23,7 +23,8 @@ return new class extends Migration
             $table->string('cellphone');
             $table->string('curp')->unique();
             $table->string('user_identification')->unique()->nullable();
-            $table->enum('user_type', ['root', 'admin', 'employee', 'instructor']);
+            $table->decimal('weight', 10, 2);
+            $table->enum('user_type', ['root', 'admin', 'employee', 'instructor', 'flight_instructor']);
 
             $table->unsignedBigInteger('id_base');
             $table->foreign('id_base')->references('id')->on('bases');

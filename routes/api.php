@@ -266,6 +266,7 @@ Route::prefix('/infoflights')->group(function () {
     Route::get('/students/history/flight/{name?}', [InfoFlightController::class, 'studentsFlightHistory']);
     Route::get('/history/flight/{id_student}', [InfoFlightController::class, 'flightHistory']);
     Route::get('/get/flight/syllabus/data/{id_flight}', [InfoFlightController::class, 'getFlightSyllabusData']);
+    Route::get('/airplane/flight/index', [InfoFlightController::class, 'AirplaneFlightIndex']);
 });
 
 

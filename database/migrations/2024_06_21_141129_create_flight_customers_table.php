@@ -39,11 +39,16 @@ return new class extends Migration
             $table->enum('flight_status', ['pendiente', 'realizado', 'cancelado'])->default('pendiente');
             $table->decimal('total', 10, 2);
 
+            $table->string('flight_type')->default('recreativo');
+
             $table->unsignedBigInteger('id_employee');
             $table->foreign('id_employee')->references('id')->on('employees');
 
             $table->unsignedBigInteger('id_flight');
             $table->foreign('id_flight')->references('id')->on('info_flights');
+
+            $table->unsignedBigInteger('id_air_planes')->nullable();
+            $table->foreign('id_air_planes')->references('id')->on('air_planes');
 
             $table->unsignedBigInteger('id_payment_method');
             $table->foreign('id_payment_method')->references('id')->on('payment_methods');

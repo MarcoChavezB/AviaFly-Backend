@@ -16,7 +16,6 @@ return new class extends Migration
         Schema::create('flight_history', function (Blueprint $table) {
             $table->id();
             $table->decimal('hours', 8, 2);
-            $table->enum('type_flight', ['simulador', 'vuelo']);
             $table->enum('reservation_type', ['academico', 'recreativo']);
             $table->enum('flight_status', ['proceso', 'cancelado', 'hecho']);
             $table->enum('maneuver', ['local', 'ruta']);
@@ -30,10 +29,12 @@ return new class extends Migration
             $table->decimal('total_horometer', 8, 2);
             $table->decimal('final_tacometer', 8, 2);
             $table->string('comment')->nullable();
+            $table->enum('type_flight', ['simulador', 'vuelo']);
 
 
             $table->unsignedBigInteger('id_equipo');
             $table->foreign('id_equipo')->references('id')->on('info_flights');
+
             $table->unsignedBigInteger('id_airplane')->nullable();
 
             $table->foreign('id_airplane')->references('id')->on('air_planes')->nullable();

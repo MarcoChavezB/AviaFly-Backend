@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AirPlane;
 use App\Models\FlightCustomer;
+use App\Models\InfoFlight;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,11 +15,16 @@ class FlightCustomerController extends Controller
 
     private $userController;
     private $paymentMethodIdController;
+    private $infoFlightController;
+    private $airplaneController;
 
-    public function __construct(UserController $userController, PaymentMethodController $paymentMethodIdController)
+
+    public function __construct(UserController $userController, PaymentMethodController $paymentMethodIdController, InfoFlightController $infoFlightControlle, AirPlaneController $airplaneController)
     {
         $this->userController = $userController;
         $this->paymentMethodIdController = $paymentMethodIdController;
+        $this->infoFlightController = $infoFlightControlle;
+        $this->airplaneController = $airplaneController;
     }
 
 
@@ -77,18 +84,26 @@ class FlightCustomerController extends Controller
     /**
      * Store a newly created resource in storage.
      * Payload:
-     *{
-            "customer_name": "Marco Chavez Baltierrez",
-            "customer_email": "marco1102004@gmail.com",
-            "customer_phone": "6242647089",
+        {
             "id_flight_type": "1",
-            "flight_hours": 4,
-            "flight_weight": 9,
-            "flight_passengers": "2",
-            "flight_reservation_date": "2024-07-18",
-            "flight_reservation_hour": "13:13",
-            "payment_method": "2",
-            "total_price": 3200
+            "id_pilot": "1",
+            "flight_hours": 1,
+            "flight_passengers": "3",
+            "flight_reservation_date": "2024-07-26",
+            "flight_reservation_hour": "13:28",
+            "payment_method": "1",
+            "total_price": 800,
+            "first_passenger_weight": 30,
+            "first_passenger_name": "marco",
+            "first_passenger_age": "20",
+            "second_passenger_weight": 100,
+            "second_passenger_name": "carlos",
+            "second_passenger_age": 30,
+            "tird_passenger_weight": 200,
+            "tird_passenger_name": "pedro",
+            "tird_passenger_age": 40,
+            "pilot_weight": 100,
+            "total_weight": 430
         }
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -96,59 +111,84 @@ class FlightCustomerController extends Controller
     public function storeReservationFlight(Request $request)
     {
         $data = $request->all();
-
         $validator = Validator::make($data, [
-            'customer_name' => 'required|string|max:255',
-            'customer_email' => 'required|string|email|max:255',
-            'customer_phone' => 'required|string|max:10',
-            'id_flight_type' => 'required|integer|exists:info_flights,id',
-            'flight_hours' => 'required|integer',
-            'flight_weight' => 'required|integer',
-            'flight_passengers' => 'required|integer',
-            'flight_reservation_date' => 'required|date',
+            'id_flight_type' => 'required|exists:info_flights,id',
+            'id_pilot' => 'required|exists:users,id',
+            'flight_hours' => 'required|numeric',
+            'flight_passengers' => 'required|numeric|min:1|max:3',
+            'flight_reservation_date' => 'required',
             'flight_reservation_hour' => 'required',
-            'payment_method' => 'required|integer|exists:payment_methods,id',
-            'total_price' => 'required|integer',
+            'payment_method' => 'required|exists:payment_methods,id',
+            'total_price' => 'required',
+            'first_passenger_weight' => 'required|numeric',
+            'first_passenger_name' => 'required',
+            'first_passenger_age' => 'required',
+            'pilot_weight' => 'required|numeric',
+            'total_weight' => 'required|numeric',
+            'id_air_planes' => 'exists:air_planes,id'
         ]);
 
-        if ($validator->fails()) {
+        if($validator->fails()){
             return response()->json($validator->errors(), 400);
         }
 
-        $employee_identification = Auth::user()->user_identification;
-        $id_employee = $this->userController->getIdEmploye($employee_identification);
+        $userIdentification = Auth::user()->user_identification;
+        $employeeId = $this->userController->getIdEmploye($userIdentification);
 
-        $payment_method = intval($data['payment_method']);
-        $efectivoId = intval($this->paymentMethodIdController->getEfectivoId());
-        $inbursaDebitoId = intval($this->paymentMethodIdController->getInbursaDebitoId());
-        $inbursaCreditoId = intval($this->paymentMethodIdController->getInbursaCreditoId());
-
-        if ($payment_method == $efectivoId
-            || $payment_method == $inbursaDebitoId
-            || $payment_method == $inbursaCreditoId) {
-            $payment_status = 'pagado';
-        } else {
-            $payment_status = 'pendiente';
+        // validacion de la fecha y hora de la reservacion
+        if($this->infoFlightController->OtherFlightReserved($data['flight_reservation_date'], $data['flight_reservation_hour'], $data['flight_hours'] ,$data['id_flight_type'])){
+            return response()->json(['message' => 'Las fechas coinciden con otra reservacion'], 400);
         }
 
-        $flightCustomer = FlightCustomer::create([
-            'name' => $data['customer_name'],
-            'email' => $data['customer_email'],
-            'phone' => $data['customer_phone'],
-            'flight_hours' => $data['flight_hours'],
-            'reservation_date' => $data['flight_reservation_date'],
-            'reservation_hour' => $data['flight_reservation_hour'],
-            'weight' => $data['flight_weight'],
-            'number_of_passengers' => $data['flight_passengers'],
-            'payment_status' => $payment_status,
-            'flight_status' => 'Pendiente',
-            'total' => $data['total_price'],
-            'id_employee' => $id_employee,
-            'id_flight' => $data['id_flight_type'],
-            'id_payment_method' => $data['payment_method']
-        ]);
+        // validacion del peso total del avion seleccionado
+        if($data['id_airplane'] != 0 && $this->airplaneController->totalWeightExceded($data['id_airplane'], $data['total_weight'])){
+            return response()->json(['message' => 'El peso total excede el limite del avion'], 400);
+        }
 
-        return response()->json($flightCustomer, 201);
+        if(intval($data['payment_method']) === $this->paymentMethodIdController->getEfectivoId()){
+            $paymentStatus = 'pagado';
+        } else {
+            $paymentStatus = 'pendiente';
+        }
+
+
+        $flightCustomer = new FlightCustomer();
+        $flightCustomer->first_passenger_name = $data['first_passenger_name'];
+        $flightCustomer->first_passenger_age = $data['first_passenger_age'];
+        $flightCustomer->first_passenger_weight = $data['first_passenger_weight'];
+
+        if($data['flight_passengers'] > 1){
+            $flightCustomer->second_passenger_name = $data['second_passenger_name'];
+            $flightCustomer->second_passenger_age = $data['second_passenger_age'];
+            $flightCustomer->second_passenger_weight = $data['second_passenger_weight'];
+        }
+
+        if($data['flight_passengers'] > 2){
+            $flightCustomer->tird_passenger_name = $data['tird_passenger_name'];
+            $flightCustomer->tird_passenger_age = $data['tird_passenger_age'];
+            $flightCustomer->tird_passenger_weight = $data['tird_passenger_weight'];
+        }
+
+        $flightCustomer->pilot_weight = $data['pilot_weight'];
+        $flightCustomer->flight_hours = $data['flight_hours'];
+        $flightCustomer->reservation_date = $data['flight_reservation_date'];
+        $flightCustomer->reservation_hour = $data['flight_reservation_hour'];
+        $flightCustomer->total_weight = $data['total_weight'];
+        $flightCustomer->number_of_passengers = $data['flight_passengers'];
+
+        $flightCustomer->payment_status = $paymentStatus;
+        $flightCustomer->flight_status = 'pendiente';
+        $flightCustomer->total = $data['total_price'];
+
+        $flightCustomer->id_employee = $employeeId;
+        $flightCustomer->id_flight = $data['id_flight_type'];
+        $flightCustomer->id_air_planes = $data['id_airplane'];
+        $flightCustomer->id_payment_method = $data['payment_method'];
+        $flightCustomer->id_pilot = $data['id_pilot'];
+
+        $flightCustomer->save();
+
+        return response()->json(['message' => 'Reservacion creada con exito'], 201);
     }
 
     public function create()
@@ -199,7 +239,12 @@ class FlightCustomerController extends Controller
     {
         //
     }
+
+
 }
+
+
+
 
 
 
