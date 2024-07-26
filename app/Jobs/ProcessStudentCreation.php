@@ -45,7 +45,7 @@ class ProcessStudentCreation implements ShouldQueue
             'id_student' => $this->student->id,
             'payment_date' => $this->student->created_at,
             'amount' => $career->registration_fee,
-            'concept' => 'Inscripción'.' '.$career->name,
+            'concept' => 'Inscripción'.'_'.$career->name,
             'status' => 'pending',
         ]);
 
@@ -57,7 +57,7 @@ class ProcessStudentCreation implements ShouldQueue
                 'id_student' => $this->student->id,
                 'payment_date' => $paymentDate,
                 'amount' => $career->monthly_fee,
-                'concept' => 'Mensualidad'.' '.$career->name,
+                'concept' => 'Mensualidad'.'_'.$career->name.'_'.$paymentDate,
                 'status' => 'pending',
             ]);
         }

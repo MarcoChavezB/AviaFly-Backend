@@ -150,7 +150,7 @@ Route::prefix('/careers')->group(function () {
 Route::prefix('/incomes')->group(function (){
     Route::middleware('auth:sanctum')->group(function () {
             Route::post('/tuition/create', [IncomesController::class, 'createTuitionIncome']);
-            Route::post('/flight-credit/create', [IncomesController::class, 'createFlightCreditIncome']);
+            Route::post('/flight-credit/create', [IncomesController::class, 'createIncomes']);
     });
 });
 
