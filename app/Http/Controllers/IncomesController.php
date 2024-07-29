@@ -10,6 +10,7 @@ use App\Models\MonthlyPayment;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -189,6 +190,52 @@ class IncomesController extends Controller
         $monthlyPayment->save();
     }
 
+    public function index(Request $request)
+    {
+        $perPage = $request->get('per_page', 15);
+        $startDate = $request->get('start_date', null);
+        $endDate = $request->get('end_date', null);
+        $studentFilter = $request->get('student_filter', null);
+
+        $query = DB::table('income_details')
+            ->join('incomes', 'income_details.id', '=', 'incomes.income_details_id')
+            ->join('students', 'income_details.student_id', '=', 'students.id')
+            ->select('students.user_identification as student_registration',
+                DB::raw("CONCAT(students.name, ' ', students.last_names) as student_name"),
+                'income_details.payment_date',
+                'income_details.total',
+                'income_details.payment_method',
+                'income_details.id as income_details_id',
+                'incomes.id as income_id',
+                'incomes.concept');
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('income_details.payment_date', [$startDate, $endDate]);
+        }
+
+        if ($studentFilter) {
+            $query->where(function ($query) use ($studentFilter) {
+                $query->where('students.user_identification', 'like', '%' . $studentFilter . '%')
+                    ->orWhere(DB::raw("CONCAT(students.name, ' ', students.last_names)"), 'like', '%' . $studentFilter . '%');
+            });
+        }
+
+        $incomes = $query->orderBy('income_details.payment_date', 'desc')
+            ->paginate($perPage);
+
+        $paginationData = [
+            'current_page' => $incomes->currentPage(),
+            'has_next_page' => $incomes->hasMorePages(),
+            'total_records' => $incomes->total(),
+            'displaying_from' => $incomes->firstItem(),
+            'displaying_to' => $incomes->lastItem(),
+        ];
+
+        return response()->json([
+            'incomes' => $incomes->items(),
+            'pagination_data' => $paginationData,
+        ]);
+    }
 
 
 
@@ -199,33 +246,4 @@ class IncomesController extends Controller
 
 
 
-    /* public function createTuitionIncome(Request $request): JsonResponse
-     {
-         $validator = Validator::make($request->all(), [
-             'payments' => 'required|array',
-         ],
-             [
-                 'payments.required' => 'Debe ingresar al menos un pago',
-                 'payments.array' => 'El pago debe ser un arreglo',
-             ]);
-
-         if($validator->fails()){
-             return response()->json(['errors' => $validator->errors()], 400);
-         }
-
-         $user = Auth::user();
-         $employee = Employee::where('user_identification', $user->user_identification)->first();
-         $this->studentDataForTicket($request->input('payments'), $employee->name, $employee->last_names);
-
-         foreach ($request->input('payments') as $payment){
-             $monthlyPayment = MonthlyPayment::find($payment['id']);
-             $monthlyPayment->status = $payment['status'];
-             $monthlyPayment->amount = $payment['status'] == 'paid' ? 0 : $monthlyPayment->amount-$payment['total'];
-             $monthlyPayment->save();
-
-             $this->extracted($payment, $employee->id);
-         }
-
-         return response()->json(['message' => 'ok'], 201);
-     }*/
 }

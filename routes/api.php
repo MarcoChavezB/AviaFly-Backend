@@ -152,6 +152,7 @@ Route::prefix('/incomes')->group(function (){
             Route::post('/tuition/create', [IncomesController::class, 'createTuitionIncome']);
             Route::post('/flight-credit/create', [IncomesController::class, 'createIncomes']);
     });
+    Route::get('/get/all', [IncomesController::class, 'index']);
 });
 
 
