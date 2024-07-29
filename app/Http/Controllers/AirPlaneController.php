@@ -7,6 +7,18 @@ use Illuminate\Http\Request;
 
 class AirPlaneController extends Controller
 {
+
+    public function totalWeightExceded($id_airplane, $total_weight){
+        $airplane = AirPlane::find($id_airplane);
+        return intval($airplane->limit_weight) < intval($total_weight);
+    }
+
+    public function getTotalWeight($id_airplane)
+    {
+        $airplane = AirPlane::find($id_airplane);
+        return $airplane->limit_weight;
+    }
+
     /**
      * Display a listing of the resource.
      *

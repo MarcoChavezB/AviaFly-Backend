@@ -10,6 +10,7 @@ class AirPlane extends Model
     use HasFactory;
     protected $fillable = [
         'model',
-        'limit_hours'
+        'limit_hours',
+        'limit_weight',
     ];
 }
