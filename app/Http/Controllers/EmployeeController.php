@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Base;
+use App\Mail\AdminEntryNotification;
+use App\Mail\EmployeeEntryNotification;
+use App\Mail\FingerPrintMail;
+use App\Models\CheckInRecords;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class EmployeeController extends Controller
@@ -112,5 +115,38 @@ class EmployeeController extends Controller
         $tokens = DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
 
         return response()->json(['message' => 'Contraseña actualizada correctamente']);
+    }
+
+    function fingerPrintList($id_finger){
+
+        $employee = Employee::where('id', $id_finger)->first();
+
+        if(!$employee){
+            return response()->json(['message' => 'Empleado no encontrado'], 404);
+        }
+
+        if(CheckInRecords::where('id_employee', $employee->id)->where('arrival_date', date('Y-m-d'))->exists()){
+            return response()->json(['message' => 'Ya se ha registrado la asistencia del dia de hoy'], 400);
+        }
+
+        CheckInRecords::Create([
+            'arrival_date' => date('Y-m-d'),
+            'arrival_time' => date('H:i:s'),
+            'id_employee' => $employee->id
+        ]);
+
+        $employeeName = $employee->name . ' ' . $employee->last_names;
+        $currentDateTime = date('Y-m-d H:i:s');
+        $user_type = $employee->user_type;
+
+        $admins = Employee::where('user_type', 'admin')->orWhere('user_type', 'root')->get();
+
+        foreach($admins as $admin){
+            Mail::to($admin->email)->send(new AdminEntryNotification($employeeName, $currentDateTime, $user_type));
+        }
+
+        Mail::to($employee->company_email)->send(new EmployeeEntryNotification($employeeName, $currentDateTime, $user_type));
+
+        return response()->json(['message' => 'Correo enviado correctamente']);
     }
 }

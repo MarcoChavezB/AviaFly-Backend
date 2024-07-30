@@ -191,7 +191,7 @@ class InfoFlightController extends Controller
      *
      * */
 
-    function OtherFlightReserved($flight_date, $flight_hour, $hours, $id_equipo)
+    function OtherFlightReserved($flight_date, $flight_hour, $hours, $id_equipo, $currentReservationId = null)
     {
         $startTime = Carbon::createFromFormat('Y-m-d H:i', "$flight_date $flight_hour");
         $endTime = $startTime->copy()->addHours($hours);
@@ -199,7 +199,7 @@ class InfoFlightController extends Controller
         $start_time_str = $startTime->format('H:i:s');
         $end_time_str = $endTime->format('H:i:s');
 
-        // buscar en flight history
+        // Buscar en flight_history
         $query = DB::table('flight_history')
             ->leftJoin('flight_payments', 'flight_history.id', '=', 'flight_payments.id_flight')
             ->where('flight_history.flight_date', $flight_date)
@@ -209,22 +209,32 @@ class InfoFlightController extends Controller
                 $q->whereBetween('flight_history.flight_hour', [$start_time_str, $end_time_str])
                     ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$start_time_str])
                     ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$end_time_str]);
-            })
-            ->get();
+            });
 
-        // buscar en customer_flights
+        if ($currentReservationId) {
+            $query->where('flight_history.id', '!=', $currentReservationId);
+        }
+
+        $queryResult = $query->get();
+
+        // Buscar en flight_customers
         $queryCustomer = DB::table('flight_customers')
             ->where('reservation_date', $flight_date)
             ->where('flight_status', 'pendiente')
             ->where('id_flight', $id_equipo)
-                ->where(function ($q) use ($start_time_str, $end_time_str) {
-                    $q->whereBetween('reservation_hour', [$start_time_str, $end_time_str])
-                        ->orWhereRaw('? BETWEEN reservation_hour AND ADDTIME(flight_customers.reservation_hour, SEC_TO_TIME(flight_customers.flight_hours * 3600))', [$start_time_str])
-                        ->orWhereRaw('? BETWEEN reservation_hour AND ADDTIME(flight_customers.reservation_hour, SEC_TO_TIME(flight_customers.flight_hours * 3600))', [$end_time_str]);
-                })
-            ->get();
+            ->where(function ($q) use ($start_time_str, $end_time_str) {
+                $q->whereBetween('reservation_hour', [$start_time_str, $end_time_str])
+                    ->orWhereRaw('? BETWEEN reservation_hour AND ADDTIME(flight_customers.reservation_hour, SEC_TO_TIME(flight_customers.flight_hours * 3600))', [$start_time_str])
+                    ->orWhereRaw('? BETWEEN reservation_hour AND ADDTIME(flight_customers.reservation_hour, SEC_TO_TIME(flight_customers.flight_hours * 3600))', [$end_time_str]);
+            });
 
-        return $query->count() > 0 || $queryCustomer->count() > 0;
+        if ($currentReservationId) {
+            $queryCustomer->where('id', '!=', $currentReservationId);
+        }
+
+        $queryCustomerResult = $queryCustomer->get();
+
+        return $queryResult->count() > 0 || $queryCustomerResult->count() > 0;
     }
 
     function getTypeFlightById(int $id_flight) {

@@ -48,7 +48,7 @@ return new class extends Migration
             $table->foreign('id_flight')->references('id')->on('info_flights');
 
             $table->unsignedBigInteger('id_air_planes')->nullable();
-            $table->foreign('id_air_planes')->references('id')->on('air_planes');
+            $table->foreign('id_air_planes')->references('id')->on('air_planes')->nullable();
 
             $table->unsignedBigInteger('id_payment_method');
             $table->foreign('id_payment_method')->references('id')->on('payment_methods');

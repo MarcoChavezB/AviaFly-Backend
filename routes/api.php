@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\BaseController;
+use App\Http\Controllers\CheckInRecordsController;
 use App\Http\Controllers\ConsumableController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\PendingController;
@@ -25,13 +26,11 @@ use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\NewSletterController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\OrderDetailController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SessionController;
-use App\Models\InfoFlight;
 
 /*
 |--------------------------------------------------------------------------
@@ -273,6 +272,7 @@ Route::prefix('/infoflights')->group(function () {
 Route::prefix('/customers')->middleware('auth:sanctum')->group(function () {
     Route::post('/flight/reservation', [FlightCustomerController::class, 'storeReservationFlight']);
     Route::get('/flight/index', [FlightCustomerController::class, 'index']);
+    Route::post('/flight/edit/{reservation_id}/{flight_status?}', [FlightCustomerController::class, 'edit']);
 });
 
 Route::prefix('/airplanes')->middleware('auth:sanctum')->group(function () {
@@ -307,5 +307,15 @@ Route::prefix('/shops')->middleware('auth:sanctum')->group(function () {
     Route::post('/edit', [OrderController::class, 'edit']);
     Route::post('/store/installment', [OrderController::class, 'storeInstallment']);
 });
+
+
+Route::prefix('/fingerPrint')->group(function () {
+    Route::post('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
+});
+
+Route::prefix('/arrival')->group(function () {
+    Route::get('/index', [CheckInRecordsController::class, 'index']);
+});
+
 
 

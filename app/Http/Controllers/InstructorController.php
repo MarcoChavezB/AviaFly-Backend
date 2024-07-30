@@ -16,7 +16,7 @@ class InstructorController extends Controller
 {
 
     public function index(){
-        $employees = Employee::where('user_type', 'instructor')->get();
+        $employees = Employee::where('user_type', 'flight_instructor')->get();
         return response()->json($employees, 200);
     }
 
