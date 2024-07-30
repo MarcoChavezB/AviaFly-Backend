@@ -10,9 +10,22 @@ class CareerController extends Controller
 {
     public function create(Request $request)
     {
-        try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|unique:careers,name',
+                'monthly_payments' => 'required|integer',
+                'registration_fee' => 'required|numeric',
+                'monthly_fee' => 'required|numeric',
+            ],
+            [
+                'name.required' => 'El nombre es requerido',
+                'name.string' => 'El nombre debe ser una cadena de texto',
+                'name.unique' => 'El nombre ya existe',
+                'monthly_payments.required' => 'Los pagos mensuales son requeridos',
+                'monthly_payments.integer' => 'Los pagos mensuales deben ser un número entero',
+                'registration_fee.required' => 'La cuota de inscripción es requerida',
+                'registration_fee.numeric' => 'La cuota de inscripción debe ser un número',
+                'monthly_fee.required' => 'La cuota mensual es requerida',
+                'monthly_fee.numeric' => 'La cuota mensual debe ser un número',
             ]);
 
             if ($validator->fails()) {
@@ -21,12 +34,12 @@ class CareerController extends Controller
 
             $career = new Career();
             $career->name = $request->name;
+            $career->monthly_payments = $request->monthly_payments;
+            $career->registration_fee = $request->registration_fee;
+            $career->monthly_fee = $request->monthly_fee;
             $career->save();
 
-            return response()->json($career, 201);
-        } catch (\Exception $e) {
-            return response()->json(["message" => "Internal Server Error"], 500);
-        }
+            return response()->json(["message" => "ok"], 201);
     }
 
     public function getCareers()

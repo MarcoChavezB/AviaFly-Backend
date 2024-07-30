@@ -141,11 +141,11 @@ Route::prefix('/instructors')->group(function () {
 });
 
 Route::prefix('/careers')->group(function () {
-    Route::post('/create', [CareerController::class, 'create']);
     Route::get('/get', [CareerController::class, 'getCareers']);
     Route::get('/get-with-subjects', [CareerController::class, 'getCareersWithSubjects']);
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/index', [CareerController::class, 'index']);
+        Route::post('/create', [CareerController::class, 'create']);
         Route::put('/update', [CareerController::class, 'update']);
     });
 });
