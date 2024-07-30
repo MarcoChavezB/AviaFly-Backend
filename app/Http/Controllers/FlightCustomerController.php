@@ -33,46 +33,90 @@ class FlightCustomerController extends Controller
      * Display a listing of the resource.
      *
      *  {
-           id_reservacion
-           nombre_cliente
-           telefono_cliente
-            fecha_reservacion
-            hora_reservacion
-            numero de pasajeros
-            peso de pasajeros
-            estatus de vuelo
-            empleado que realizo la reservacion
-            equipo de vuelo
-            metodo de pago
-            estado de pago
-            total
-        }
+     *      "id_reservation": number,
+     *      "flight_type": number,
+     *      "pilot": number,
+     *      "flight_hours": number,
+     *      "flight_passengers": number,
+     *      "flight_reservation_date": "2024-07-26",
+     *      "flight_reservation_hour": "13:28",
+     *      "payment_method": number,
+     *      "total_price": number,
+     *      "passengers": [
+     *          {
+     *              "name": "marco",
+     *              "age": "20",
+     *              "weight": 30
+     *          },
+     *          {
+     *          "name": "carlos",
+     *          "age": "30",
+     *          "weight": 100
+     *          },
+     *      ]
+     *
+     *
+     *  }
      * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $query = FlightCustomer::select(
-            'flight_customers.id as id_reservacion',
-            'employees.name as employee_name',
-            'flight_customers.name as client_name',
-            'flight_customers.phone as client_phone',
-            'flight_customers.reservation_date',
-            'flight_customers.reservation_hour',
-            'flight_customers.number_of_passengers as passengers',
-            'flight_customers.weight as total_weight',
-            'flight_customers.flight_status',
-            'info_flights.equipo as flight_equipment',
-            'payment_methods.type as payment_method',
-            'flight_customers.payment_status as payment_status',
-            'flight_customers.total'
-        )
-        ->join('employees', 'employees.id', '=', 'flight_customers.id_employee')
-        ->join('info_flights', 'info_flights.id', '=', 'flight_customers.id_flight')
-        ->join('payment_methods', 'payment_methods.id', '=', 'flight_customers.id_payment_method')
-        ->orderBy('flight_customers.created_at', 'desc')
-        ->get();
+        // Obtener todos los registros ordenados por created_at en orden descendente
+        $flightCustomers = FlightCustomer::orderBy('created_at', 'desc')->get();
+        $flightCustomersArray = [];
 
-        return response()->json($query, 200);
+        foreach ($flightCustomers as $flightCustomer) {
+            $flightCustomerArray = [
+                'id_reservation' => $flightCustomer->id,
+                'id_flight_type' => $flightCustomer->info_flight->id,
+                'id_airplane' => $flightCustomer->airplane->id,
+                'flight_type' => $flightCustomer->info_flight->equipo,
+                'reservation_status' => $flightCustomer->flight_status,
+                'employee' => $flightCustomer->employee->name,
+                'id_pilot' => $flightCustomer->pilot->id,
+                'pilot' => $flightCustomer->pilot->name,
+                'flight_hours' => $flightCustomer->flight_hours,
+                'flight_passengers' => $flightCustomer->number_of_passengers,
+                'id_payment_method' => $flightCustomer->paymentMethod->id,
+                'payment_method' => $flightCustomer->paymentMethod->type,
+                'total_price' => $flightCustomer->total,
+                'flight_reservation_date' => $flightCustomer->reservation_date,
+                'flight_reservation_hour' => $flightCustomer->reservation_hour,
+                'first_passenger_name' => $flightCustomer->first_passenger_name,
+                'first_passenger_age' => $flightCustomer->first_passenger_age,
+                'first_passenger_weight' => $flightCustomer->first_passenger_weight,
+                'second_passenger_name' => $flightCustomer->second_passenger_name,
+                'second_passenger_age' => $flightCustomer->second_passenger_age,
+                'second_passenger_weight' => $flightCustomer->second_passenger_weight,
+                'tird_passenger_name' => $flightCustomer->tird_passenger_name,
+                'tird_passenger_age' => $flightCustomer->tird_passenger_age,
+                'tird_passenger_weight' => $flightCustomer->tird_passenger_weight,
+                'pilot_weight' => $flightCustomer->pilot_weight,
+                'total_weight' => $flightCustomer->total_weight,
+                'passengers' => []
+            ];
+
+            // Añadir los datos de los pasajeros adicionales si existen
+            if ($flightCustomer->number_of_passengers > 1) {
+                $flightCustomerArray['passengers'][] = [
+                    'name' => $flightCustomer->second_passenger_name,
+                    'age' => $flightCustomer->second_passenger_age,
+                    'weight' => $flightCustomer->second_passenger_weight
+                ];
+            }
+
+            if ($flightCustomer->number_of_passengers > 2) {
+                $flightCustomerArray['passengers'][] = [
+                    'name' => $flightCustomer->tird_passenger_name,
+                    'age' => $flightCustomer->tird_passenger_age,
+                    'weight' => $flightCustomer->tird_passenger_weight
+                ];
+            }
+
+            $flightCustomersArray[] = $flightCustomerArray;
+        }
+
+        return response()->json($flightCustomersArray, 200);
     }
 
     /**
@@ -113,7 +157,7 @@ class FlightCustomerController extends Controller
         $data = $request->all();
         $validator = Validator::make($data, [
             'id_flight_type' => 'required|exists:info_flights,id',
-            'id_pilot' => 'required|exists:users,id',
+            'id_pilot' => 'required|exists:employees,id',
             'flight_hours' => 'required|numeric',
             'flight_passengers' => 'required|numeric|min:1|max:3',
             'flight_reservation_date' => 'required',
@@ -182,9 +226,12 @@ class FlightCustomerController extends Controller
 
         $flightCustomer->id_employee = $employeeId;
         $flightCustomer->id_flight = $data['id_flight_type'];
-        $flightCustomer->id_air_planes = $data['id_airplane'];
         $flightCustomer->id_payment_method = $data['payment_method'];
         $flightCustomer->id_pilot = $data['id_pilot'];
+
+        if($data['id_airplane'] != 0){
+            $flightCustomer->id_air_planes = $data['id_airplane'];
+        }
 
         $flightCustomer->save();
 
@@ -212,9 +259,89 @@ class FlightCustomerController extends Controller
      * @param  \App\Models\FlightCustomer  $flightCustomer
      * @return \Illuminate\Http\Response
      */
-    public function edit(FlightCustomer $flightCustomer)
+    public function edit(Request $request, int $reservation_id, string $flight_status = null)
     {
-        //
+        $data = $request->all();
+        $validator = Validator::make($data, [
+            'id_flight_type' => 'nullable|exists:info_flights,id',
+            'id_pilot' => 'nullable|exists:employees,id',
+            'flight_hours' => 'nullable|numeric',
+            'flight_passengers' => 'nullable|numeric|min:1|max:3',
+            'payment_method' => 'nullable|exists:payment_methods,id',
+            'first_passenger_weight' => 'nullable|numeric',
+            'pilot_weight' => 'nullable|numeric',
+            'total_weight' => 'nullable|numeric',
+            'id_air_planes' => 'nullable|exists:air_planes,id'
+        ]);
+
+        if($validator->fails()){
+            return response()->json($validator->errors(), 400);
+        }
+
+        $userIdentification = Auth::user()->user_identification;
+        $employeeId = $this->userController->getIdEmploye($userIdentification);
+
+        // Validación de la fecha y hora de la reservación, excluyendo la reserva actual
+        if(isset($data['flight_reservation_date']) && isset($data['flight_reservation_hour']) && isset($data['flight_hours']) && isset($data['id_flight_type']) && $this->infoFlightController->OtherFlightReserved($data['flight_reservation_date'], $data['flight_reservation_hour'], $data['flight_hours'], $data['id_flight_type'], $reservation_id)){
+            return response()->json(['message' => 'Las fechas coinciden con otra reservacion'], 400);
+        }
+
+         // Validación del peso total del avión seleccionado
+        if(isset($data['id_airplane']) && $data['id_airplane'] != 0 && isset($data['total_weight']) && $this->airplaneController->totalWeightExceded($data['id_airplane'], $data['total_weight'])){
+            return response()->json(['message' => 'El peso total excede el limite del avion'], 400);
+        }
+
+        $paymentStatus = 'pendiente';
+        if(isset($data['payment_method']) && intval($data['payment_method']) === $this->paymentMethodIdController->getEfectivoId()){
+            $paymentStatus = 'pagado';
+        }
+
+        $flightCustomer = FlightCustomer::find($reservation_id);
+        $flightCustomer->first_passenger_name = $data['first_passenger_name'] ?? $flightCustomer->first_passenger_name;
+        $flightCustomer->first_passenger_age = $data['first_passenger_age'] ?? $flightCustomer->first_passenger_age;
+        $flightCustomer->first_passenger_weight = $data['first_passenger_weight'] ?? $flightCustomer->first_passenger_weight;
+
+        if(isset($data['flight_passengers']) && $data['flight_passengers'] > 1){
+            $flightCustomer->second_passenger_name = $data['second_passenger_name'] ?? $flightCustomer->second_passenger_name;
+            $flightCustomer->second_passenger_age = $data['second_passenger_age'] ?? $flightCustomer->second_passenger_age;
+            $flightCustomer->second_passenger_weight = $data['second_passenger_weight'] ?? $flightCustomer->second_passenger_weight;
+        }
+
+        if(isset($data['flight_passengers']) && $data['flight_passengers'] > 2){
+            $flightCustomer->tird_passenger_name = $data['tird_passenger_name'] ?? $flightCustomer->tird_passenger_name;
+            $flightCustomer->tird_passenger_age = $data['tird_passenger_age'] ?? $flightCustomer->tird_passenger_age;
+            $flightCustomer->tird_passenger_weight = $data['tird_passenger_weight'] ?? $flightCustomer->tird_passenger_weight;
+        }
+
+        $flightCustomer->pilot_weight = $data['pilot_weight'] ?? $flightCustomer->pilot_weight;
+        $flightCustomer->flight_hours = $data['flight_hours'] ?? $flightCustomer->flight_hours;
+        $flightCustomer->reservation_date = $data['flight_reservation_date'] ?? $flightCustomer->reservation_date;
+        $flightCustomer->reservation_hour = $data['flight_reservation_hour'] ?? $flightCustomer->reservation_hour;
+        $flightCustomer->total_weight = $data['total_weight'] ?? $flightCustomer->total_weight;
+        $flightCustomer->number_of_passengers = $data['flight_passengers'] ?? $flightCustomer->number_of_passengers;
+
+        $flightCustomer->payment_status = $paymentStatus;
+
+        if($flight_status != null){
+            $flightCustomer->flight_status = $flight_status;
+        } else {
+            $flightCustomer->flight_status = 'pendiente';
+        }
+
+        $flightCustomer->total = $data['total_price'] ?? $flightCustomer->total;
+
+        $flightCustomer->id_employee = $employeeId;
+        $flightCustomer->id_flight = $data['id_flight_type'] ?? $flightCustomer->id_flight;
+        $flightCustomer->id_payment_method = $data['payment_method'] ?? $flightCustomer->id_payment_method;
+        $flightCustomer->id_pilot = $data['id_pilot'] ?? $flightCustomer->id_pilot;
+
+        if(isset($data['id_airplane']) && $data['id_airplane'] != 0){
+            $flightCustomer->id_air_planes = $data['id_airplane'] ?? $flightCustomer->id_air_planes;
+        }
+
+        $flightCustomer->save();
+
+        return response()->json(['message' => 'Reservacion actualizada con exito'], 200);
     }
 
     /**

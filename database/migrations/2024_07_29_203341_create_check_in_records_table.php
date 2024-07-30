@@ -13,9 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('sessions', function (Blueprint $table) {
+        Schema::create('check_in_records', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+
+            $table->date('arrival_date');
+            $table->time('arrival_time');
+
+            $table->unsignedBigInteger('id_employee');
+            $table->foreign('id_employee')->references('id')->on('employees');
+
             $table->timestamps();
         });
     }
@@ -27,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('check_in_records');
     }
 };
