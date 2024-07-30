@@ -150,6 +150,8 @@ Route::prefix('/incomes')->group(function (){
     Route::middleware('auth:sanctum')->group(function () {
             Route::post('/tuition/create', [IncomesController::class, 'createTuitionIncome']);
             Route::post('/flight-credit/create', [IncomesController::class, 'createIncomes']);
+            Route::get('/get/all', [IncomesController::class, 'index']);
+            Route::get('/show/{id}', [IncomesController::class, 'show'])->where('id', '[0-9]+');
     });
 });
 
