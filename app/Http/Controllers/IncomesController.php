@@ -237,6 +237,32 @@ class IncomesController extends Controller
         ]);
     }
 
+    public function show($id){
+        $income = DB::table('income_details')
+            ->join('incomes', 'income_details.id', '=', 'incomes.income_details_id')
+            ->join('employees', 'income_details.employee_id', '=', 'employees.id')
+            ->join('students', 'income_details.student_id', '=', 'students.id')
+            ->select('students.user_identification as student_registration',
+                DB::raw("CONCAT(students.name, ' ', students.last_names) as student_name"),
+                'income_details.payment_date',
+                'incomes.concept',
+                'income_details.payment_method',
+                'income_details.file_path as voucher',
+                'incomes.discount',
+                'incomes.original_import as subtotal',
+                'income_details.total',
+                DB::raw("CONCAT(employees.name, ' ', employees.last_names) as employee_name"),
+                'income_details.bank_account',
+                'incomes.iva as iva',
+                'income_details.commission',
+                'income_details.ticket_path as ticket',
+                )
+            ->where('incomes.id', $id)
+            ->first();
+
+        return response()->json($income);
+    }
+
 
 
 

@@ -25,13 +25,11 @@ use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\NewSletterController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\OrderDetailController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SessionController;
-use App\Models\InfoFlight;
 
 /*
 |--------------------------------------------------------------------------
@@ -151,8 +149,9 @@ Route::prefix('/incomes')->group(function (){
     Route::middleware('auth:sanctum')->group(function () {
             Route::post('/tuition/create', [IncomesController::class, 'createTuitionIncome']);
             Route::post('/flight-credit/create', [IncomesController::class, 'createIncomes']);
+            Route::get('/get/all', [IncomesController::class, 'index']);
+            Route::get('/show/{id}', [IncomesController::class, 'show'])->where('id', '[0-9]+');
     });
-    Route::get('/get/all', [IncomesController::class, 'index']);
 });
 
 
