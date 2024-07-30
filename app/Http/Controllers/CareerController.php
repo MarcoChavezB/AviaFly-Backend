@@ -56,6 +56,29 @@ class CareerController extends Controller
         }
     }
 
+    public function index()
+    {
+        $careers = Career::all();
+        if ($careers->isEmpty()) {
+            return response()->json(["errors" => ["No hay carreras creadas"]], 404);
+        }
+        return response()->json(["careers" => $careers], 200);
+    }
+
+    public function update(Request $request)
+    {
+        $career = Career::find($request->id);
+        if (!$career) {
+            return response()->json(["errors" => ["La carrera no existe"]], 404);
+        }
+
+        $career->monthly_payments = $request->monthly_payments;
+        $career->registration_fee = $request->registration_fee;
+        $career->monthly_fee = $request->monthly_fee;
+        $career->save();
+        return response()->json($career, 200);
+    }
+
 
 
 }
