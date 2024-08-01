@@ -145,7 +145,7 @@ class EmployeeController extends Controller
             Mail::to($admin->email)->send(new AdminEntryNotification($employeeName, $currentDateTime, $user_type));
         }
 
-        Mail::to($employee->company_email)->send(new EmployeeEntryNotification($employeeName, $currentDateTime, $user_type));
+        Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTime, $user_type));
 
         return response()->json(['message' => 'Correo enviado correctamente']);
     }

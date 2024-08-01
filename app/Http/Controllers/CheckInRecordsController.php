@@ -32,7 +32,7 @@ class CheckInRecordsController extends Controller
 
         $result = $checkInRecords->map(function($item) {
             return [
-                "id_employee" => $item->employee->id,
+                "id_employee" => $item->employee->user_identification,
                 "employee_name" => $item->employee->name,
                 "employee_email" => $item->employee->company_email,
                 "employee_phone" => $item->employee->phone,

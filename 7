@@ -255,21 +255,19 @@ class FlightHistoryController extends Controller
     {
         $data = $request->all();
 
-        // Validar los datos recibidos
         $validator = Validator::make($data, [
             'id_flight' => 'required|numeric',
             'horometroInicial' => 'required|numeric',
             'horometroFinal' => 'required|numeric',
-            'tacometro' => 'required|numeric',  // Asegúrate de validar que sea numérico
+            'tacometro' => 'required',
             'flight_alone' => 'required|boolean',
             'total_horometro' => 'required|numeric',
         ], [
             'horometroInicial.required' => 'Campo requerido',
             'horometroFinal.required' => 'Campo requerido',
-            'horometroInicial.numeric' => 'Dato incorrecto',
+            'horoemtroInicial.numeric' => 'Dato incorrecto',
             'horometroFinal.numeric' => 'Dato incorrecto',
             'tacometro.required' => 'Campo requerido',
-            'tacometro.numeric' => 'Dato incorrecto',  // Agrega validación numérica para tacometro
             'flight_alone.required' => 'Campo requerido',
             'total_horometro.required' => 'Campo requerido',
         ]);
@@ -278,18 +276,10 @@ class FlightHistoryController extends Controller
             return response()->json($validator->errors(), 400);
         }
 
-        // Obtener el vuelo y el avión
         $flight = flightHistory::find($data['id_flight']);
-        if (!$flight) {
-            return response()->json(['msg' => 'Vuelo no encontrado'], 404);
-        }
 
         $airplane = AirPlane::find($flight->id_airplane);
-        if (!$airplane) {
-            return response()->json(['msg' => 'Avión no encontrado'], 404);
-        }
 
-        // Verificar el horómetro inicial
         if ($data['horometroInicial'] < $flight->initial_horometer) {
             return response()->json([
                 'msg' => 'El horómetro inicial no puede ser menor al horómetro inicial del vuelo'
@@ -297,24 +287,11 @@ class FlightHistoryController extends Controller
         }
 
 
-        // Actualizar el vuelo con los datos proporcionados
-        $flight->flight_alone = $data['flight_alone'];
-        $flight->initial_horometer = $data['horometroInicial'];
-        $flight->final_horometer = $data['horometroFinal'];
-        $flight->total_horometer = $data['total_horometro'];
-        $flight->final_tacometer = $data['tacometro'];
-        $flight->comment = $data['comments'];
-        $flight->has_report = 1;
-
-        // Guardar los cambios
-        $flight->save();
-
-        // Consultar la diferencia de tacómetro
         $tacometer_difference = DB::select("
             WITH RankedFlights AS (
                 SELECT
                     final_tacometer,
-                    ROW_NUMBER() OVER (ORDER BY id DESC) AS row_num
+                    ROW_NUMBER() OVER (ORDER BY id ASC) AS row_num
                 FROM
                     flight_history
                 WHERE
@@ -328,9 +305,31 @@ class FlightHistoryController extends Controller
         ");
 
         $actual_tacometer = $airplane->tacometer;
-        $difference = !empty($tacometer_difference) ? $tacometer_difference[0]->tacometer_difference : 0;
-        $airplane->tacometer = $actual_tacometer + $difference;
 
+        if (!empty($tacometer_difference) && isset($tacometer_difference[0]->tacometer_difference)) {
+
+            $actual_tacometer = $airplane->tacometer;
+
+            $difference = $tacometer_difference[0]->tacometer_difference;
+
+            $airplane->tacometer = $actual_tacometer + $difference;
+        }
+
+        return response()->json([
+            "msg" => $actual_tacometer + $difference,
+            'first' => $actual_tacometer,
+            'second' => $difference
+        ]);
+
+        $flight->flight_alone = $data['flight_alone'];
+        $flight->initial_horometer = $data['horometroInicial'];
+        $flight->final_horometer = $data['horometroFinal'];
+        $flight->total_horometer = $data['total_horometro'];
+        $flight->final_tacometer = $data['tacometro'];
+        $flight->comment = $data['comments'];
+        $flight->has_report = 1;
+
+        $flight->save();
         $airplane->save();
 
         return response()->json([
