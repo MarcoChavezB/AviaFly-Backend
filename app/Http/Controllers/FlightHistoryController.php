@@ -563,6 +563,13 @@ class FlightHistoryController extends Controller
 
 function getAllInfoReport(int $id_flight)
 {
+    // Fetch the second most recent final_horometer value for 'vuelo' flights
+    $secondLatestFinalHorometer = DB::table('flight_history')
+        ->where('type_flight', 'vuelo')
+        ->orderBy('id', 'desc')
+        ->skip(1) // Skip the most recent record to get the second most recent
+        ->value('final_horometer');
+
     $flightReport = FlightPayment::select([
         'flight_history.flight_date',
         'flight_history.flight_hour',
@@ -585,7 +592,6 @@ function getAllInfoReport(int $id_flight)
         'flight_history.hours',
         DB::raw('flight_payments.hour_instructor_cost * flight_history.hours AS total_payment_instructor'),
         'info_flights.price as hour_flight_price',
-        'air_planes.tacometer'
     ])
     ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
     ->leftJoin('employees as instructor', 'flight_payments.id_instructor', '=', 'instructor.id')
@@ -598,6 +604,13 @@ function getAllInfoReport(int $id_flight)
     ->orderBy('flight_history.flight_hour', 'desc')
     ->limit(1)
     ->get();
+
+    // Adding the second most recent final_horometer as initial_horometer to each flightReport record
+    $flightReport->each(function ($report) use ($secondLatestFinalHorometer) {
+        if ($secondLatestFinalHorometer !== null) {
+            $report->initial_horometer = $secondLatestFinalHorometer;
+        }
+    });
 
     return response()->json($flightReport, 200);
 }
