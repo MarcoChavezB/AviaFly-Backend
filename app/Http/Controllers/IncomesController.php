@@ -71,7 +71,9 @@ class IncomesController extends Controller
 
         $baseName = $this->sanitizeName($base->name);
         $extension = $file->getClientOriginalExtension();
+
         $fileName = $this->generateFileName($baseName, $student->user_identification, 'vouchers', $extension);
+
         $file->move(public_path(dirname($fileName)), basename($fileName));
 
         return url($fileName);
@@ -83,6 +85,7 @@ class IncomesController extends Controller
         $this->validateRequest($request);
 
         $employee = $this->getAuthenticatedEmployee();
+
         $voucherPath = $this->handleFileUpload($request, $employee->id_base, $request->input('student_id'));
 
         $paymentDetails = $this->extractPaymentDetails($request, $voucherPath);

@@ -8,16 +8,17 @@ use App\Http\Controllers\UserController;
 use App\Models\Employee;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class NewSletterController extends Controller
 {
-    protected $userController;
-    public function __construct(UserController $userController)
+    protected $userController, $fileController;
+    public function __construct(UserController $userController, FileController $fileController)
     {
         $this->userController = $userController;
+        $this->fileController = $fileController;
     }
-
 
     /**
      * Display a listing of the resource.
@@ -114,6 +115,7 @@ class NewSletterController extends Controller
      *      "file": "file"
      * }
      */
+
     public function create(Request $request)
     {
         $data = $request->all();
@@ -125,6 +127,7 @@ class NewSletterController extends Controller
             'expired_date' => 'required|date',
             'direct_to' => 'required|in:todos,empleados,instructores,estudiantes',
             'base_id' => 'required|numeric',
+            'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf'
         ], [
             'title.required' => 'El título es requerido.',
             'content.required' => 'El contenido es requerido.',
@@ -138,8 +141,12 @@ class NewSletterController extends Controller
             return response()->json(['errors' => $validator->errors()], 400);
         }
 
+        if ($request->hasFile('file')) {
+            $url =  $this->fileController->saveFile($data['file'], $data['base_id'], $data['direct_to'], $this->fileController->getBasePath());
+        }
+
         $created_by = Employee::where('user_identification', Auth::user()->user_identification)->first();
-        $newSletter = new NewSletter();
+        $newSletter = new Newsletter();
 
         $newSletter->title = $data['title'];
         $newSletter->content = $data['content'];
@@ -148,11 +155,15 @@ class NewSletterController extends Controller
         $newSletter->direct_to = $data['direct_to'];
         $newSletter->id_base = $data['base_id'];
         $newSletter->created_by = $created_by->id;
+        $newSletter->file = $url ?? null;
 
         $newSletter->save();
-        return response()->json(['message' => 'Se ha creado el boletin correctamente.']);
-    }
 
+        return response()->json([
+            'message' => 'Se ha creado el boletín correctamente.',
+            'url' => $url ?? null
+        ]);
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -189,7 +200,7 @@ class NewSletterController extends Controller
             'title' => 'string',
             'content' => 'string',
             'direct_to' => 'in:todos,empleados,instructores,estudiantes',
-            'file' => 'nullable',
+            'file' => 'nullable|file',
             'start_date' => 'date',
             'expired_date' => 'date',
             'created_date' => 'date',
@@ -218,12 +229,20 @@ class NewSletterController extends Controller
             return response()->json(['errors' => ['No tienes permisos para editar este boletin.']], 403);
         }
 
+        if ($request->hasFile('file') && $request->file('file')->isValid()) {
+            if ($newSletter->file) {
+                $this->fileController->deleteFile($newSletter->file);
+            }
+
+            $url = $this->fileController->saveFile($request->file('file'), $data['id_base'], $data['direct_to'], $this->fileController->getBasePath());
+            $newSletter->file = $url;
+        }
+
         $newSletter->id_base = $data['id_base'] ?? $newSletter->id_base;
         $newSletter->is_active = $data['is_active'] ?? $newSletter->is_active;
         $newSletter->title = $data['title'] ?? $newSletter->title;
         $newSletter->content = $data['content'] ?? $newSletter->content;
         $newSletter->direct_to = $data['direct_to'] ?? $newSletter->direct_to;
-        $newSletter->file = $data['file'] ?? $newSletter->file;
         $newSletter->start_at = $data['start_date'] ?? $newSletter->start_at;
         $newSletter->expired_at = $data['expired_date'] ?? $newSletter->expired_at;
         $newSletter->created_at = $data['created_date'] ?? $newSletter->created_at;
