@@ -251,7 +251,7 @@ Route::prefix('/calendars')->group(function () {
 
 
 Route::prefix('/tikets')->group(function () {
-    Route::get('/flight/reservation/{flightHistoryId}', [PDFController::class, 'getReservationTicket']);
+    Route::get('/flight/reservation/{flightHistoryId}', [PDFController::class, 'generateTicket']);
 });
 
 

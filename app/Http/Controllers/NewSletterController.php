@@ -142,7 +142,7 @@ class NewSletterController extends Controller
         }
 
         if ($request->hasFile('file')) {
-            $url =  $this->fileController->saveFile($data['file'], $data['base_id'], $data['direct_to'], $this->fileController->getBasePath());
+            $url = $this->fileController->saveFile($request->file('file'), $data['base_id'], $data['direct_to'], $this->fileController->getBasePath());
         }
 
         $created_by = Employee::where('user_identification', Auth::user()->user_identification)->first();
@@ -239,7 +239,7 @@ class NewSletterController extends Controller
         }
 
         $newSletter->id_base = $data['id_base'] ?? $newSletter->id_base;
-        $newSletter->is_active = $data['is_active'] ?? $newSletter->is_active;
+        $newSletter->is_active = $data['is_active'] == 'true' ? true: false ?? $newSletter->is_active;
         $newSletter->title = $data['title'] ?? $newSletter->title;
         $newSletter->content = $data['content'] ?? $newSletter->content;
         $newSletter->direct_to = $data['direct_to'] ?? $newSletter->direct_to;

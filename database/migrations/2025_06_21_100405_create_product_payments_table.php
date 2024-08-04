@@ -20,6 +20,9 @@ return new class extends Migration
             $table->decimal('amount', 8, 2);
             $table->unsignedBigInteger('id_payment_method');
             $table->foreign('id_payment_method')->references('id')->on('payment_methods');
+
+            $table->string('payment_voucher')->nullable();
+            $table->string('payment_ticket')->nullable();
             $table->timestamps();
         });
     }

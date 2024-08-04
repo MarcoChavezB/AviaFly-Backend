@@ -3,15 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Base;
+use App\Models\Student;
+use Barryvdh\DomPDF\PDF;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\UploadedFile;
 
 class FileController extends Controller
 {
     protected $basePath = 'newsletters/bases';
+    protected $tiketPath = 'bases/';
+
     public function getBasePath(): string
     {
         return $this->basePath;
+    }
+
+    public function getTicketPath(): string
+    {
+        return $this->tiketPath;
     }
 
 
@@ -48,7 +57,6 @@ class FileController extends Controller
         return url($fileName);
     }
 
-
     /*
      * @Request: url del archivo a eliminar
     *  */
@@ -63,6 +71,35 @@ class FileController extends Controller
         }
 
         return false;
+    }
+
+
+    private function generateTicketName(string $originalName, string $baseName, string $basePath, Student $student): string
+    {
+        $extension = 'pdf';
+        $basePath = rtrim($basePath, '/');
+        $baseName = trim($baseName, '/');
+        $studentId = trim($student->user_identification, '/');
+
+        return $basePath . '/' . $baseName . '/' . $studentId . '/tickets/' . $this->sanitizeName($originalName) . '_' . time() . '.' . $extension;
+    }
+
+    public function saveTicket(PDF $pdf, Student $student, int $baseId): string
+    {
+        $base = Base::findOrFail($baseId);
+        $baseName = $this->sanitizeName($base->name);
+
+        $originalName = 'ticket';
+        $fileName = $this->generateTicketName($originalName, $baseName, $this->tiketPath, $student);
+        $directory = public_path(dirname($fileName));
+
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $pdf->save($directory . '/' . basename($fileName));
+
+        return url(trim(str_replace(public_path(), '', $fileName), '/'));
     }
 }
 
