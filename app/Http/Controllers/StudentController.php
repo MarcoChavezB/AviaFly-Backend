@@ -243,7 +243,7 @@ class StudentController extends Controller
         }
     }
 
-    public function updateGrade(Request $request)
+        public function updateGrade(Request $request)
     {
         try {
             $validator = Validator::make(
@@ -1047,6 +1047,37 @@ class StudentController extends Controller
             ->get();
 
         return response()->json(['student_subjects' => $student_subjects], 200);
+    }
+
+    public function getStudentIncomes(){
+        try {
+            $user = Auth::user();
+
+            $student = Student::where('user_identification', $user->user_identification)->first();
+            if (!$student) {
+                return response()->json(['error' => 'Estudiante no encontrado'], 404);
+            }
+
+            $incomes = DB::table('income_details')
+                ->join('incomes', 'income_details.id', '=', 'incomes.income_details_id')
+                ->select('incomes.concept',
+                    'incomes.quantity',
+                    'incomes.total',
+                    'incomes.id',
+                    'income_details.payment_method',
+                    'income_details.payment_date',
+                    'income_details.ticket_path'
+                )
+                ->where('income_details.student_id', $student->id)
+                ->orderBy('income_details.payment_date', 'desc')
+                ->get();
+
+            return response()->json([
+                'incomes' => $incomes
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Ocurrió un error al obtener los ingresos del estudiante'], 500);
+        }
     }
 
 }
