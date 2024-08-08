@@ -211,6 +211,8 @@ Route::prefix('/employees')->group(function () {
         Route::get('/show/{id}', [EmployeeController::class, 'show'])->where('id', '[0-9]+');
         Route::put('/update/{id}', [EmployeeController::class, 'update'])->where('id', '[0-9]+');
         Route::put('/update/password/{id}', [EmployeeController::class, 'updatePassword'])->where('id', '[0-9]+');
+        Route::delete('/destroy/access/{id}', [EmployeeController::class, 'deleteAccessUser'])->where('id', '[0-9]+');
+        Route::post('/create/access/{id}', [EmployeeController::class, 'createAccessUser'])->where('id', '[0-9]+');
     });
 });
 
