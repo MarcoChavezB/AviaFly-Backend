@@ -152,42 +152,57 @@ class EmployeeController extends Controller
     }
 
     public function deleteAccessUser($id){
-        $employee = Employee::where('id', $id)->first();
 
-        if(!$employee){
-            return response()->json(['message' => 'Empleado no encontrado'], 404);
+        try {
+            $employee = Employee::where('id', $id)->first();
+
+            if(!$employee){
+                return response()->json(['message' => 'Empleado no encontrado'], 404);
+            }
+
+            $user = User::where('user_identification', $employee->user_identification)->first();
+
+            if(!$user){
+                return response()->json(['message' => 'El usuario no tiene acceso'], 404);
+            }
+
+            $tokens = DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
+            $user->delete();
+
+            return response()->json(['message' => 'Accesos eliminados correctamente']);
+
+        }catch (\Exception $e) {
+            return response()->json(['message' => 'Internal Server Error'], 500);
         }
-
-        $user = User::where('user_identification', $employee->user_identification)->first();
-
-        $tokens = DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
-        $user->delete();
-
-        return response()->json(['message' => 'Accesos eliminados correctamente']);
     }
 
     public function createAccessUser($id){
+        try {
 
-        $employee = Employee::where('id', $id)->first();
+            $employee = Employee::where('id', $id)->first();
 
-        if(!$employee){
-            return response()->json(['message' => 'Empleado no encontrado'], 404);
+            if(!$employee){
+                return response()->json(['message' => 'Empleado no encontrado'], 404);
+            }
+
+            $user = User::where('user_identification', $employee->user_identification)->first();
+
+            if($user){
+                return response()->json(['message' => 'El usuario ya tiene acceso'], 400);
+            }
+
+            $user = User::create([
+                'user_identification' => $employee->user_identification,
+                'password' => bcrypt($employee->curp),
+                'user_type' => $employee->user_type,
+                'id_base' => $employee->id_base,
+            ]);
+
+            return response()->json(['message' => 'Acceso creado correctamente']);
+
+        }catch (\Exception $e){
+            return response()->json(['message' => 'Internal Server Error'], 500);
         }
-
-        $user = User::where('user_identification', $employee->user_identification)->first();
-
-        if($user){
-            return response()->json(['message' => 'El usuario ya tiene acceso'], 400);
-        }
-
-        $user = User::create([
-            'user_identification' => $employee->user_identification,
-            'password' => bcrypt($employee->curp),
-            'user_type' => $employee->user_type,
-            'id_base' => $employee->id_base,
-        ]);
-
-        return response()->json(['message' => 'Acceso creado correctamente']);
 
     }
 }
