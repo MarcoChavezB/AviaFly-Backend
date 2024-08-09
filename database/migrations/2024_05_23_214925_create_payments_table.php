@@ -22,6 +22,10 @@ return new class extends Migration
 
             $table->unsignedBigInteger('id_flight');
             $table->foreign('id_flight')->references('id')->on('flight_payments');
+
+            $table->string('payment_voucher')->nullable();
+            $table->string('payment_ticket')->nullable();
+
             $table->timestamps();
         });
     }

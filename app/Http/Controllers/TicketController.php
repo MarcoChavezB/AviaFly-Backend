@@ -8,20 +8,13 @@ use App\Models\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\FileController;
 use App\Models\Employee;
-use App\Models\Payments;
 
 class TicketController extends Controller
 {
-
-    private $fileController;
-
-    public function __construct(FileController $fileController)
-    {
-        $this->fileController = $fileController;
-    }
-
     public function generateTicket(array $data, string $employeeName, string $employeeLastNames, int $employeeBaseId, int $incomeDetailsId, Student $student, Employee $employee, int $id_payment): string
     {
+
+        $fileController = new FileController();
         $baseData = Base::findOrFail($employeeBaseId);
         $incomeDetails = IncomeDetails::findOrFail($incomeDetailsId);
 
@@ -38,7 +31,7 @@ class TicketController extends Controller
             'incomeDetails'
             ));
 
-        $fileUrl = $this->fileController->saveTicket(
+        $fileUrl = $fileController->saveTicket(
             $pdf->output(),
             $student,
             $employee->id_base

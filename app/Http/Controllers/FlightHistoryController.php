@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\TicketController;
 
 class FlightHistoryController extends Controller
 {
@@ -58,12 +59,9 @@ class FlightHistoryController extends Controller
         return response()->json($report, 200);
     }
 
-
-
-    function flightsData(int $id_student)
+    function flightsData(int $id_student, int $flightHistory = null)
     {
-        // Consulta principal para obtener los detalles del vuelo y los totales
-        $flights = FlightPayment::select(
+        $query = FlightPayment::select(
             'flight_payments.id as id_flight',
             'students.id as id_student',
             'students.curp',
@@ -80,31 +78,38 @@ class FlightHistoryController extends Controller
             ->leftJoin('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
             ->leftJoin('students', 'students.id', '=', 'flight_payments.id_student')
             ->leftJoin('payments', 'flight_payments.id', '=', 'payments.id_flight')
-            ->where('students.id', $id_student)
-            ->groupBy(
-                'students.curp',
-                'students.id',
-                'flight_history.type_flight',
-                'flight_history.flight_date',
-                'flight_history.flight_hour',
-                'flight_history.flight_status',
-                'flight_payments.total',
-                'payments.id_flight',
-                'flight_payments.payment_status',
-                'flight_payments.id'
-            )
+            ->where('students.id', $id_student);
+
+        if (!is_null($flightHistory)) {
+            $query->where('flight_history.id', $flightHistory);
+        }
+
+        $flights = $query->groupBy(
+            'students.curp',
+            'students.id',
+            'flight_history.type_flight',
+            'flight_history.flight_date',
+            'flight_history.flight_hour',
+            'flight_history.flight_status',
+            'flight_payments.total',
+            'payments.id_flight',
+            'flight_payments.payment_status',
+            'flight_payments.id'
+        )
             ->OrderBy('flight_history.created_at', 'desc')
             ->get();
 
         $data = $flights->map(function ($flights) {
             $history_amounts = DB::table('payments')
-                ->select('amount', 'created_at')
+                ->select('payments.amount', 'payments.created_at', 'payment_methods.type as payment_method')
+                ->join('payment_methods', 'payment_methods.id', '=', 'payments.id_payment_method')
                 ->where('id_flight', $flights->id_flight)
                 ->get();
 
             return [
                 'id_flight' => $flights->id_flight,
                 'id_student' => $flights->id_student,
+                'payment_method' => $history_amounts[0] ? $history_amounts[0]->payment_method : null,
                 'curp' => $flights->curp,
                 'flight_type' => $flights->tipo_vuelo,
                 'flight_date' => $flights->fecha_vuelo,
@@ -460,7 +465,7 @@ class FlightHistoryController extends Controller
         return response()->json($student, 200);
     }
     /** */
-    function getFlightDetails(int $id_flight)
+    function getFlightDetails(string $id_flight)
     {
         $flight = flightHistory::select(
             'flight_history.hours',
@@ -476,11 +481,15 @@ class FlightHistoryController extends Controller
             'students.id as id_student',
             'students.name as student_name',
             'students.last_names as student_last_name',
-            'students.phone as student_phone'
+            'students.phone as student_phone',
+            'payment_methods.type as payment_method',
+            'payments.payment_ticket',
         )
             ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->join('students', 'students.id', '=', 'flight_payments.id_student')
             ->join('employees', 'employees.id', '=', 'flight_payments.id_instructor')
+            ->join('payments', 'payments.id_flight', '=', 'flight_history.id')
+            ->join('payment_methods', 'payment_methods.id', '=', 'payments.id_payment_method')
             ->where('flight_history.id', $id_flight)
             ->groupBy(
                 'flight_history.hours',
@@ -496,8 +505,15 @@ class FlightHistoryController extends Controller
                 'students.id',
                 'flight_history.flight_status',
                 'students.last_names',
-                'students.phone'
+                'students.phone',
+                'payment_methods.type',
+                'payments.payment_ticket',
             )->get();
+        $PdfController = new PDFController();
+        $flight = $flight->map(function ($flight) use ($PdfController, $id_flight) {
+            $flight->ticket = $PdfController->generateTicket($id_flight);
+            return $flight;
+        });
 
         return response()->json($flight, 200);
     }

@@ -8,16 +8,10 @@ use Illuminate\Support\Facades\DB;
 
 class PDFController extends Controller
 {
-    protected $fileController;
 
-    public function __construct(FileController $fileController)
+    public function generateTicket($id_flight_history)
     {
-        $this->fileController = $fileController;
-    }
-
-    public function generateTicket($flightHistoryId)
-    {
-        $response = $this->getReservationTicket($flightHistoryId);
+        $response = $this->getReservationTicket($id_flight_history);
         $apiData = $response->first();
 
         if (!$apiData) {
@@ -51,8 +45,10 @@ class PDFController extends Controller
 
         $pdf = PDF::loadView('income_ticket', $data);
         $student = Student::find($apiData['id_student']);
-        $url =  $this->fileController->saveTicket($pdf, $student, $apiData['id_base']);
-        return response()->json($url, 200);
+
+        $fileController = new FileController();
+        $url =  $fileController->saveTicket($pdf, $student, $apiData['id_base']);
+        return $url;
     }
 
     public function getReservationTicket($flightHistoryId)

@@ -11,7 +11,7 @@ use Illuminate\Http\UploadedFile;
 class FileController extends Controller
 {
     protected $basePath = 'newsletters/bases';
-    protected $tiketPath = 'bases/';
+    protected $tiketPath = 'bases';
 
     public function getBasePath(): string
     {
@@ -77,11 +77,8 @@ class FileController extends Controller
     private function generateTicketName(string $originalName, string $baseName, string $basePath, Student $student): string
     {
         $extension = 'pdf';
-        $basePath = rtrim($basePath, '/');
-        $baseName = trim($baseName, '/');
-        $studentId = trim($student->user_identification, '/');
-
-        return $basePath . '/' . $baseName . '/' . $studentId . '/tickets/' . $this->sanitizeName($originalName) . '_' . time() . '.' . $extension;
+        $originalName = $this->sanitizeName($originalName);
+        return $basePath . '/' . $baseName . '/' . $student->user_identification . '/tickets/' . $this->sanitizeName($originalName) . '_' . time() . '.' . $extension;
     }
 
     public function saveTicket(PDF $pdf, Student $student, int $baseId): string
@@ -99,7 +96,7 @@ class FileController extends Controller
 
         $pdf->save($directory . '/' . basename($fileName));
 
-        return url(trim(str_replace(public_path(), '', $fileName), '/'));
+        return url($fileName);
     }
 }
 

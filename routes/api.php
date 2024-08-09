@@ -191,7 +191,7 @@ Route::prefix('/turns')->group(function () {
 
 Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get', [InfoFlightController::class, 'index']);
-    Route::get('/get/flight/data/{id_student}', [FlightHistoryController::class, 'flightsData']);
+    Route::get('/get/flight/data/{id_student}/{flightHistory?}', [FlightHistoryController::class, 'flightsData']);
     Route::post('/changeStatus', [FlightHistoryController::class, 'changeStatusFlight']);
     Route::get('/get/flight/report/{id_flight}', [FlightHistoryController::class, 'reportDataById']);
     Route::post('/already/date/reserved', [FlightHistoryController::class, 'isDateReserved']);
@@ -217,7 +217,6 @@ Route::prefix('/products')->middleware('auth:sanctum')->group(function () {
     Route::post('/store', [ProductController::class, 'store']);
     Route::put('/update/{id_product}', [ProductController::class, 'update']);
     Route::post('/filters', [ProductController::class, 'filters']);
-
 });
 
 Route::prefix('/enum/values')->group(function () {

@@ -98,15 +98,18 @@ class InfoFlightController extends Controller
                 'employees.name as instructor_name',
                 'flight_history.type_flight as flight_type',
                 'flight_history.flight_category as flight_category',
+                'flight_history.maneuver',
                 'flight_history.flight_date as flight_date',
                 'flight_history.flight_hour as flight_hour',
                 'flight_history.hours as flight_hours',
                 'sessions.name as session_name',
                 'flight_payments.total as total',
                 'flight_history.flight_status as flight_status',
+                'payment_methods.type as payment_method',
             )
             ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->join('payments', 'flight_payments.id', '=', 'payments.id_flight')
+            ->join('payment_methods', 'payments.id_payment_method', '=', 'payment_methods.id')
             ->join('students', 'flight_payments.id_student', '=', 'students.id')
             ->join('employees', 'flight_payments.id_instructor', '=', 'employees.id')
             ->leftJoin('sessions', 'flight_history.id_session', '=', 'sessions.id')
@@ -129,7 +132,9 @@ class InfoFlightController extends Controller
                 'students.id',
                 'students.user_identification',
                 'students.name',
-                'flight_history.flight_status'
+                'flight_history.flight_status',
+                'flight_history.maneuver',
+                'payment_methods.type'
             )
             ->orderBy('flight_history.created_at', 'desc')
             ->get();
@@ -146,9 +151,12 @@ class InfoFlightController extends Controller
             }
             $result[$data->student_id]['flights'][] = [
                 'instructor_name' => $data->instructor_name,
+                'payment_method' => $data->payment_method,
                 'id_flight' => $data->id_flight,
+                'id_student' => $data->student_id,
                 'flight_type' => $data->flight_type,
                 'flight_category' => $data->flight_category,
+                'flight_manuever' => $data->maneuver,
                 'flight_date' => $data->flight_date,
                 'flight_hour' => $data->flight_hour,
                 'flight_hours' => $data->flight_hours,

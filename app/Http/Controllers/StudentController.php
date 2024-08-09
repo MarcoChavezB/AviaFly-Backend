@@ -7,10 +7,12 @@ use App\Models\Base;
 use App\Models\Employee;
 use App\Models\flightHistory;
 use App\Models\InfoFlight;
+use App\Models\Payments;
 use App\Models\Student;
 use App\Models\StudentSubject;
 use App\Models\User;
 use Carbon\Carbon;
+use Faker\Provider\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -461,7 +463,7 @@ class StudentController extends Controller
             'maneuver' => 'required|string|in:local,ruta',
             'total' => 'required|numeric',
             'hour_instructor_cost' => 'required|numeric',
-            'id_pay_method' => 'required|string|exists:payment_methods,id',
+            'id_pay_method' => 'required|exists:payment_methods,id',
             'due_week' => 'nullable|numeric',
             'installment_value' => 'nullable|numeric',
             'id_student' => 'required|numeric',
@@ -546,8 +548,18 @@ class StudentController extends Controller
 
         $last_id_insert = flightHistory::latest('id')->first();
         $message = $request->flight_payment_status == 'pending' ? 'Vuelo agendado, pendiente de pago' : 'Se agendo el vuelo';
+
+        $lastPaymentInsert = Payments::latest('id')->first();
+
+        $PdfController = new PDFController();
+        $urlTicket = $PdfController->generateTicket($last_id_insert->id);
+
+        $lastPaymentInsert->payment_ticket = $urlTicket;
+        $lastPaymentInsert->save();
+
         return response()->json(["msg" => $message, "id" => $last_id_insert->id], 201);
     }
+
     /*
  *      payload : {
  *          id_instructor,
