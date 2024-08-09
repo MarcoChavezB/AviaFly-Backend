@@ -14,10 +14,7 @@ class StudentSubject extends Model
         'id_subject',
         'id_teacher',
         'id_turn',
-        'start_date',
-        'end_date',
         'final_grade',
-        'duration',
         'status'
     ];
 

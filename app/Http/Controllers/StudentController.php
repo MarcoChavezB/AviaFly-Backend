@@ -1041,8 +1041,6 @@ class StudentController extends Controller
                 'student_subjects.final_grade',
                 'student_subjects.status',
                 'student_subjects.id as student_subject_id',
-                'student_subjects.start_date',
-                'student_subjects.end_date',
             )
             ->get();
 

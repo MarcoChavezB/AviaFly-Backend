@@ -57,7 +57,7 @@ class ProcessStudentCreation implements ShouldQueue
                 'id_student' => $this->student->id,
                 'payment_date' => $paymentDate,
                 'amount' => $career->monthly_fee,
-                'concept' => 'Mensualidad'.'_'.$career->name.'_'.$paymentDate,
+                'concept' => 'Mensualidad'.' '.$career->name.' '.$paymentDate,
                 'status' => 'pending',
             ]);
         }
@@ -84,9 +84,6 @@ class ProcessStudentCreation implements ShouldQueue
                     'id_subject' => $careerSubject->id_subject,
                     'id_turn' => $this->request['turn'],
                     'id_teacher' => $teacher->id_teacher,
-                    'start_date' => $teacher->start_date,
-                    'end_date' => $teacher->end_date,
-                    'duration' => $teacher->duration,
                 ]);
             } else {
                 return;

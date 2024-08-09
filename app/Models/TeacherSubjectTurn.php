@@ -13,9 +13,6 @@ class TeacherSubjectTurn extends Model
         'id_teacher',
         'career_subject_id',
         'id_turn',
-        'start_date',
-        'end_date',
-        'duration',
     ];
 
     function subject(){

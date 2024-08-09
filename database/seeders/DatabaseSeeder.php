@@ -215,21 +215,16 @@ class DatabaseSeeder extends Seeder
 
 
         $sobrecargoCareerSubjectsIds = [9, 10, 11, 12, 13, 14, 15, 16];
-        $start_date = new \DateTime('2024-01-01');
-        $end_date = new \DateTime('2024-02-29');
+
 
         foreach ($sobrecargoCareerSubjectsIds as $careerSubjectId) {
             TeacherSubjectTurn::create([
                 'id_teacher' => 1,
                 'career_subject_id' => $careerSubjectId,
                 'id_turn' => 1,
-                'start_date' => $start_date->format('Y-m-d'),
-                'end_date' => $end_date->format('Y-m-d'),
-                'duration' => 4,
+
             ]);
 
-            $start_date->modify('+1 month');
-            $end_date->modify('+1 month');
         }
 
 
@@ -238,81 +233,54 @@ class DatabaseSeeder extends Seeder
             'id_teacher' => 2,
             'career_subject_id' => 17,
             'id_turn' => 1,
-            'start_date' => '2024-01-01',
-            'end_date' => '2024-02-29',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 3,
             'career_subject_id' => 18,
             'id_turn' => 1,
-            'start_date' => '2024-04-01',
-            'end_date' => '2024-05-31',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 4,
             'career_subject_id' => 19,
             'id_turn' => 1,
-            'start_date' => '2024-07-01',
-            'end_date' => '2024-08-31',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 4,
             'career_subject_id' => 20,
             'id_turn' => 1,
-            'start_date' => '2024-10-01',
-            'end_date' => '2024-11-30',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 3,
             'career_subject_id' => 21,
             'id_turn' => 1,
-            'start_date' => '2024-01-01',
-            'end_date' => '2024-02-29',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 2,
             'career_subject_id' => 22,
             'id_turn' => 1,
-            'start_date' => '2024-04-01',
-            'end_date' => '2024-05-31',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 2,
             'career_subject_id' => 23,
             'id_turn' => 1,
-            'start_date' => '2024-07-01',
-            'end_date' => '2024-08-31',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 3,
             'career_subject_id' => 24,
             'id_turn' => 1,
-            'start_date' => '2024-10-01',
-            'end_date' => '2024-11-30',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 4,
             'career_subject_id' => 25,
             'id_turn' => 1,
-            'start_date' => '2024-10-01',
-            'end_date' => '2024-11-30',
-            'duration' => 4,
         ]);
 
         //Piloto Privado
@@ -320,72 +288,48 @@ class DatabaseSeeder extends Seeder
             'id_teacher' => 2,
             'career_subject_id' => 1,
             'id_turn' => 1,
-            'start_date' => '2024-01-01',
-            'end_date' => '2024-02-29',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 3,
             'career_subject_id' => 2,
             'id_turn' => 1,
-            'start_date' => '2024-04-01',
-            'end_date' => '2024-05-31',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 4,
             'career_subject_id' => 3,
             'id_turn' => 1,
-            'start_date' => '2024-07-01',
-            'end_date' => '2024-08-31',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 4,
             'career_subject_id' => 4,
             'id_turn' => 1,
-            'start_date' => '2024-10-01',
-            'end_date' => '2024-11-30',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 3,
             'career_subject_id' => 5,
             'id_turn' => 1,
-            'start_date' => '2024-01-01',
-            'end_date' => '2024-02-29',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 2,
             'career_subject_id' => 6,
             'id_turn' => 1,
-            'start_date' => '2024-04-01',
-            'end_date' => '2024-05-31',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 2,
             'career_subject_id' => 7,
             'id_turn' => 1,
-            'start_date' => '2024-07-01',
-            'end_date' => '2024-08-31',
-            'duration' => 4,
         ]);
 
         TeacherSubjectTurn::create([
             'id_teacher' => 3,
             'career_subject_id' => 8,
             'id_turn' => 1,
-            'start_date' => '2024-10-01',
-            'end_date' => '2024-11-30',
-            'duration' => 4,
         ]);
 
 
