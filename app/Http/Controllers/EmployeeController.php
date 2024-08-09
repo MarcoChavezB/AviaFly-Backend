@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\AdminEntryNotification;
 use App\Mail\EmployeeEntryNotification;
 use App\Mail\FingerPrintMail;
+use App\Models\Base;
 use App\Models\CheckInRecords;
 use App\Models\Employee;
 use App\Models\User;
@@ -148,5 +149,60 @@ class EmployeeController extends Controller
         Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTime, $user_type));
 
         return response()->json(['message' => 'Correo enviado correctamente']);
+    }
+
+    public function deleteAccessUser($id){
+
+        try {
+            $employee = Employee::where('id', $id)->first();
+
+            if(!$employee){
+                return response()->json(['message' => 'Empleado no encontrado'], 404);
+            }
+
+            $user = User::where('user_identification', $employee->user_identification)->first();
+
+            if(!$user){
+                return response()->json(['message' => 'El usuario no tiene acceso'], 404);
+            }
+
+            $tokens = DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
+            $user->delete();
+
+            return response()->json(['message' => 'Accesos eliminados correctamente']);
+
+        }catch (\Exception $e) {
+            return response()->json(['message' => 'Internal Server Error'], 500);
+        }
+    }
+
+    public function createAccessUser($id){
+        try {
+
+            $employee = Employee::where('id', $id)->first();
+
+            if(!$employee){
+                return response()->json(['message' => 'Empleado no encontrado'], 404);
+            }
+
+            $user = User::where('user_identification', $employee->user_identification)->first();
+
+            if($user){
+                return response()->json(['message' => 'El usuario ya tiene acceso'], 400);
+            }
+
+            $user = User::create([
+                'user_identification' => $employee->user_identification,
+                'password' => bcrypt($employee->curp),
+                'user_type' => $employee->user_type,
+                'id_base' => $employee->id_base,
+            ]);
+
+            return response()->json(['message' => 'Acceso creado correctamente']);
+
+        }catch (\Exception $e){
+            return response()->json(['message' => 'Internal Server Error'], 500);
+        }
+
     }
 }

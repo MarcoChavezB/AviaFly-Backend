@@ -115,7 +115,9 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
 
 
         Route::get('/student/get/profile-info', [StudentController::class, 'studentInfo']); // Esto puede hacerlo: estudiante
-        Route::get('student/get/subjects', [StudentController::class, 'getStudentSubjectsAsStudent']); // Esto puede hacerlo: estudiante
+        Route::get('/student/get/subjects', [StudentController::class, 'getStudentSubjectsAsStudent']); // Esto puede hacerlo: estudiante
+        Route::get('/student/incomes', [StudentController::class, 'getStudentIncomes']); //Esto peude hacerlo un estudiante
+
 
     });
 });
@@ -209,6 +211,8 @@ Route::prefix('/employees')->group(function () {
         Route::get('/show/{id}', [EmployeeController::class, 'show'])->where('id', '[0-9]+');
         Route::put('/update/{id}', [EmployeeController::class, 'update'])->where('id', '[0-9]+');
         Route::put('/update/password/{id}', [EmployeeController::class, 'updatePassword'])->where('id', '[0-9]+');
+        Route::delete('/delete/access-user/{id}', [EmployeeController::class, 'deleteAccessUser'])->where('id', '[0-9]+');
+        Route::post('/create/access-user/{id}', [EmployeeController::class, 'createAccessUser'])->where('id', '[0-9]+');
     });
 });
 

@@ -59,7 +59,7 @@ class SubjectController extends Controller
 
         $teacher_subject_turn = new TeacherSubjectTurn();
         $teacher_subject_turn->id_teacher = $request->instructor_id;
-        $teacher_subject_turn->id_subject = $subject->id;
+        $teacher_subject_turn->career_subject_id = $career_subject->id;
         $teacher_subject_turn->id_turn = $request->turn_id;
         $teacher_subject_turn->start_date = $request->start_date;
         $teacher_subject_turn->end_date = $request->end_date;
