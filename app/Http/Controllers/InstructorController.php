@@ -264,7 +264,7 @@ class InstructorController extends Controller
 
                 if($teacher_subject){
                     if($request->has('teacher_id')){
-                        $teacher_subject->id_teacher = $request->id;
+                        $teacher_subject->id_teacher = $request->teacher_id;
                     }
                     if($request->has('turn_id')){
                         $teacher_subject->id_turn = $request->turn_id;
@@ -279,7 +279,7 @@ class InstructorController extends Controller
             });
 
         }catch(\Exception $e){
-            return response()->json(["msg" => "Internal Server Error"], 500);
+            return response()->json(["msg" => $e], 500);
         }
     }
 

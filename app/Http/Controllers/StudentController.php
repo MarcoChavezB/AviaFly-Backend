@@ -230,14 +230,11 @@ class StudentController extends Controller
                     'employees.id as teacher_id',
                     'employees.user_identification as teacher_identification',
                     'student_subjects.updated_at as last_update',
-                    'student_subjects.start_date as start_date',
-                    'student_subjects.end_date as end_date',
-                    'student_subjects.duration as duration'
                 )
                 ->get();
 
             $student->career_name = $career->name;
-            $student->makeHidden(['id_created_by', 'id_history_flight', 'created_at', 'updated_at']); //8714936204
+            $student->makeHidden(['id_created_by', 'id_history_flight', 'created_at', 'updated_at']);
 
             return response()->json(['student' => $student, 'student_subjects' => $subjects], 200);
         } catch (\Exception $e) {
@@ -245,7 +242,7 @@ class StudentController extends Controller
         }
     }
 
-        public function updateGrade(Request $request)
+    public function updateGrade(Request $request)
     {
         try {
             $validator = Validator::make(
@@ -254,9 +251,6 @@ class StudentController extends Controller
                     'id_student' => 'required|exists:students,id',
                     'id_subject' => 'required|exists:subjects,id',
                     'final_grade' => 'sometimes|numeric|min:0|max:100',
-                    'start_date' => 'sometimes|date',
-                    'end_date' => 'sometimes|date',
-                    'duration' => 'sometimes|numeric|min:0',
                 ],
                 [
                     'student_id.required' => 'El id del estudiante es requerido',
@@ -266,9 +260,6 @@ class StudentController extends Controller
                     'final_grade.numeric' => 'La calificación no es válida',
                     'final_grade.min' => 'La calificación no puede ser menor a 0',
                     'final_grade.max' => 'La calificación no puede ser mayor a 100',
-                    'start_date.date' => 'La fecha de inicio no es válida',
-                    'end_date.date' => 'La fecha de fin no es válida',
-                    'duration.numeric' => 'La duración no es válida',
                 ]
             );
 
@@ -276,21 +267,23 @@ class StudentController extends Controller
                 return response()->json(["errors" => $validator->errors()], 400);
             }
 
-            $studentSubject = StudentSubject::where('id_student', $request->id_student)
-                ->where('id_subject', $request->id_subject)
-                ->first();
+            DB::transaction(function () use ($request) {
+                $studentSubject = StudentSubject::where('id_student', $request->id_student)
+                    ->where('id_subject', $request->id_subject)
+                    ->first();
 
-            if (!$studentSubject) {
-                return response()->json(["errors" => ["El estudiante no está inscrito en la materia", $request->all()]], 404);
-            }
+                if (!$studentSubject) {
+                    return response()->json(["errors" => ["El estudiante no está inscrito en la materia", $request->all()]], 404);
+                }
 
-            $studentSubject->update($request->all());
-            $studentSubject->status = $request->final_grade >= 85 ? 'approved' : 'failed';
-            $studentSubject->save();
+                $studentSubject->update($request->all());
+                $studentSubject->status = $request->final_grade >= 85 ? 'approved' : 'failed';
+                $studentSubject->save();
 
-            return response()->json(["message" => "Calificación actualizada"], 200);
+                return response()->json(["message" => "Calificación actualizada"], 200);
+            });
         } catch (\Exception $e) {
-            return response()->json(["error" => "Internal Server Error"], 500);
+            return response()->json(["error" => "Error al actualizar la calificación: " . $e->getMessage()], 500);
         }
     }
 
@@ -671,6 +664,7 @@ class StudentController extends Controller
 
     public function update(Request $request)
     {
+        try {
         $validator = Validator::make($request->all(), [
             'student_id' => 'required|exists:students,id',
             'name' => 'required|string',
@@ -710,172 +704,184 @@ class StudentController extends Controller
             return response()->json(["errors" => $validator->errors()], 400);
         }
 
-        $student = Student::find($request->student_id);
-        if (!$student) {
-            return response()->json(["error" => "Estudiante no encontrado"], 404);
+            DB::transaction(function () use ($request) {
+                $student = Student::find($request->student_id);
+                if (!$student) {
+                    return response()->json(["error" => "Estudiante no encontrado"], 404);
+                }
+
+                $student->name = $request->name;
+                $student->last_names = $request->last_names;
+                $student->curp = $request->curp;
+                $student->phone = $request->phone;
+                $student->cellphone = $request->cellphone;
+                $student->email = $request->email;
+                $student->emergency_contact = $request->emergency_contact;
+                $student->emergency_phone = $request->emergency_phone;
+                $student->emergency_direction = $request->emergency_direction;
+                $student->save();
+
+                return response()->json(["message" => "Estudiante actualizado"], 200);
+            });
+        } catch (\Exception $e) {
+            return response()->json(["error" => "Error al actualizar el estudiante: " . $e->getMessage()], 500);
         }
-
-        $student->name = $request->name;
-        $student->last_names = $request->last_names;
-        $student->curp = $request->curp;
-        $student->phone = $request->phone;
-        $student->cellphone = $request->cellphone;
-        $student->email = $request->email;
-        $student->emergency_contact = $request->emergency_contact;
-        $student->emergency_phone = $request->emergency_phone;
-        $student->emergency_direction = $request->emergency_direction;
-        $student->save();
-
-        return response()->json(["message" => "Estudiante actualizado"], 200);
     }
 
     public function getStudentSubjects(Int $id)
     {
-        $user = Auth::user();
-        $employee = Employee::where('user_identification', $user->user_identification)->first();
+        try{
+            $user = Auth::user();
+            $employee = Employee::where('user_identification', $user->user_identification)->first();
 
-        $student = Student::find($id);
-        if (!$student) {
-            return response()->json(["error" => "Estudiante no encontrado"], 404);
+            $student = Student::find($id);
+            if (!$student) {
+                return response()->json(["error" => "Estudiante no encontrado"], 404);
+            }
+            $student_subjects = DB::table('student_subjects')
+                ->where('id_student', $id)
+                ->join('subjects', 'student_subjects.id_subject', '=', 'subjects.id')
+                ->join('employees', 'student_subjects.id_teacher', '=', 'employees.id')
+                ->select(
+                    'subjects.name as subject_name',
+                    'subjects.id as subject_id',
+                    DB::raw('CONCAT(employees.name, " ", employees.last_names) as teacher_full_name'),
+                    'employees.id as teacher_id',
+                    'employees.user_identification as teacher_identification',
+                )
+                ->get();
+            $instructors = Employee::where('user_type', 'instructor')
+                ->where('id_base', $employee->id_base)
+                ->get(['id', 'name', 'last_names']);
+
+            $turns = DB::table('turns')
+                ->get(['id', 'name']);
+
+            $subjects = DB::table('subjects')
+                ->get(['id', 'name']);
+
+            return response()->json(['student_subjects' => $student_subjects, 'instructors' => $instructors, 'turns' => $turns, 'subjects' => $subjects], 200);
+        }catch(\Exception $e){
+            return response()->json(["msg" => "Internal Server Error"], 500);
         }
-        $student_subjects = DB::table('student_subjects')
-            ->where('id_student', $id)
-            ->join('subjects', 'student_subjects.id_subject', '=', 'subjects.id')
-            ->join('employees', 'student_subjects.id_teacher', '=', 'employees.id')
-            ->select(
-                'subjects.name as subject_name',
-                'subjects.id as subject_id',
-                DB::raw('CONCAT(employees.name, " ", employees.last_names) as teacher_full_name'),
-                'employees.id as teacher_id',
-                'employees.user_identification as teacher_identification',
-            )
-            ->get();
-        $instructors = Employee::where('user_type', 'instructor')
-            ->where('id_base', $employee->id_base)
-            ->get(['id', 'name', 'last_names']);
-
-        $turns = DB::table('turns')
-            ->get(['id', 'name']);
-
-        $subjects = DB::table('subjects')
-            ->get(['id', 'name']);
-
-        return response()->json(['student_subjects' => $student_subjects, 'instructors' => $instructors, 'turns' => $turns, 'subjects' => $subjects], 200);
     }
 
     public function addSubjectToStudent(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'id_student' => 'required|exists:students,id',
-            'id_subject' => 'required|exists:subjects,id',
-            'id_instructor' => 'required|exists:employees,id',
-            'id_turn' => 'required|exists:turns,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'duration' => 'required|numeric',
-        ], [
-            'id_student.required' => 'El id del estudiante es requerido',
-            'id_student.exists' => 'El id del estudiante no existe',
-            'id_subject.required' => 'El id de la materia es requerido',
-            'id_subject.exists' => 'El id de la materia no existe',
-            'id_instructor.required' => 'El id del instructor es requerido',
-            'id_instructor.exists' => 'El id del instructor no existe',
-            'id_turn.required' => 'El id del turno es requerido',
-            'id_turn.exists' => 'El id del turno no existe',
-            'start_date.required' => 'La fecha de inicio es requerida',
-            'start_date.date' => 'La fecha de inicio no es válida',
-            'end_date.required' => 'La fecha de fin es requerida',
-            'end_date.date' => 'La fecha de fin no es válida',
-            'duration.required' => 'La duración es requerida',
-            'duration.numeric' => 'La duración no es válida',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(["errors" => $validator->errors()], 400);
-        }
-
-        $exist = DB::table('student_subjects')
-            ->where('id_student', $request->id_student)
-            ->where('id_subject', $request->id_subject)
-            ->first();
-
-        if ($exist) {
-            return response()->json(["errors" => ["El estudiante ya tiene la materia asignada"]], 400);
-        }
-
-        $student_subject = new StudentSubject();
-        $student_subject->id_student = $request->id_student;
-        $student_subject->id_subject = $request->id_subject;
-        $student_subject->id_teacher = $request->id_instructor;
-        $student_subject->id_turn = $request->id_turn;
-        $student_subject->start_date = $request->start_date;
-        $student_subject->end_date = $request->end_date;
-        $student_subject->duration = $request->duration;
-        $student_subject->save();
-
-        return response()->json(["message" => "Materia agregada al estudiante"], 201);
-    }
-
-    public function deleteSubjectFromStudent(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'id_student' => 'required|exists:students,id',
-            'id_subject' => 'required|exists:subjects,id',
-        ], [
-            'id_student.required' => 'El id del estudiante es requerido',
-            'id_student.exists' => 'El id del estudiante no existe',
-            'id_subject.required' => 'El id de la materia es requerido',
-            'id_subject.exists' => 'El id de la materia no existe',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(["errors" => $validator->errors()], 400);
-        }
-
-        $student_subject = DB::table('student_subjects')
-            ->where('id_student', $request->id_student)
-            ->where('id_subject', $request->id_subject)
-            ->delete();
-
-        return response()->json(["message" => "Materia eliminada del estudiante"], 200);
-    }
-
-    public function changeInstructorFromStudentSubject(Request $request)
-    {
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'student_id' => 'required|exists:students,id',
-                'subject_id' => 'required|exists:subjects,id',
-                'instructor_id' => 'required|exists:employees,id',
-            ],
-            [
+        try{
+            $validator = Validator::make($request->all(), [
+                'id_student' => 'required|exists:students,id',
+                'id_subject' => 'required|exists:subjects,id',
+                'id_instructor' => 'required|exists:employees,id',
+                'id_turn' => 'required|exists:turns,id',
+            ], [
                 'id_student.required' => 'El id del estudiante es requerido',
                 'id_student.exists' => 'El id del estudiante no existe',
                 'id_subject.required' => 'El id de la materia es requerido',
                 'id_subject.exists' => 'El id de la materia no existe',
                 'id_instructor.required' => 'El id del instructor es requerido',
                 'id_instructor.exists' => 'El id del instructor no existe',
-            ]
-        );
+                'id_turn.required' => 'El id del turno es requerido',
+                'id_turn.exists' => 'El id del turno no existe',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(["errors" => $validator->errors()], 400);
+            if ($validator->fails()) {
+                return response()->json(["errors" => $validator->errors()], 400);
+            }
+
+            $exist = DB::table('student_subjects')
+                ->where('id_student', $request->id_student)
+                ->where('id_subject', $request->id_subject)
+                ->first();
+
+            if ($exist) {
+                return response()->json(["errors" => ["El estudiante ya tiene la materia asignada"]], 400);
+            }
+
+            $student_subject = new StudentSubject();
+            $student_subject->id_student = $request->id_student;
+            $student_subject->id_subject = $request->id_subject;
+            $student_subject->id_teacher = $request->id_instructor;
+            $student_subject->id_turn = $request->id_turn;
+            $student_subject->save();
+
+            return response()->json(["message" => "Materia agregada al estudiante"], 201);
+        }catch(\Exception $e){
+            return response()->json(["msg" => "Internal Server Error"], 500);
         }
+    }
 
-        $studen_subject = StudentSubject::where('id_student', $request->student_id)
-            ->where('id_subject', $request->subject_id)
-            ->first();
+    public function deleteSubjectFromStudent(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'id_student' => 'required|exists:students,id',
+                'id_subject' => 'required|exists:subjects,id',
+            ], [
+                'id_student.required' => 'El id del estudiante es requerido',
+                'id_student.exists' => 'El id del estudiante no existe',
+                'id_subject.required' => 'El id de la materia es requerido',
+                'id_subject.exists' => 'El id de la materia no existe',
+            ]);
 
+            if ($validator->fails()) {
+                return response()->json(["errors" => $validator->errors()], 400);
+            }
 
-        if (!$studen_subject) {
-            return response()->json(["errors" => ["El estudiante no tiene la materia asignada"]], 400);
+            DB::transaction(function () use ($request) {
+                DB::table('student_subjects')
+                    ->where('id_student', $request->id_student)
+                    ->where('id_subject', $request->id_subject)
+                    ->delete();
+            });
+
+            return response()->json(["message" => "Materia eliminada del estudiante"], 200);
+        } catch (\Exception $e) {
+            return response()->json(["error" => "Error al eliminar la materia del estudiante: " . $e->getMessage()], 500);
         }
+    }
 
-        $studen_subject->id_teacher = $request->instructor_id;
-        $studen_subject->save();
+    public function changeInstructorFromStudentSubject(Request $request)
+    {
+        try {
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'student_id' => 'required|exists:students,id',
+                    'subject_id' => 'required|exists:subjects,id',
+                    'instructor_id' => 'required|exists:employees,id',
+                ],
+                [
+                    'id_student.required' => 'El id del estudiante es requerido',
+                    'id_student.exists' => 'El id del estudiante no existe',
+                    'id_subject.required' => 'El id de la materia es requerido',
+                    'id_subject.exists' => 'El id de la materia no existe',
+                    'id_instructor.required' => 'El id del instructor es requerido',
+                    'id_instructor.exists' => 'El id del instructor no existe',
+                ]
+            );
 
-        return response()->json([["message" => "Instructor actualizado", 'data' => $studen_subject, 'req' => $request->all()]], 200);
+            if ($validator->fails()) {
+                return response()->json(["errors" => $validator->errors()], 400);
+            }
+
+            DB::transaction(function () use ($request) {
+                $studen_subject = StudentSubject::where('id_student', $request->student_id)
+                    ->where('id_subject', $request->subject_id)
+                    ->first();
+
+                if (!$studen_subject) {
+                    return response()->json(["errors" => ["El estudiante no tiene la materia asignada"]], 400);
+                }
+
+                $studen_subject->id_teacher = $request->instructor_id;
+                $studen_subject->save();
+
+                return response()->json([["message" => "Instructor actualizado", 'data' => $studen_subject, 'req' => $request->all()]], 200);
+            });
+        } catch (\Exception $e) {
+            return response()->json(["error" => "Error al actualizar el instructor: " . $e->getMessage()], 500);
+        }
     }
 
 
@@ -928,11 +934,15 @@ class StudentController extends Controller
 
     public function getStudentMonthlyPayments(int $id)
     {
-        $monthly_payments = DB::table('monthly_payments')
-            ->where('id_student', $id)
-            ->get(['id', 'payment_date', 'amount', 'status', 'concept']);
+        try {
+            $monthly_payments = DB::table('monthly_payments')
+                ->where('id_student', $id)
+                ->get(['id', 'payment_date', 'amount', 'status', 'concept']);
 
-        return response()->json(['monthly_payments' => $monthly_payments], 200);
+            return response()->json(['monthly_payments' => $monthly_payments], 200);
+        }catch (\Exception $e){
+            return response()->json(["msg" => "Internal Server Error"], 500);
+        }
     }
 
     public function getStudentAndOwedMonthlyPayments(int $id)
