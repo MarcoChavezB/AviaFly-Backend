@@ -24,10 +24,6 @@ return new class extends Migration
             $table->unsignedBigInteger('id_turn');
             $table->foreign('id_turn')->references('id')->on('turns');
             $table->timestamps();
-
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
-            $table->string('duration')->nullable();
         });
     }
 

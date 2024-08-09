@@ -19,10 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_subject');
             $table->unsignedBigInteger('id_turn');
             $table->unsignedBigInteger('id_teacher');
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
             $table->integer('final_grade')->nullable();
-            $table->double('duration')->nullable();
             $table->enum('status', ['pending', 'approved', 'failed'])->default('pending');
 
             $table->foreign('id_student')->references('id')->on('students');
