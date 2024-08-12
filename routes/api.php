@@ -68,9 +68,6 @@ Route::prefix('/avia')->group(function () {
 
         Route::post('logout', [UserController::class, 'logout']);
 
-        Route::prefix('/instructor')->group(function () {
-            Route::get('/get/periods', [InstructorController::class, 'getPeriods']);
-        });
     });
 });
 
