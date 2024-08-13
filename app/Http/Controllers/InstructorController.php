@@ -335,9 +335,17 @@ class InstructorController extends Controller
                 ->where('student_subjects.id_subject', $id)
                 ->orderBy('students.id', 'desc')
                 ->distinct()
-                ->get();
+                ->paginate(150);
 
-            return response()->json(['students' => $students]);
+            $paginationData = [
+                'current_page' => $students->currentPage(),
+                'has_next_page' => $students->hasMorePages(),
+                'total_records' => $students->total(),
+                'displaying_from' => $students->firstItem(),
+                'displaying_to' => $students->lastItem(),
+            ];
+
+            return response()->json(['students' => $students->items(), 'pagination_data' => $paginationData]);
         }catch (\Exception $e) {
             return response()->json(["msg" => "Internal Server Error"], 500);
         }
