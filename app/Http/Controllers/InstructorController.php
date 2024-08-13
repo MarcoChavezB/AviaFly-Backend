@@ -115,30 +115,6 @@ class InstructorController extends Controller
         return response()->json(["error" => "Instructor not found"], 404);
     }
 
-    public function getInstructorSubjects(){
-        $user = Auth::user();
-
-        $instructor = Employee::where('user_identification', $user->user_identification)->first();
-
-        if($instructor) {
-            $subjects = DB::table('student_subjects')
-                ->join('students', 'student_subjects.id_student', '=', 'students.id')
-                ->join('subjects', 'student_subjects.id_subject', '=', 'subjects.id')
-                ->where('student_subjects.id_teacher', $instructor->id)
-                ->select('subjects.id', 'subjects.name')
-                ->distinct()
-                ->get();
-
-            if($subjects->isEmpty()){
-                return response()->json(["errors" => ["No hay materias asignadas"]], 404);
-            }
-
-            return response()->json(['subjects'=>$subjects]);
-        }
-
-        return response()->json(["error" => "Instructor not found"], 404);
-    }
-
     public function getStudentsByInstructor(Request $request){
         $user = Auth::user();
 
@@ -337,6 +313,89 @@ class InstructorController extends Controller
                 return response()->json(["errors" => ["No hay turnos asignados"]], 400);
             }
             return response()->json(['turns'=>$turns, 'instructors'=>$instructors]);
+        }catch(\Exception $e){
+            return response()->json(["msg" => "Internal Server Error"], 500);
+        }
+    }
+
+    public function getInstructorStudents($id){
+        try{
+            $user = Auth::user();
+            $employee = Employee::where('user_identification', $user->user_identification)->first();
+
+            $students = DB::table('student_subjects')
+                ->join('students', 'student_subjects.id_student', '=', 'students.id')
+                ->select('students.id as student_id',
+                    DB::raw('CONCAT(students.name, " ", students.last_names) as student_name'),
+                    'students.user_identification',
+                    'student_subjects.final_grade',
+                    'student_subjects.id as student_subject_id',
+                )
+                ->where('student_subjects.id_teacher', $employee->id)
+                ->where('student_subjects.id_subject', $id)
+                ->orderBy('students.id', 'desc')
+                ->distinct()
+                ->get();
+
+            return response()->json(['students' => $students]);
+        }catch (\Exception $e) {
+            return response()->json(["msg" => "Internal Server Error"], 500);
+        }
+    }
+
+    public function getInstructorActiveSubjects(){
+        try {
+            $user = Auth::user();
+            $employee = Employee::where('user_identification', $user->user_identification)->first();
+
+            $instructorSubjects = DB::table('student_subjects')
+                ->join('subjects', 'student_subjects.id_subject', '=', 'subjects.id')
+                ->select('student_subjects.id_subject as subject_id', 'subjects.name as subject_name')
+                ->where('student_subjects.id_teacher', $employee->id)
+                ->distinct()
+                ->get();
+
+            return response()->json(['subjects' => $instructorSubjects]);
+        }catch (\Exception $e) {
+            return response()->json(["msg" => "Internal Server Error"], 500);
+        }
+    }
+
+    public function updateStudentSubjectGrade(Request $request){
+        try{
+            $validator = Validator::make($request->all(), [
+                'student_subject_id' => 'required|exists:student_subjects,id',
+                'student_id' => 'required|exists:students,id',
+                'grade' => 'required|numeric|min:0|max:100'
+            ],[
+                'student_subject_id.required' => 'Se debe indicar la materia',
+                'student_subject_id.exists' => 'No se encontro la materia',
+                'student_id.required' => 'El estudiante es requerido',
+                'student_id.exists' => 'El estudiante no existe',
+                'grade.required' => 'La calificación es requerida',
+                'grade.numeric' => 'La calificación no es válida',
+                'grade.min' => 'La calificación no puede ser menor a 0',
+                'grade.max' => 'La calificación no puede ser mayor a 100'
+            ]);
+
+            if($validator->fails()){
+                return response()->json(["errors" => $validator->errors()], 400);
+            }
+
+            $studentSubject = StudentSubject::where('id', $request->student_subject_id)
+                ->where('id_student', $request->student_id)
+                ->first();
+
+            if(!$studentSubject){
+                return response()->json(["errors" => ["No se encontro la relación de la materia con el estudiante"]], 404);
+            }
+
+            $studentSubject->final_grade = $request->grade;
+            $studentSubject->status = $request->grade >= 85 ? 'approved' : 'failed';
+            $studentSubject->save();
+
+            return response()->json(['msg' => 'ok'], 200);
+
         }catch(\Exception $e){
             return response()->json(["msg" => "Internal Server Error"], 500);
         }
