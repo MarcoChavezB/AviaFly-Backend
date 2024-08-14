@@ -7,6 +7,7 @@ use App\Models\FlightPayment;
 use App\Models\Payments;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -30,7 +31,7 @@ class PaymentsController extends Controller
             'installment_value' => 'required',
             'payment_method' => 'required',
             'flight_status' => 'required',
-            'file_transfer' => 'mime:jpeg,png,jpg,pdf'
+            'file_transfer' => 'mimes:jpeg,png,jpg,pdf'
         ]);
 
         if($validator->fails()){
@@ -97,16 +98,20 @@ class PaymentsController extends Controller
             $flight->save();
         }
 
-        $PDFController->generateTicket($this->queryTicket($data['id_flight_history']));
+        $FileController = new FileController();
+
+        $urlTicket = $PDFController->generateTicketInstallment($data['id_flight_history']);
+        $payment->payment_ticket = $urlTicket;
+
+        if($request->hasFile('file_transfer')){
+            $urlPath =  $FileController->saveFilePath($request->file('file_transfer'), $student->id_base, 'vouchers/flight', $student);
+            $payment->payment_voucher = $urlPath;
+        }
+
+        $payment->save();
 
         return response()->json($totalInstallments);
     }
-
-    function queryTicket($id_flight_history){
-
-    }
-
-
 
 
     /*

@@ -98,5 +98,24 @@ class FileController extends Controller
 
         return url($fileName);
     }
+
+
+    public function saveFilePath($file, int $baseId, string $path, Student $student): string
+    {
+        $base = Base::findOrFail($baseId);
+        $baseName = $this->sanitizeName($base->name);
+
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $extension = $file->getClientOriginalExtension();
+
+        $uniqueName = $originalName . '_' . time() . '.' . $extension;
+
+        $filePath = 'bases/' . $baseName . '/' . $student->user_identification . '/' . $path . '/' . $uniqueName;
+
+        $file->move(public_path(dirname($filePath)), $uniqueName);
+
+        return url($filePath);
+    }
+
 }
 

@@ -25,8 +25,8 @@ return new class extends Migration
                 $table->unsignedBigInteger('id_instructor');
                 $table->foreign('id_instructor')->references('id')->on('employees');
 
-                $table->unsignedBigInteger('id_employee');
-                $table->foreign('id_employee')->references('id')->on('employees');
+                $table->unsignedBigInteger('id_employee')->nullable();
+                $table->foreign('id_employee')->references('id')->on('employees')->nullable();
 
                 $table->decimal('total', 8, 2);
                 $table->enum('payment_status', ['pendiente', 'pagado', 'cancelado']);

@@ -9,6 +9,76 @@ use Illuminate\Support\Facades\DB;
 class PDFController extends Controller
 {
 
+    public function generateTicketInstallment($id_flight_history)
+    {
+        $response = $this->queryTicketInstallment($id_flight_history);
+
+        if (!$response) {
+            abort(404, 'Ticket not found');
+        }
+
+        $data = [
+            'baseData' => (object)[
+                'location' => $response->location,
+            ],
+            'employeeName' => $response->authorized_by,
+            'employeeLastNames' => $response->authorized_by_last_names,
+            'studentData' => (object)[
+                'user_identification' => $response->student_identification,
+                'name' => $response->student_name,
+                'last_names' => $response->student_last_names,
+            ],
+            'incomeDetails' => (object)[
+                'payment_method' => $response->payment_method,
+                'commission' => '0.00',
+                'total' => $response->total,
+            ],
+            'data' => [
+                [
+                    'quantity' => 1,
+                    'concept' => 'Abono de cuota de vuelo',
+                    'total' => $response->total,
+                ]
+            ],
+        ];
+
+        $pdf = PDF::loadView('income_ticket', $data);
+        $student = Student::find($response->id_student);
+
+        $fileController = new FileController();
+        $url =  $fileController->saveTicket($pdf, $student, $response->id_base);
+        return $url;
+    }
+
+    function queryTicketInstallment($id_flight_history){
+        return DB::table('payments')
+            ->join('flight_history', 'flight_history.id', '=', 'payments.id_flight')
+            ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->join('students', 'students.id', '=', 'flight_payments.id_student')
+            ->join('employees', 'employees.id', '=', 'flight_payments.id_instructor')
+            ->join('payment_methods', 'payment_methods.id', '=', 'payments.id_payment_method')
+            ->join('bases', 'bases.id', '=', 'employees.id_base')
+            ->select(
+                'bases.location',
+                'employees.name as authorized_by',
+                'employees.last_names as authorized_by_last_names',
+                'students.user_identification as student_identification',
+                'students.name as student_name',
+                'students.last_names as student_last_names',
+                'payment_methods.type as payment_method',
+                'payments.amount as total',
+                'flight_history.id as flightHistoryId',
+                'students.id as id_student',
+                'bases.id as id_base'
+            )
+            ->where('flight_history.id', '=', $id_flight_history)
+            ->orderBy('payments.created_at', 'desc')
+            ->first(); // Devuelve el primer resultado directamente desde la función
+    }
+
+
+
+
     public function generateTicket($id_flight_history)
     {
         $response = $this->getReservationTicket($id_flight_history);

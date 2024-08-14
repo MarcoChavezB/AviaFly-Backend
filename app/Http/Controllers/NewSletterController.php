@@ -80,7 +80,9 @@ class NewSletterController extends Controller
         });
 
         $newSletters = $newSlettersQuery->get();
-        $client_id = $this->userController->getIdEmploye($user->user_identification);
+
+       $client_id = $this->userController->getClientId($user->id);
+
 
         // is ownser of the newsletter
         $newSletters = $newSletters->map(function ($newsletter) use ($client_id) {
