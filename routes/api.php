@@ -68,9 +68,6 @@ Route::prefix('/avia')->group(function () {
 
         Route::post('logout', [UserController::class, 'logout']);
 
-        Route::prefix('/instructor')->group(function () {
-            Route::get('/get/periods', [InstructorController::class, 'getPeriods']);
-        });
     });
 });
 
@@ -139,6 +136,10 @@ Route::prefix('/instructors')->group(function () {
         Route::put('/update/instructors-subjects', [InstructorController::class, 'updateInstructorsSubjects']); // Esto puede hacerlo: root, admin
         Route::put('/update/student/grade', [InstructorController::class, 'updateStudentGrade']); // Esto puede hacerlo: instructor
         Route::get('/get/instructors-and-turns', [InstructorController::class, 'getInstructorsAndTurns']); // Esto puede hacerlo: root, admin
+        Route::get('/get/instructor-students/{id}', [InstructorController::class, 'getInstructorStudents'])->where('id', '[0-9]+'); // Esto puede hacerlo: instructor
+        Route::get('/get/instructor-active-subjects', [InstructorController::class, 'getInstructorActiveSubjects'])->where('id', '[0-9]+'); // Esto puede hacerlo: instructor
+        Route::put('/update/student-grade', [InstructorController::class, 'updateStudentSubjectGrade']); // Esto puede hacerlo: instructor
+
     });
 });
 
