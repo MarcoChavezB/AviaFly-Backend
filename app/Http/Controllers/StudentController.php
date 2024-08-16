@@ -1153,4 +1153,29 @@ class StudentController extends Controller
         }
     }
 
+    public function deleteStudent($id){
+    try{
+        $student = Student::find($id);
+
+        if(!$student){
+            return response()->json(["error" => "Estudiante no encontrado"], 404);
+        }
+
+        DB::transaction(function() use ($student) {
+            $user = User::where('user_identification', $student->user_identification)->first();
+
+            if($user){
+                DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
+                $user->delete();
+            }
+
+            $student->delete();
+        });
+
+        return response()->json(["msg" => "Estudiante eliminado"], 200);
+    }catch (\Exception $e){
+        return response()->json(["error" => "Internal Server Error"], 500);
+    }
+}
+
 }
