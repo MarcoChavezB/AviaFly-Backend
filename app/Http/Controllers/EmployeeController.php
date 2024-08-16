@@ -86,37 +86,42 @@ class EmployeeController extends Controller
     }
 
     public function updatePassword(Request $request, $id){
-        $employee = Employee::where('id', $id)->first();
+        try{
+            $employee = Employee::where('id', $id)->first();
 
-        $validator = Validator::make($request->all(), [
-            'password' => 'required|string',
-            'password_confirmation' => 'required|string|same:password',
-        ],
-        [
-            'password.required' => 'El campo contraseña es requerida',
-            'password.string' => 'El campo contraseña debe ser una cadena de texto',
-            'password_confirmation.required' => 'La confirmación de contraseña es requerida',
-            'password_confirmation.string' => 'El campo confirmación de contraseña debe ser una cadena de texto',
-            'password_confirmation.same' => 'Las contraseñas no coinciden',
-        ]);
+            $validator = Validator::make($request->all(), [
+                'password' => 'required|string',
+                'password_confirmation' => 'required|string|same:password',
+            ],
+                [
+                    'password.required' => 'El campo contraseña es requerida',
+                    'password.string' => 'El campo contraseña debe ser una cadena de texto',
+                    'password_confirmation.required' => 'La confirmación de contraseña es requerida',
+                    'password_confirmation.string' => 'El campo confirmación de contraseña debe ser una cadena de texto',
+                    'password_confirmation.same' => 'Las contraseñas no coinciden',
+                ]);
 
-        if ($validator->fails()) {
-            return response()->json(["errors" => $validator->errors()], 400);
+            if ($validator->fails()) {
+                return response()->json(["errors" => $validator->errors()], 400);
+            }
+
+            if(!$employee){
+                return response()->json(['message' => 'Empleado no encontrado'], 404);
+            }
+
+            $user = User::where('user_identification', $employee->user_identification)->first();
+
+            DB::transaction(function() use ($user, $request){
+                $user->update([
+                    'password' => bcrypt($request->password)
+                ]);
+                DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
+            });
+
+            return response()->json(['message' => 'Contraseña actualizada correctamente']);
+        }catch(\Exception $e){
+            return response()->json(['message' => 'Internal Server Error'], 500);
         }
-
-        if(!$employee){
-            return response()->json(['message' => 'Empleado no encontrado'], 404);
-        }
-
-        $user = User::where('user_identification', $employee->user_identification)->first();
-
-        $user->update([
-            'password' => bcrypt($request->password)
-        ]);
-
-        $tokens = DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
-
-        return response()->json(['message' => 'Contraseña actualizada correctamente']);
     }
 
     function fingerPrintList($id_finger){
@@ -167,8 +172,10 @@ class EmployeeController extends Controller
                 return response()->json(['message' => 'El usuario no tiene acceso'], 404);
             }
 
-            $tokens = DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
-            $user->delete();
+            DB::transaction(function() use ($user){
+                DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
+                $user->delete();
+            });
 
             return response()->json(['message' => 'Accesos eliminados correctamente']);
 

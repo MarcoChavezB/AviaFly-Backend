@@ -1099,4 +1099,82 @@ class StudentController extends Controller
         }
     }
 
+    public function deleteAccessUser($id){
+        try{
+            $student = Student::find($id);
+
+            if(!$student){
+                return response()->json(["error" => "Estudiante no encontrado"], 404);
+            }
+
+            $user = User::where('user_identification', $student->user_identification)->first();
+
+            if(!$user){
+                return response()->json(["error" => "El usuario no existe"], 404);
+            }
+
+            DB::transaction(function() use ($user) {
+                DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
+                $user->delete();
+            });
+
+            return response()->json(["msg" => "Usuario eliminado"], 200);
+        }catch (\Exception $e){
+            return response()->json(["error" => "Internal Server Error"], 500);
+        }
+    }
+
+    public function createAccessUser($id){
+        try{
+            $student = Student::find($id);
+
+            if(!$student){
+                return response()->json(["error" => "Estudiante no encontrado"], 404);
+            }
+
+            $user = User::where('user_identification', $student->user_identification)->first();
+
+            if($user){
+                return response()->json(["error" => "El usuario ya existe"], 400);
+            }
+
+            $user = User::create([
+                'user_identification' => $student->user_identification,
+                'password' => bcrypt($student->curp),
+                'user_type' => 'student',
+                'id_base' => $student->id_base
+            ]);
+
+            return response()->json(["msg" => "Usuario creado"], 201);
+
+        }catch(\Exception $e){
+            return response()->json(["error" => "Internal Server Error"], 500);
+        }
+    }
+
+    public function deleteStudent($id){
+    try{
+        $student = Student::find($id);
+
+        if(!$student){
+            return response()->json(["error" => "Estudiante no encontrado"], 404);
+        }
+
+        DB::transaction(function() use ($student) {
+            $user = User::where('user_identification', $student->user_identification)->first();
+
+            if($user){
+                DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
+                $user->delete();
+            }
+
+            $student->delete();
+        });
+
+        return response()->json(["msg" => "Estudiante eliminado"], 200);
+    }catch (\Exception $e){
+        return response()->json(["error" => "Internal Server Error"], 500);
+    }
+}
+
 }
