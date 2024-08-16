@@ -25,7 +25,7 @@ class UserController extends Controller
             return response()->json(["errors" => $validator->errors()], 400);
         }
 
-        $user = User::where('user_identification', $request->user_identification)->first();
+       $user = User::where('user_identification', $request->user_identification)->first();
 
         if(!$user){
             return response()->json(["errors" => ["Usuario no encontrado"]], 404);
@@ -41,11 +41,18 @@ class UserController extends Controller
 
         $cookie = cookie('jwt', $token, 60*8);
 
+        $userType = $user->user_type;
+        if($user->user_type == 'student'){
+            $user = Student::where('user_identification', $user->user_identification)->first();
+            $userType = 'student';
+        }
+
+
         $response = response()->json([
             'message' => 'Se ha logeado correctamente',
             'data' => $user,
             'jwt' => $token,
-            'user_type' => $user->user_type,
+            'user_type' => $userType,
         ])->withCookie($cookie);
 
         return $response;

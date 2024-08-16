@@ -336,10 +336,9 @@ class StudentController extends Controller
         }
 
         $client = Auth::user();
-        $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
-
-        // Obtener información de los estudiantes
-        $students = Student::select(
+        $userController = new UserController();
+        $id_base = $userController->getBaseAuth($client)->id;
+       $students = Student::select(
             'students.id',
             'students.flight_credit',
             'students.name',
@@ -430,7 +429,6 @@ class StudentController extends Controller
                 WHERE students.id = $id
             GROUP BY students.id, students.name, students.last_names, careers.name, students.start_date;
             ");
-
         if ($value[0]->pendings_payments == 1 || $value[0]->pendings_months == 1 || $value[0]->subjects_failed == 1) {
             return true;
         } else {
@@ -898,6 +896,7 @@ class StudentController extends Controller
             ->where('flight_history.flight_date', $flight_date)
             ->where('flight_history.flight_status', 'proceso')
             ->where('flight_history.type_flight', $flight_type)
+            ->where('flight_history.flight_client_status', 'aceptado')
             ->where(function ($q) use ($start_time_str, $end_time_str) {
                 $q->whereBetween('flight_history.flight_hour', [$start_time_str, $end_time_str])
                     ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$start_time_str])

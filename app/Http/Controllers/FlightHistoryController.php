@@ -8,12 +8,14 @@ use App\Models\flightHistory;
 use App\Models\FlightPayment;
 use App\Models\InfoFlight;
 use App\Models\Student;
+use App\Models\Payments;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\TicketController;
+use App\Models\Employee;
 
 class FlightHistoryController extends Controller
 {
@@ -354,6 +356,7 @@ class FlightHistoryController extends Controller
         // Consulta a la tabla FlightHistory
         $flightHistories = FlightHistory::select('flight_status', 'id', 'type_flight', 'flight_date', 'flight_hour', 'hours')
             ->groupBy('flight_status', 'type_flight', 'flight_date', 'flight_hour', 'hours', 'id')
+            ->where('flight_client_status', 'aceptado')
             ->get();
 
         // Verifica si la colección está vacía y conviértela a una colección Eloquent
@@ -692,23 +695,175 @@ function getAllInfoReport(int $id_flight)
     }
 
 
-    function checkLimitHoursPlane() {
+    function requestFlightReservation( Request $request){
+        $validator = Validator::make($request->all(), [
+            'id_instructor' => 'required|numeric|exists:employees,id',
+            'flight_date' => 'required|string',
+            'flight_hour' => 'required|string',
+            'equipo' => 'required|string|exists:info_flights,id',
+            'hours' => 'required|numeric',
+            'flight_type' => 'required|string|in:simulador,vuelo',
+            'flight_category' => 'required|string|in:VFR,IFR,IFR_nocturno',
+            'maneuver' => 'required|string|in:local,ruta',
+            'total' => 'required|numeric',
+            'hour_instructor_cost' => 'required|numeric',
+            'id_pay_method' => 'required|exists:payment_methods,id',
+            'due_week' => 'nullable|numeric',
+            'installment_value' => 'nullable|numeric',
+            'id_student' => 'required|numeric',
+            'flight_payment_status' => 'required|string|in:pendiente,pagado,cancelado',
+
+        ], [
+            'flight_airplane' => 'required|string',
+            'id_student.required' => 'campo requerido',
+            'id_instructor.exists' => 'Selecciona un instructor',
+            'id_instructor.required' => 'campo requerido',
+            'flight_type.required' => 'campo requerido',
+            'flight_type.in' => 'El tipo de vuelo no es válido',
+            'flight_date.required' => 'campo requerido',
+            'flight_date.date' => 'La fecha de vuelo no es válida',
+            'flight_hour.required' => 'campo requerido',
+            'flight_hour.string' => 'La hora de vuelo no es válida',
+            'flight_payment_status.required' => 'campo requerido',
+            'flight_payment_status.in' => 'El estatus de pago no es válido',
+            'hours.required' => 'campo requerido',
+            'hours.numeric' => 'Las horas de vuelo no son válidas',
+            'total.required' => 'campo requerido',
+            'total.numeric' => 'campo requerido',
+            'id_pay_method.required' => 'campo requerido',
+            'due_week.numeric' => 'La semana de vencimiento no es válida',
+            'installment_value.numeric' => 'El valor de la mensualidad no es válido',
+            'equipo.required' => 'El equipo es requerido',
+            'equipo.in' => 'El equipo no es válido',
+            'flight_category.required' => 'campo requerido',
+            'flight_category.in' => 'La categoría de vuelo no es válida',
+            'maneuver.required' => 'campo requerido',
+            'maneuver.in' => 'campo no válido',
+            'hour_instructor_cost.numeric' => 'El costo de la hora de instructor no es válido',
+            'flight_airplane.required' => 'campo requerido',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(["errors" => $validator->errors()], 400);
+        }
+
+        if ($this->OtherFlightReserved($request->flight_date, $request->flight_hour, $request->hours, $request->flight_type)) {
+            return response()->json(["errors" => ["sameDate" => ["Existe un vuelo en la fecha y hora por favor de seleccionar otra hora"]]], 400);
+        }
+
+        $empleado = Employee::find($request->id_instructor);
+        if ($empleado->user_type != 'instructor') {
+            return response()->json(["errors" => ["El empleado no es un instructor"]], 400);
+        }
+
+        $student = Student::find($request->id_student);
+        $payment_method_controller = new PaymentMethodController();
+        if ($request->id_pay_method == $payment_method_controller->getCreditoVueloId()) {
+            $hoursCredit = $this->getPriceFly($request->flight_type) * $request->hours;
+            if ($student->flight_credit < $hoursCredit) {
+                return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
+            }
+        }
+
+        if($this->checkLimitHoursPlane($request->flight_airplane, $request->hours) && $request->flight_type == 'vuelo'){
+            return response()->json(["errors" => ["No hay horas disponibles en el avión"]], 402);
+        }
+
+
+        $flight = new flightHistory();
+        $flight->hours = $request->hours;
+        $flight->reservation_type = 'academico';
+        $flight->flight_status = 'proceso';
+        $flight->flight_client_status = 'pendiente';
+        $flight->maneuver = $request->maneuver;
+        $flight->flight_category = $request->flight_category;
+        $flight->flight_date = $request->flight_date;
+        $flight->flight_hour = $request->flight_hour;
+        $flight->type_flight = $request->flight_type;
+        $flight->id_equipo = $request->equipo;
+        $flight->id_airplane = $request->flight_aiplane;
+
+        if($request->flight_session != 0){
+            $flight->id_session = $request->flight_session;
+        }
+
+        $flight->initial_horometer = 0;
+        $flight->final_horometer = 0;
+        $flight->total_horometer = 0;
+        $flight->final_tacometer = 0;
+        $flight->save();
+
+
+        $flightPayment = new FlightPayment();
+        $flightPayment->id_student = $request->id_student;
+        $flightPayment->id_flight = $flight->id;
+        $flightPayment->id_instructor = $request->id_instructor;
+        $flightPayment->id_employee = $request->id_employee;
+        $flightPayment->total = $request->total;
+        $flightPayment->payment_status = 'pendiente';
+        $flightPayment->hour_instructor_cost = $request->hour_instructor_cost;
+        $flightPayment->due_week = $request->due_week;
+        $flightPayment->save();
+
+        $payment = new Payments();
+        $payment->amount = $request->total;
+        $payment->id_payment_method = $request->id_pay_method;
+        $payment->id_flight = $flightPayment->id;
+        $payment->save();
+
+
+        return response()->json(["msg" => "Peticion de vuelo registrada"], 200);
+    }
+
+
+
+    function checkLimitHoursPlane($id_airplane, $new_hours) {
+        // Obtener el límite de horas del avión y la suma de horas actuales de vuelo
         $queryResult = DB::table('flight_history')
             ->join('air_planes', 'air_planes.id', '=', 'flight_history.id_airplane')
             ->select(
                 'air_planes.limit_hours',
-                DB::raw('SUM(flight_history.hours) as total_hours'),
-                DB::raw('CASE WHEN SUM(flight_history.hours) > air_planes.limit_hours THEN TRUE ELSE FALSE END as over_limit')
+                DB::raw('SUM(flight_history.hours) as total_hours')
             )
+            ->where('air_planes.id', $id_airplane)
             ->groupBy('air_planes.limit_hours')
-            ->get();
+            ->first();
 
-        if($queryResult[0]->over_limit == 0){
-            // no se ha excedido el límite de horas
-            return false;
+        if ($queryResult) {
+            $current_total_hours = $queryResult->total_hours;
+            $limit_hours = $queryResult->limit_hours;
+
+            if (($current_total_hours + $new_hours) > $limit_hours) {
+                // Se excede el límite de horas
+                return true;
+            }
         }
-        // se excedió el límite de horas
+        // No se excede el límite de horas
         return false;
     }
+    function OtherFlightReserved($flight_date, $flight_hour, $hours, $flight_type)
+    {
+        $startTime = Carbon::createFromFormat('Y-m-d H:i', "$flight_date $flight_hour");
+        $endTime = $startTime->copy()->addHours($hours);
+
+        $start_time_str = $startTime->format('H:i:s');
+        $end_time_str = $endTime->format('H:i:s');
+
+        $query = DB::table('flight_history')
+            ->leftJoin('flight_payments', 'flight_history.id', '=', 'flight_payments.id_flight')
+            ->where('flight_history.flight_date', $flight_date)
+            ->where('flight_history.flight_status', 'proceso')
+            ->where('flight_history.flight_client_status', 'aceptado')
+            ->where('flight_history.type_flight', $flight_type)
+            ->where(function ($q) use ($start_time_str, $end_time_str) {
+                $q->whereBetween('flight_history.flight_hour', [$start_time_str, $end_time_str])
+                    ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$start_time_str])
+                    ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$end_time_str]);
+            })
+            ->get();
+
+        return $query->isNotEmpty();
+    }
+
 
 }
