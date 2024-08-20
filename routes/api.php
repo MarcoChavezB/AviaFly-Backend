@@ -193,7 +193,7 @@ Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::post('/changeStatus', [FlightHistoryController::class, 'changeStatusFlight']);
     Route::get('/get/flight/report/{id_flight}', [FlightHistoryController::class, 'reportDataById']);
     Route::post('/already/date/reserved', [FlightHistoryController::class, 'isDateReserved']);
-    Route::get('/credit/students/index/{name?}', [FlightHistoryController::class, 'flightCreditStudent']);
+    Route::post('/store/request/student/flight', [FlightHistoryController::class, 'requestFlightReservation']);
 });
 
 Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
