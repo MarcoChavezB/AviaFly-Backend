@@ -25,6 +25,7 @@ use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\NewSletterController;
+use App\Http\Controllers\OptionController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PaymentsController;
@@ -201,6 +202,7 @@ Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get/flight/report/{id_flight}', [FlightHistoryController::class, 'reportDataById']);
     Route::post('/already/date/reserved', [FlightHistoryController::class, 'isDateReserved']);
     Route::post('/store/request/student/flight', [FlightHistoryController::class, 'requestFlightReservation']);
+    Route::post('/change/status/request', [FlightHistoryController::class, 'changeStatusRequest']);
 });
 
 Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
@@ -278,6 +280,7 @@ Route::prefix('/infoflights')->group(function () {
     Route::get('/history/flight/{id_student}', [InfoFlightController::class, 'flightHistory']);
     Route::get('/get/flight/syllabus/data/{id_flight}', [InfoFlightController::class, 'getFlightSyllabusData']);
     Route::get('/airplane/flight/index', [InfoFlightController::class, 'AirplaneFlightIndex']);
+    Route::get('/request/flight', [InfoFlightController::class, 'flightRequestIndex']);
 });
 
 
@@ -327,6 +330,10 @@ Route::prefix('/fingerPrint')->group(function () {
 
 Route::prefix('/arrival')->group(function () {
     Route::get('/index', [CheckInRecordsController::class, 'index']);
+});
+
+Route::prefix('/options')->group(function () {
+    Route::get('/change/flight/request', [OptionController::class, 'changeFlightRequest']);
 });
 
 

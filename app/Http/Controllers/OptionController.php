@@ -22,10 +22,16 @@ class OptionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function changeFlightRequest()
     {
-        //
+        $option = Option::where('option_type', 'can_reservate_flight')->first();
+        $option->is_active = !$option->is_active;
+        $option->save();
+        return response()->json(
+            ['data' => $option->is_active]
+        );
     }
+
 
     /**
      * Store a newly created resource in storage.

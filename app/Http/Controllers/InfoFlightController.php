@@ -6,6 +6,7 @@ use App\Models\AirPlane;
 use App\Models\flightHistory;
 use App\Models\FlightPayment;
 use App\Models\InfoFlight;
+use App\Models\Option;
 use Carbon\Carbon;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
@@ -119,6 +120,7 @@ class InfoFlightController extends Controller
             ->leftJoin('stage_sessions', 'stage_sessions.id_session', '=', 'sessions.id')
             ->leftJoin('stages', 'stages.id', '=', 'stage_sessions.id_stage')
             ->where('students.id', $id_student)
+            ->where('flight_history.flight_client_status', 'aceptado')
             ->groupBy(
                 'employees.name',
                 'flight_history.id',
@@ -168,6 +170,107 @@ class InfoFlightController extends Controller
 
         return response()->json(array_values($result));
     }
+
+
+function flightRequestIndex(){
+    $canReservate = Option::where('option_type', 'can_reservate_flight')->get('is_active')->first();
+    $results = DB::table('flight_payments')
+        ->select(
+            'students.id as student_id',
+            'flight_history.id as id_flight',
+            'students.name as student_name',
+            'students.user_identification as student_identification',
+            'employees.name as instructor_name',
+            'flight_history.type_flight as flight_type',
+            'flight_history.flight_category as flight_category',
+            'flight_history.maneuver',
+            'flight_history.flight_date as flight_date',
+            'flight_history.flight_hour as flight_hour',
+            'flight_history.hours as flight_hours',
+            'sessions.name as session_name',
+            'flight_payments.total as total',
+            'flight_history.flight_status as flight_status',
+            'payment_methods.type as payment_method',
+            'flight_history.flight_client_status',
+            DB::raw("'{$canReservate->is_active}' as can_reservate")
+        )
+        ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+        ->join('payments', 'flight_payments.id', '=', 'payments.id_flight')
+        ->join('payment_methods', 'payments.id_payment_method', '=', 'payment_methods.id')
+        ->join('students', 'flight_payments.id_student', '=', 'students.id')
+        ->join('employees', 'flight_payments.id_instructor', '=', 'employees.id')
+        ->leftJoin('sessions', 'flight_history.id_session', '=', 'sessions.id')
+        ->leftJoin('lesson_objetive_sessions', 'lesson_objetive_sessions.id_session', '=', 'sessions.id')
+        ->leftJoin('flight_objetives', 'flight_objetives.id', '=', 'lesson_objetive_sessions.id_flight_objetive')
+        ->leftJoin('lessons', 'lessons.id', '=', 'lesson_objetive_sessions.id_lesson')
+        ->leftJoin('stage_sessions', 'stage_sessions.id_session', '=', 'sessions.id')
+        ->leftJoin('stages', 'stages.id', '=', 'stage_sessions.id_stage')
+        ->where('flight_history.flight_client_status', 'pendiente')
+        ->groupBy(
+            'employees.name',
+            'flight_history.id',
+            'flight_history.type_flight',
+            'flight_history.flight_category',
+            'flight_history.flight_date',
+            'flight_history.flight_hour',
+            'flight_history.hours',
+            'sessions.name',
+            'flight_payments.total',
+            'students.id',
+            'students.user_identification',
+            'students.name',
+            'flight_history.flight_status',
+            'flight_history.maneuver',
+            'payment_methods.type',
+            'flight_history.flight_client_status'
+        )
+        ->orderBy('flight_history.created_at', 'desc')
+        ->get();
+
+    foreach ($results as $result) {
+        $conflictingFlights = $this->OtherFlightReservedRequest($result->flight_date, $result->flight_hour, $result->flight_hours, $result->flight_type);
+
+        $result->same_time = $conflictingFlights->contains(function($flight) use ($result) {
+            return $flight->id_flight != $result->id_flight;
+        });
+
+        $result->flight_conflight = $conflictingFlights->filter(function($flight) use ($result) {
+            return $flight->id_flight != $result->id_flight;
+        })->map(function($flight) {
+            return ['id_flight' => $flight->id_flight];
+        })->values()->toArray();
+    }
+
+    return response()->json($results);
+}
+
+    function OtherFlightReservedRequest($flight_date, $flight_hour, $hours, $flight_type)
+    {
+        $startTime = Carbon::createFromFormat('Y-m-d H:i', "$flight_date $flight_hour");
+        $endTime = $startTime->copy()->addHours($hours);
+
+        $start_time_str = $startTime->format('H:i:s');
+        $end_time_str = $endTime->format('H:i:s');
+
+        $query = DB::table('flight_history')
+            ->leftJoin('flight_payments', 'flight_history.id', '=', 'flight_payments.id_flight')
+            ->where('flight_history.flight_date', $flight_date)
+            ->where('flight_history.flight_status', 'proceso')
+            ->where('flight_history.flight_client_status', 'pendiente')
+            ->where('flight_history.type_flight', $flight_type)
+            ->where(function ($q) use ($start_time_str, $end_time_str) {
+                $q->whereBetween('flight_history.flight_hour', [$start_time_str, $end_time_str])
+                    ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$start_time_str])
+                    ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$end_time_str]);
+            })
+            ->select('flight_history.id as id_flight')
+            ->get();
+
+        return $query;
+    }
+
+
+
 
 
     function getFlightSyllabusData($id_flight) {
