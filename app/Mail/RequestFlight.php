@@ -2,6 +2,8 @@
 
 namespace App\Mail;
 
+use App\Models\flightHistory;
+use App\Models\Student;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -12,15 +14,18 @@ use Illuminate\Queue\SerializesModels;
 class RequestFlight extends Mailable
 {
     use Queueable, SerializesModels;
+    public Student $student;
+    public flightHistory $flight;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(Student $student, flightHistory $flight)
     {
-        //
+        $this->student = $student;
+        $this->flight = $flight;
     }
 
     /**
@@ -35,25 +40,9 @@ class RequestFlight extends Mailable
         );
     }
 
-    /**
-     * Get the message content definition.
-     *
-     * @return \Illuminate\Mail\Mailables\Content
-     */
-    public function content()
-    {
-        return new Content(
-            view: 'view.name',
-        );
+    public function build(){
+        return $this->view('emails.request-flight')
+            ->subject('Request Flight');
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array
-     */
-    public function attachments()
-    {
-        return [];
-    }
 }

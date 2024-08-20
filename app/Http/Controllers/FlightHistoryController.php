@@ -15,10 +15,64 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\TicketController;
+use App\Mail\RequestFlight;
+use App\Mail\RequestFlightAccepted;
+use App\Mail\RequestFlightDeclined;
 use App\Models\Employee;
+use App\Models\Option;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class FlightHistoryController extends Controller
 {
+
+public function changeStatusRequest(Request $request){
+    $userController = new UserController();
+    $client = $userController->getIdEmploye(Auth::user()->user_identification);
+
+    $flight = flightHistory::find($request->flightId);
+    $flight->flight_client_status = $request->flightClientStatus;
+    $flight->save();
+
+    $flightPayment = FlightPayment::where("id_flight", $request->flightId)->first();
+    $flightPayment->id_employee = $client;
+    $flightPayment->save();
+
+    $message = $request->comments;
+
+
+    $student = Student::where('flight_payments.id_flight', $request->flightId)
+        ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')->first();
+
+    if($request->flightClientStatus == 'aceptado'){
+        if(is_array($request->flightConflicts)){
+            foreach ($request->flightConflicts as $conflict) {
+                $flight = flightHistory::find($conflict['id_flight']);
+                $student = Student::
+                    where('flight_payments.id_flight', $conflict['id_flight'])
+                    ->join('flight_payments',  'flight_payments.id_student', '=', 'students.id')->first();
+
+                $messageDeclined = "La solicitud de vuelo ha sido rechazada, ya que existe un conflicto con otra reservacion agendada previamente, por favor seleccione otra fecha para si vuelo";
+
+                Mail::to($student->email)->send(new RequestFlightDeclined($student, $flight, $messageDeclined));
+
+                $flight->flight_client_status = 'rechazado';
+                $flight->save();
+
+                $flightPayment = FlightPayment::where("id_flight", $conflict['id_flight'])->first();
+                $flightPayment->id_employee = $client;
+                $flightPayment->save();
+            }
+        }
+        if($student){
+
+            Mail::to($student->email)->send(new RequestFlightAccepted($student, $flight, $message));
+        }
+    }
+
+    return response()->json(['msg' => 'solicitud actualizada'], 200);
+}
+
 
     public function indexReport(int $id_flight)
     {
@@ -40,6 +94,7 @@ class FlightHistoryController extends Controller
             ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
             ->join('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
             ->where('flight_history.id', $id_flight)
+            ->where('flight_history.flight_client_status', 'aceptado')
             ->orderBy('flight_history.created_at', 'desc')
             ->groupBy(
                 'students.name',
@@ -353,61 +408,60 @@ class FlightHistoryController extends Controller
      */
     public function getFlightReservations()
     {
-        // Consulta a la tabla FlightHistory
+        $canReservate = Option::select('option_type', 'is_active')
+            ->where('option_type', 'can_reservate_flight')
+            ->first();
+
+        if (!$canReservate) {
+            return response()->json(['error' => 'Option not found'], 404);
+        }
+
         $flightHistories = FlightHistory::select('flight_status', 'id', 'type_flight', 'flight_date', 'flight_hour', 'hours')
             ->groupBy('flight_status', 'type_flight', 'flight_date', 'flight_hour', 'hours', 'id')
             ->where('flight_client_status', 'aceptado')
             ->get();
 
-        // Verifica si la colección está vacía y conviértela a una colección Eloquent
-        if ($flightHistories->isEmpty()) {
-            $flightHistories = new Collection();
-        } else {
-            $flightHistories = $flightHistories->map(function ($flight) {
-                $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
-                $end = $start->copy()->addHours($flight->hours);
+        $flightHistories = $flightHistories->isEmpty() ? new Collection() : $flightHistories->map(function ($flight) use ($canReservate) {
+            $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
+            $end = $start->copy()->addHours($flight->hours);
 
-                return [
-                    'id' => $flight->id,
-                    'flight_status' => $flight->flight_status,
-                    'title' => $flight->type_flight,
-                    'start' => $start->toIso8601String(),
-                    'end' => $end->toIso8601String(),
-                    'source' => 'flight_history'
-                ];
-            });
-        }
+            return [
+                'id' => $flight->id,
+                'flight_status' => $flight->flight_status,
+                'title' => $flight->type_flight,
+                'start' => $start->toIso8601String(),
+                'end' => $end->toIso8601String(),
+                'source' => 'flight_history',
+                'can_reservate' => $canReservate->is_active
+            ];
+        });
 
-        // Consulta a la tabla flight_customers
         $flightCustomers = FlightCustomer::select('payment_status as flight_status', 'id', 'flight_type as type_flight', 'reservation_date as flight_date', 'reservation_hour as flight_hour', 'flight_hours as hours')
             ->groupBy('payment_status', 'flight_type', 'reservation_date', 'reservation_hour', 'flight_hours', 'id')
             ->get();
 
-        // Verifica si la colección está vacía y conviértela a una colección Eloquent
-        if ($flightCustomers->isEmpty()) {
-            $flightCustomers = new Collection();
-        } else {
-            $flightCustomers = $flightCustomers->map(function ($flight) {
-                $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
-                $end = $start->copy()->addHours($flight->hours);
+        $flightCustomers = $flightCustomers->isEmpty() ? new Collection() : $flightCustomers->map(function ($flight) use ($canReservate) {
+            $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
+            $end = $start->copy()->addHours($flight->hours);
 
-                return [
-                    'id' => $flight->id,
-                    'flight_status' => $flight->flight_status,
-                    'title' => $flight->type_flight,
-                    'start' => $start->toIso8601String(),
-                    'end' => $end->toIso8601String(),
-                    'source' => 'flight_customers'
-                ];
-            });
-        }
+            return [
+                'id' => $flight->id,
+                'flight_status' => $flight->flight_status,
+                'title' => $flight->type_flight,
+                'start' => $start->toIso8601String(),
+                'end' => $end->toIso8601String(),
+                'source' => 'flight_customers',
+                'can_reservate' => $canReservate->is_active // Debería aparecer aquí
+            ];
+        });
 
-        // Combinar los resultados de ambas consultas
         $flights = $flightHistories->merge($flightCustomers);
+
+        // Inspección adicional
+        // dd($flights);
 
         return response()->json($flights);
     }
-
 
     /**
         filtros para el reporte de vuelos
@@ -696,6 +750,13 @@ function getAllInfoReport(int $id_flight)
 
 
     function requestFlightReservation( Request $request){
+
+        $can = Option::select('is_active')->where('option_type', 'can_reservate_flight')->first();
+        if(!$can){
+            return response()->json(['error' => 'Option not found']);
+        }
+
+
         $validator = Validator::make($request->all(), [
             'id_instructor' => 'required|numeric|exists:employees,id',
             'flight_date' => 'required|string',
@@ -811,8 +872,21 @@ function getAllInfoReport(int $id_flight)
         $payment->id_flight = $flightPayment->id;
         $payment->save();
 
+        $employee = Employee::select('email')
+            ->join('users', 'users.user_identification', '=', 'employees.user_identification')
+            ->where(function($query) {
+                $query->where('users.user_type', 'admin')
+                      ->orWhere('users.user_type', 'root')
+                      ->orWhere('users.user_type', 'employee');
+            })
+            ->get();
 
-        return response()->json(["msg" => "Peticion de vuelo registrada"], 200);
+
+        foreach ($employee as $emp) {
+            Mail::to($emp)->send(new RequestFlight($student, $flight));
+        }
+
+        return response()->json(["msg" => "Peticion de vuelo registrada", 'employees' => $employee], 200);
     }
 
 
