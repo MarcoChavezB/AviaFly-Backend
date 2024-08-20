@@ -57,7 +57,6 @@ class UserController extends Controller
             'message' => 'Se ha logeado correctamente',
             'data' => $user,
             'jwt' => $token,
-            'expiration_date' => $expiresAt,
             'user_type' => $userType
         ])->withCookie($cookie);
 
