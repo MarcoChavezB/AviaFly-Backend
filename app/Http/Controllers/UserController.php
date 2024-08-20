@@ -7,6 +7,7 @@ use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -39,7 +40,11 @@ class UserController extends Controller
 
         $token = $user->createToken('access_token')->plainTextToken;
 
-        $cookie = cookie('jwt', $token, 60*8);
+        $expiresAt = now()->addMinutes(30*8);
+        $minutesUntilExpiration = now()->diffInMinutes($expiresAt);
+
+        $cookie = cookie('jwt', $token, $minutesUntilExpiration);
+        Cache::put($user->user_identification, $user->user_type, $expiresAt);
 
         $userType = $user->user_type;
         if($user->user_type == 'student'){
@@ -52,7 +57,8 @@ class UserController extends Controller
             'message' => 'Se ha logeado correctamente',
             'data' => $user,
             'jwt' => $token,
-            'user_type' => $userType,
+            'expiration_date' => $expiresAt,
+            'user_type' => $userType
         ])->withCookie($cookie);
 
         return $response;
@@ -68,6 +74,7 @@ class UserController extends Controller
         $user->currentAccessToken()->delete();
 
         $cookie = Cookie::forget('jwt');
+        Cache::forget($user->user_identification);
 
         return response()->json(['message' => 'Se ha cerrado sesión correctamente'])->withCookie($cookie);
     }

@@ -55,17 +55,16 @@ Route::any('/unauthorized', function () {
 })->name('unauthorized');
 
 
-Route::prefix('/avia')->group(function () {
+Route::prefix('/avia')->group(function () { //root, admin, employee, instructor, student, flight_instructor
 
     Route::post('login', [UserController::class, 'login']);
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/auth/check', function () {
             return response()->json([
                 true
             ]);
         });
-
 
         Route::post('logout', [UserController::class, 'logout']);
 
@@ -100,50 +99,44 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/employees/bystudent/{id}', [StudentController::class, 'getEmployeesByStudent']);
     Route::post('/flight/store', [StudentController::class, 'storeFlight']);
 
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/get', [StudentController::class, 'getStudents']); // Esto puede hacerlo: root, admin
-        Route::get('/get/subjects/{id}', [StudentController::class, 'getStudentSubjects'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
-        Route::post('/add/subject', [StudentController::class, 'addSubjectToStudent']); // Esto puede hacerlo: root, admin
-        Route::delete('/delete/subject', [StudentController::class, 'deleteSubjectFromStudent']); // Esto puede hacerlo: root, admin
-        Route::put('/change/instructor', [StudentController::class, 'changeInstructorFromStudentSubject']); // Esto puede hacerlo: root, admin
-        Route::put('/update', [StudentController::class, 'update']); // Esto puede hacerlo: root, admin
-        Route::get('/student/monthly-payments/{id}', [StudentController::class, 'getStudentMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
-        Route::get('/student/owed-monthly-payments/{id}', [StudentController::class, 'getStudentAndOwedMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
-        Route::get('/get/name-identification/{id}', [StudentController::class, 'getStudentNameAndIdentification'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
+    Route::get('/get', [StudentController::class, 'getStudents']); // Esto puede hacerlo: root, admin
+    Route::get('/get/subjects/{id}', [StudentController::class, 'getStudentSubjects'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
+    Route::post('/add/subject', [StudentController::class, 'addSubjectToStudent']); // Esto puede hacerlo: root, admin
+    Route::delete('/delete/subject', [StudentController::class, 'deleteSubjectFromStudent']); // Esto puede hacerlo: root, admin
+    Route::put('/change/instructor', [StudentController::class, 'changeInstructorFromStudentSubject']); // Esto puede hacerlo: root, admin
+    Route::put('/update', [StudentController::class, 'update']); // Esto puede hacerlo: root, admin
+    Route::get('/student/monthly-payments/{id}', [StudentController::class, 'getStudentMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
+    Route::get('/student/owed-monthly-payments/{id}', [StudentController::class, 'getStudentAndOwedMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
+    Route::get('/get/name-identification/{id}', [StudentController::class, 'getStudentNameAndIdentification'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
 
 
-        Route::get('/student/get/profile-info', [StudentController::class, 'studentInfo']); // Esto puede hacerlo: estudiante
-        Route::get('/student/get/subjects', [StudentController::class, 'getStudentSubjectsAsStudent']); // Esto puede hacerlo: estudiante
-        Route::get('/student/incomes', [StudentController::class, 'getStudentIncomes']); //Esto peude hacerlo un estudiante
-        Route::delete('/delete/access-user/{id}', [StudentController::class, 'deleteAccessUser'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
-        Route::post('/create/access-user/{id}', [StudentController::class, 'createAccessUser'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
+    Route::get('/student/get/profile-info', [StudentController::class, 'studentInfo']); // Esto puede hacerlo: estudiante
+    Route::get('/student/get/subjects', [StudentController::class, 'getStudentSubjectsAsStudent']); // Esto puede hacerlo: estudiante
+    Route::get('/student/incomes', [StudentController::class, 'getStudentIncomes']); //Esto peude hacerlo un estudiante
+    Route::delete('/delete/access-user/{id}', [StudentController::class, 'deleteAccessUser'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
+    Route::post('/create/access-user/{id}', [StudentController::class, 'createAccessUser'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
 
-
-    });
 });
 
-Route::prefix('/bases')->group(function () {
-    Route::post('/create', [BaseController::class, 'create']);
+Route::prefix('/bases')->middleware(['auth:sanctum', 'role:root,admin,employee,instructor,flight_instructor'])->group(function () {
     Route::get('/get', [BaseController::class, 'getBases']);
 });
 
-Route::prefix('/instructors')->group(function () {
+Route::prefix('/instructors')->middleware('auth:sanctum')->group(function () {
     Route::post('/create', [InstructorController::class, 'create']);
     Route::get('/index', [InstructorController::class, 'index']);
 
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']); // Esto puede hacerlo: instructor
-        Route::get('/get/subjects', [InstructorController::class, 'getInstructorSubjects']); // Esto puede hacerlo: instructor
-        Route::get('/get/students', [InstructorController::class, 'getStudentsByInstructor']); // Esto puede hacerlo: instructor
-        Route::get('/get/instructors-subjects', [InstructorController::class, 'getInstructorsSubjects']); // Esto puede hacerlo: root, admin
-        Route::put('/update/instructors-subjects', [InstructorController::class, 'updateInstructorsSubjects']); // Esto puede hacerlo: root, admin
-        Route::put('/update/student/grade', [InstructorController::class, 'updateStudentGrade']); // Esto puede hacerlo: instructor
-        Route::get('/get/instructors-and-turns', [InstructorController::class, 'getInstructorsAndTurns']); // Esto puede hacerlo: root, admin
-        Route::get('/get/instructor-students/{id}', [InstructorController::class, 'getInstructorStudents'])->where('id', '[0-9]+'); // Esto puede hacerlo: instructor
-        Route::get('/get/instructor-active-subjects', [InstructorController::class, 'getInstructorActiveSubjects'])->where('id', '[0-9]+'); // Esto puede hacerlo: instructor
-        Route::put('/update/student-grade', [InstructorController::class, 'updateStudentSubjectGrade']); // Esto puede hacerlo: instructor
+    Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']); // Esto puede hacerlo: instructor
+    Route::get('/get/subjects', [InstructorController::class, 'getInstructorSubjects']); // Esto puede hacerlo: instructor
+    Route::get('/get/students', [InstructorController::class, 'getStudentsByInstructor']); // Esto puede hacerlo: instructor
+    Route::get('/get/instructors-subjects', [InstructorController::class, 'getInstructorsSubjects']); // Esto puede hacerlo: root, admin
+    Route::put('/update/instructors-subjects', [InstructorController::class, 'updateInstructorsSubjects']); // Esto puede hacerlo: root, admin
+    Route::put('/update/student/grade', [InstructorController::class, 'updateStudentGrade']); // Esto puede hacerlo: instructor
+    Route::get('/get/instructors-and-turns', [InstructorController::class, 'getInstructorsAndTurns']); // Esto puede hacerlo: root, admin
+    Route::get('/get/instructor-students/{id}', [InstructorController::class, 'getInstructorStudents'])->where('id', '[0-9]+'); // Esto puede hacerlo: instructor
+    Route::get('/get/instructor-active-subjects', [InstructorController::class, 'getInstructorActiveSubjects'])->where('id', '[0-9]+'); // Esto puede hacerlo: instructor
+    Route::put('/update/student-grade', [InstructorController::class, 'updateStudentSubjectGrade']); // Esto puede hacerlo: instructor
 
-    });
 });
 
 Route::prefix('/careers')->group(function () {

@@ -209,7 +209,7 @@ class EmployeeController extends Controller
             return response()->json(['message' => 'Acceso creado correctamente']);
 
         }catch (\Exception $e){
-            return response()->json(['message' => 'Internal Server Error'], 500);
+            return response()->json(['message' => $e->getMessage()], 500);
         }
 
     }
