@@ -26,52 +26,67 @@ use Illuminate\Support\Facades\Mail;
 class FlightHistoryController extends Controller
 {
 
-public function changeStatusRequest(Request $request){
-    $userController = new UserController();
-    $client = $userController->getIdEmploye(Auth::user()->user_identification);
+    public function changeStatusRequest(Request $request)
+    {
+        $userController = new UserController();
+        $client = $userController->getIdEmploye(Auth::user()->user_identification);
 
-    $flight = flightHistory::find($request->flightId);
-    $flight->flight_client_status = $request->flightClientStatus;
-    $flight->save();
+        $flight = flightHistory::find($request->flightId);
+        if (!$flight) {
+            return response()->json(['error' => 'Vuelo no encontrado'], 404);
+        }
 
-    $flightPayment = FlightPayment::where("id_flight", $request->flightId)->first();
-    $flightPayment->id_employee = $client;
-    $flightPayment->save();
+        $flight->flight_client_status = $request->flightClientStatus;
+        $flight->save();
 
-    $message = $request->comments;
+        $flightPayment = FlightPayment::where("id_flight", $request->flightId)->first();
+        if (!$flightPayment) {
+            return response()->json(['error' => 'Pago de vuelo no encontrado'], 404);
+        }
 
+        $flightPayment->id_employee = $client;
+        $flightPayment->save();
 
-    $student = Student::where('flight_payments.id_flight', $request->flightId)
-        ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')->first();
+        $message = $request->comments;
 
-    if($request->flightClientStatus == 'aceptado'){
-        if(is_array($request->flightConflicts)){
-            foreach ($request->flightConflicts as $conflict) {
-                $flight = flightHistory::find($conflict['id_flight']);
-                $student = Student::
-                    where('flight_payments.id_flight', $conflict['id_flight'])
-                    ->join('flight_payments',  'flight_payments.id_student', '=', 'students.id')->first();
+        $student = Student::where('flight_payments.id_flight', $request->flightId)
+            ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')->first();
 
-                $messageDeclined = "La solicitud de vuelo ha sido rechazada, ya que existe un conflicto con otra reservacion agendada previamente, por favor seleccione otra fecha para si vuelo";
+        if (!$student) {
+            return response()->json(['error' => 'Estudiante no encontrado'], 404);
+        }
 
-                Mail::to($student->email)->send(new RequestFlightDeclined($student, $flight, $messageDeclined));
+        if ($request->flightClientStatus === 'aceptado') {
+            if (is_array($request->flightConflicts)) {
+                foreach ($request->flightConflicts as $conflict) {
+                    $conflictFlight = flightHistory::find($conflict['id_flight']);
+                    if ($conflictFlight) {
+                        $conflictStudent = Student::where('flight_payments.id_flight', $conflict['id_flight'])
+                            ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')->first();
 
-                $flight->flight_client_status = 'rechazado';
-                $flight->save();
+                        if ($conflictStudent) {
+                            $messageDeclined = "La solicitud de vuelo ha sido rechazada, ya que existe un conflicto con otra reservación agendada previamente. Por favor seleccione otra fecha para su vuelo.";
+                            Mail::to($conflictStudent->email)->send(new RequestFlightDeclined($conflictStudent, $conflictFlight, $messageDeclined));
 
-                $flightPayment = FlightPayment::where("id_flight", $conflict['id_flight'])->first();
-                $flightPayment->id_employee = $client;
-                $flightPayment->save();
+                            $conflictFlight->flight_client_status = 'rechazado';
+                            $conflictFlight->save();
+
+                            $conflictFlightPayment = FlightPayment::where("id_flight", $conflict['id_flight'])->first();
+                            if ($conflictFlightPayment) {
+                                $conflictFlightPayment->id_employee = $client;
+                                $conflictFlightPayment->save();
+                            }
+                        }
+                    }
+                }
             }
-        }
-        if($student){
-
             Mail::to($student->email)->send(new RequestFlightAccepted($student, $flight, $message));
+        } else if ($request->flightClientStatus === 'rechazado') {
+            Mail::to($student->email)->send(new RequestFlightDeclined($student, $flight, $message));
         }
-    }
 
-    return response()->json(['msg' => 'solicitud actualizada'], 200);
-}
+        return response()->json(['msg' => 'Solicitud actualizada'], 200);
+    }
 
 
     public function indexReport(int $id_flight)
