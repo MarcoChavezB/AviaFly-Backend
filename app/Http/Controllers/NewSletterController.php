@@ -121,7 +121,7 @@ class NewSletterController extends Controller
     public function create(Request $request)
     {
         $data = $request->all();
-
+        return response()->json($data);
         $validator = Validator::make($data, [
             'title' => 'required|string',
             'content' => 'required|string',

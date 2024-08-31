@@ -427,9 +427,6 @@ class FlightHistoryController extends Controller
             ->where('option_type', 'can_reservate_flight')
             ->first();
 
-        if (!$canReservate) {
-            return response()->json(['error' => 'Option not found'], 404);
-        }
 
         $flightHistories = FlightHistory::select('flight_status', 'id', 'type_flight', 'flight_date', 'flight_hour', 'hours')
             ->groupBy('flight_status', 'type_flight', 'flight_date', 'flight_hour', 'hours', 'id')

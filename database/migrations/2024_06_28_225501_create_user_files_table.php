@@ -15,15 +15,16 @@ return new class extends Migration
     {
         Schema::create('user_files', function (Blueprint $table) {
             $table->id();
-            $table->string('certificado_preparatoria')->nullable();
-            $table->string('acta_nacimiento')->nullable();
-            $table->string('identificacion')->nullable();
-            $table->string('comprobante_domicilio')->nullable();
-            $table->string('examen_psicofisico_integral')->nullable();
-            $table->timestamps();
 
             $table->unsignedBigInteger('id_user');
             $table->foreign('id_user')->references('id')->on('users');
+
+            $table->unsignedBigInteger('id_file');
+            $table->foreign('id_file')->references('id')->on('academic_files');
+
+            $table->string('file_path')->nullable();
+
+            $table->timestamps();
         });
     }
 

@@ -90,10 +90,12 @@ class LessonController extends Controller
      *      lessons: [
      *          {
      *              "id_lesson": number,
+     *              "id_session": number
      *              "lesson_approved": boolean
      *          },
      *          {
      *          "id_lesson": number,
+     *          "id_session": number
      *          "lesson_approved": boolean
      *          }
      *      ]
@@ -106,6 +108,7 @@ class LessonController extends Controller
         foreach ($data['lessons'] as $lesson) {
             studentLesson::where('id_student', $data['id_student'])
                 ->where('id_lesson', $lesson['id_lesson'])
+                ->where('id_session', $lesson['id_session'])
                 ->update(['lesson_passed' => $lesson['lesson_approved']]);
         }
 

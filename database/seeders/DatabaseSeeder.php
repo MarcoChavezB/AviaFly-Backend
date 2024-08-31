@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Http\Controllers\PaymentMethodController;
 use App\Models\AirPlane;
+use App\Models\AcademicFile;
 use Faker\Factory as Faker;
 use App\Models\Base;
 use App\Models\Career;
@@ -18,6 +19,7 @@ use App\Models\Lesson;
 use App\Models\LessonObjetiveSession;
 use App\Models\PaymentMethod;
 use App\Models\Payments;
+use App\Models\SectionFile;
 use App\Models\Session;
 use App\Models\Stage;
 use App\Models\StageSession;
@@ -1010,6 +1012,120 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('1234567890'),
             'id_base' => 1,
         ]);
+
+        $sections = [
+            'Permiso de formacion',
+            'Orden de examen teorico',
+            'Orden de examen practico',
+            'LICENCIA',
+        ];
+
+        $sectionIds = [];
+
+        foreach($sections as $section){
+            $sectionFile = SectionFile::create(['section_name' => $section]);
+            $sectionIds[$section] = $sectionFile->id;
+        }
+
+        $files = [
+            [
+                'id_section_file' => $sectionIds['Permiso de formacion'],
+                'file_name' => 'PAGO GESTOR',
+            ],
+            [
+                'id_section_file' => $sectionIds['Permiso de formacion'],
+                'file_name' => 'PAGO ALUMNO',
+            ],
+            [
+                'id_section_file' => $sectionIds['Permiso de formacion'],
+                'file_name' => 'EXAMEN MEDICO A 90 DIAS',
+            ],
+            [
+                'id_section_file' => $sectionIds['Permiso de formacion'],
+                'file_name' => 'CEDULA 6',
+            ],
+            [
+                'id_section_file' => $sectionIds['Permiso de formacion'],
+                'file_name' => 'ACTA DE NACIMIENTO',
+            ],
+            [
+                'id_section_file' => $sectionIds['Permiso de formacion'],
+                'file_name' => 'CERTIFICADO DE PREPARATORIA',
+            ],
+            [
+                'id_section_file' => $sectionIds['Permiso de formacion'],
+                'file_name' => 'INE',
+            ],
+            [
+                'id_section_file' => $sectionIds['Permiso de formacion'],
+                'file_name' => 'CURP',
+            ],
+            [
+                'id_section_file' => $sectionIds['Permiso de formacion'],
+                'file_name' => 'COMPROBANTE DE DOMICILIO',
+            ],
+            [
+                'id_section_file' => $sectionIds['Permiso de formacion'],
+                'file_name' => 'CONTRATO ESCUELA ALUMNO',
+            ],
+            [
+                'id_section_file' => $sectionIds['Permiso de formacion'],
+                'file_name' => 'INICIO DE CURSO',
+            ],
+            [
+                'id_section_file' => $sectionIds['Orden de examen teorico'],
+                'file_name' => 'PAGO GESTOR',
+            ],
+            [
+                'id_section_file' => $sectionIds['Orden de examen teorico'],
+                'file_name' => 'PAGO ALUMNO',
+            ],
+            [
+                'id_section_file' => $sectionIds['Orden de examen teorico'],
+                'file_name' => 'PERMISO DE FORMACION',
+            ],
+            [
+                'id_section_file' => $sectionIds['Orden de examen practico'],
+                'file_name' => 'PAGO GESTOR',
+            ],
+            [
+                'id_section_file' => $sectionIds['Orden de examen practico'],
+                'file_name' => 'PAGO ALUMNO',
+            ],
+            [
+                'id_section_file' => $sectionIds['Orden de examen practico'],
+                'file_name' => 'ORDEN DE TEORICA LIBERADA',
+            ],
+            [
+                'id_section_file' => $sectionIds['Orden de examen practico'],
+                'file_name' => 'BITACORA DE VUELO (PILOTO)',
+            ],
+            [
+                'id_section_file' => $sectionIds['Orden de examen practico'],
+                'file_name' => 'LIBERACION DE PRACTICAS (MTTO)',
+            ],
+            [
+                'id_section_file' => $sectionIds['LICENCIA'],
+                'file_name' => 'PAGO GESTOR',
+            ],
+            [
+                'id_section_file' => $sectionIds['LICENCIA'],
+                'file_name' => 'PAGO ALUMNO',
+            ],
+            [
+                'id_section_file' => $sectionIds['LICENCIA'],
+                'file_name' => 'EXAMEN MEDICO A 90 DIAS',
+            ],
+            [
+                'id_section_file' => $sectionIds['LICENCIA'],
+                'file_name' => 'ORDEN DE PRACTICA LIBERADA',
+            ],
+        ];
+
+        foreach($files as $file){
+            AcademicFile::create($file);
+        };
+
     }
 
 }

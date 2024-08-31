@@ -33,12 +33,12 @@ class StudentController extends Controller
         $client = Auth::user();
         $id_base = Employee::where('user_identification', $client->user_identification)->first()->id_base;
 
-        $studens = Student::select('students.id', 'students.name', 'students.last_names', 'students.curp', 'students.flight_credit', 'careers.name as career_name')
+        $studens = Student::select('students.email','students.phone','students.user_identification','students.id', 'students.name', 'students.last_names', 'students.curp', 'students.flight_credit', 'careers.name as career_name')
             ->leftJoin('careers', 'students.id_career', '=', 'careers.id')
             ->where('careers.name', 'Piloto privado')
             ->where('students.id_base', $id_base)
             ->where('students.name', 'like', "%$identificator%")
-            ->groupBy('students.id', 'students.name', 'students.last_names', 'students.curp', 'students.flight_credit', 'careers.name')
+            ->groupBy('students.email','students.phone','students.user_identification', 'students.id', 'students.name', 'students.last_names', 'students.curp', 'students.flight_credit', 'careers.name')
             ->get();
 
         return response()->json($studens, 200);
@@ -328,87 +328,117 @@ class StudentController extends Controller
     /*
     Obtiene reporte de un alumno
     Validada por base
-*/
-    public function getInfoVueloAlumno(int $id)
-    {
-        if ($id == null) {
-            return response()->json(["error" => "No se ha proporcionado un id"], 400);
-        }
+      subjects_failed: number,
+      pendings_payments: number,
+      pendings_months: number
+    */
+public function getInfoVueloAlumno(int $id = null)
+{
+    $client = Auth::user();
+    $userController = new UserController();
+    $id_base = $userController->getBaseAuth($client)->id;
 
-        $client = Auth::user();
-        $userController = new UserController();
-        $id_base = $userController->getBaseAuth($client)->id;
-       $students = Student::select(
-            'students.id',
-            'students.flight_credit',
-            'students.name',
-            'students.last_names',
-            'students.start_date',
-            'careers.name as career_name',
-        )
-            ->leftJoin('careers', 'students.id_career', '=', 'careers.id')
-            ->leftJoin('student_subjects', 'students.id', '=', 'student_subjects.id_student')
-            ->where('students.id_base', $id_base)
-            ->where('students.id', $id)
-            ->groupBy('students.id', 'students.name', 'students.last_names', 'students.flight_credit', 'students.start_date', 'careers.name')
+    // Construcción dinámica de la consulta SQL
+    $query = "
+        SELECT
+            students.id, students.name, students.last_names, careers.name AS career_name, students.start_date, students.user_identification,
+            MAX(CASE WHEN student_subjects.status = 'failed' OR student_subjects.status = 'pending' THEN 1 ELSE 0 END) AS subjects_failed,
+            MAX(CASE WHEN flight_payments.payment_status = 'pending' THEN 1 ELSE 0 END) AS pendings_payments,
+            MAX(CASE WHEN monthly_payments.status = 'pending' OR monthly_payments.status = 'owed' THEN 1 ELSE 0 END) AS pendings_months
+        FROM students
+        LEFT JOIN careers ON students.id_career = careers.id
+        LEFT JOIN student_subjects ON students.id = student_subjects.id_student
+        LEFT JOIN flight_payments ON students.id = flight_payments.id_student
+        LEFT JOIN flight_history ON flight_payments.id_flight = flight_history.id
+        LEFT JOIN monthly_payments ON monthly_payments.id_student = students.id
+        WHERE students.id_base = :id_base
+    ";
+
+    $bindings = ['id_base' => $id_base];
+
+    // Añadir condición para el ID si se proporciona
+    if ($id !== null) {
+        $query .= " AND students.id = :id";
+        $bindings['id'] = $id;
+    }
+
+    $query .= " GROUP BY students.id, students.name, students.last_names, careers.name, students.start_date, students.user_identification";
+
+    // Ejecutar la consulta
+    $dataQuery = DB::select($query, $bindings);
+
+    // Preparar la respuesta con la información de cada estudiante
+    $studentsData = [];
+
+    foreach ($dataQuery as $student) {
+        // Obtener las horas de vuelo para el estudiante actual
+        $hours = DB::table('flight_history')
+            ->join('flight_payments', 'flight_history.id', '=', 'flight_payments.id_flight')
+            ->where('flight_payments.id_student', $student->id)
+            ->select('flight_history.hours', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_status')
             ->get();
 
-        // Obtener las horas de vuelo
-        foreach ($students as $student) {
-            $student->hours = DB::table('flight_history')
-                ->join('flight_payments', 'flight_history.id', '=', 'flight_payments.id_flight')
-                ->where('flight_payments.id_student', $student->id)
-                ->select('flight_history.hours', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_status')
-                ->get();
-        }
+        // Determinar si el estudiante tiene deuda
+        $has_debt = $this->is_debt($student->id);
 
-        // Obtener las horas totales
+        // Obtener las horas totales para el estudiante actual
         $totalHours = DB::table('students')
             ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
             ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
-            ->where('students.id', $id)
+            ->where('students.id', $student->id)
             ->where('flight_history.flight_status', 'hecho')
             ->select(DB::raw('SUM(flight_history.hours) AS total_hours'))
-            ->groupBy('students.id', 'students.name')
             ->first();
+        $totalHours = $totalHours ? $totalHours->total_hours : '0.00';
 
-        if ($totalHours == null) {
-            $totalHours = (object) [
-                'total_hours' => '0.00'
-            ];
-        }
-
-        // Obtener las horas por categoría de vuelo
+        // Obtener las horas por categoría de vuelo para el estudiante actual
         $flightCategoryHours = DB::table('students')
             ->leftJoin('flight_payments', 'students.id', '=', 'flight_payments.id_student')
             ->leftJoin('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
-            ->where('students.id', $id)
+            ->where('students.id', $student->id)
             ->where('flight_history.flight_status', 'hecho')
             ->select(
                 DB::raw('SUM(CASE WHEN flight_history.type_flight = "simulador" THEN flight_history.hours ELSE 0 END) AS simulator_hours'),
-                DB::raw('SUM(CASE WHEN flight_history.type_flight = "vuelo" THEN flight_history.hours ELSE 0 END) AS vuelo_hours'),
+                DB::raw('SUM(CASE WHEN flight_history.type_flight = "vuelo" THEN flight_history.hours ELSE 0 END) AS vuelo_hours')
             )
-            ->groupBy('students.name')
             ->first();
+        $flightCategoryHours = $flightCategoryHours ? (object) [
+            'simulator_hours' => $flightCategoryHours->simulator_hours ?? '0.00',
+            'vuelo_hours' => $flightCategoryHours->vuelo_hours ?? '0.00',
+        ] : (object) [
+            'simulator_hours' => '0.00',
+            'vuelo_hours' => '0.00',
+        ];
 
-        if (is_null($flightCategoryHours)) {
-            $flightCategoryHours = (object) [
-                'simulator_hours' => '0.00',
-                'vuelo_hours' => '0.00',
-            ];
-        }
-
-        $isDebt = $this->is_debt($id);
-
-        return response()->json([
-            'students' => $students,
-            'total_hours' => $totalHours,
-            'flight_category_hours' => $flightCategoryHours,
-            'is_debt' => $isDebt
-        ], 200);
+        $studentsData[] = [
+            'id' => $student->id,
+            'user_identification' => $student->user_identification,
+            'flight_credit' => '0.00',
+            'name' => $student->name,
+            'last_names' => $student->last_names,
+            'start_date' => $student->start_date,
+            'career_name' => $student->career_name,
+            'subjects_failed' => $student->subjects_failed,
+            'pendings_payments' => $student->pendings_payments,
+            'pendings_months' => $student->pendings_months,
+            'hours' => $hours,
+            'total_hours' => [
+                'total_hours' => $totalHours == null ? '0.00' : $totalHours
+            ],
+            'flight_category_hours' => [
+                'simulator_hours' => $flightCategoryHours->simulator_hours,
+                'vuelo_hours' => $flightCategoryHours->vuelo_hours,
+            ],
+            'is_debt' => $has_debt
+        ];
     }
 
-    /*
+    return response()->json([
+        'students' => $studentsData
+    ], 200);
+}
+
+   /*
     Funcion para validar si un alumno tiene deuda
     retorna true si tiene deuda
 */
