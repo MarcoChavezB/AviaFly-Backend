@@ -1125,7 +1125,7 @@ public function getInfoVueloAlumno(int $id = null)
             ->join('payments', 'flight_payments.id', '=', 'payments.id_flight')
             ->select(
                 DB::raw("'Pago de Vuelo' as concept"),
-                'payments.amount as quantity',
+                DB::raw("'1' as quantity"),
                 'payments.amount as total',
                 'payments.id',
                 'payments.id_payment_method as payment_method',
@@ -1139,7 +1139,7 @@ public function getInfoVueloAlumno(int $id = null)
 
         $orders = DB::table('orders')
             ->select('products.name as concept',
-                DB::raw('SUM(products.price * order_details.quantity) as quantity'),
+                'order_details.quantity as quantity',
                 DB::raw('SUM(products.price * order_details.quantity) as total'),
                 'orders.id',
                 'orders.id_payment_method as payment_method',
