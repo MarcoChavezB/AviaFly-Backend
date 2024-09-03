@@ -1150,7 +1150,7 @@ public function getInfoVueloAlumno(int $id = null)
             ->join('products', 'order_details.id_product', '=', 'products.id')
             ->where('orders.id_client', $student->id)
             ->where('orders.payment_status', 'pagado')
-            ->groupBy('orders.id', 'products.name', 'orders.id_payment_method', 'orders.order_date')
+            ->groupBy('orders.id', 'products.name', 'orders.id_payment_method', 'orders.order_date', 'order_details.quantity')
             ->orderBy('orders.order_date', 'desc')
             ->get();
 
@@ -1161,7 +1161,7 @@ public function getInfoVueloAlumno(int $id = null)
             'incomes' => $allPayments
         ], 200);
     } catch (\Exception $e) {
-        return response()->json(['error' => "Internal Server Error"], 500);
+        return response()->json(['error' => $e->getMessage()], 500);
     }
 }
 
