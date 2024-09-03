@@ -144,7 +144,7 @@ class PDFController extends Controller
                 'payment_methods.type as payment_method',
                 DB::raw('flight_payments.total as subtotal'),
                 DB::raw('flight_payments.total * 0.16 as iva'),
-                DB::raw('flight_payments.total * 1.16 as total'),
+                DB::raw('flight_payments.total'),
                 'bases.location as location'
             )
             ->where('flight_history.id', $flightHistoryId)

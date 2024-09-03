@@ -90,9 +90,10 @@ class ProcessStudentCreation implements ShouldQueue
             }
         }
 
-        // Relacion con lecciones de vuelo
+        DB::statement('CALL AddUserFiles(?)', [$this->student->id]);
         if($career->name == 'Piloto privado'){
             DB::statement('CALL flight_information_data(?)', [$this->student->id]);
         }
+
     }
 }

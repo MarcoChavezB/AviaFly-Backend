@@ -261,6 +261,7 @@ public function showLessons($id_student)
 
         $sessionQuery = flightHistory::select('students.name as student_name',
                 'stages.name as stage_name',
+                'sessions.id as id_session',
                 'sessions.name as session_name',
                 'flight_objetives.name as flight_objetive_name',
                 'lessons.id as lesson_id',
@@ -286,6 +287,7 @@ public function showLessons($id_student)
         foreach ($sessionQuery as $session){
             $studentName = $session->student_name;
             $stageName = $session->stage_name;
+            $sessionId = $session->id_session;
             $sessionName = $session->session_name;
             $flightObjetiveName = $session->flight_objetive_name;
             $lessonName = $session->lesson_name;
@@ -311,6 +313,7 @@ public function showLessons($id_student)
 
             if (!isset($result[$studentName]['stages'][$stageName]['sessions'][$sessionName])) {
                 $result[$studentName]['stages'][$stageName]['sessions'][$sessionName] = [
+                    'id_session' => $sessionId,
                     'session_name' => $sessionName,
                     'session_objetive' => $sessionObjetive,
                     'approvation_standard' => $approvationStandard,

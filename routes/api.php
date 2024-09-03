@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Http\Controllers\AcademicFileController;
 use App\Http\Controllers\AirPlaneController;
 use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\CareerController;
@@ -95,7 +97,7 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::put('/update/grade', [StudentController::class, 'updateGrade']);
     Route::get('/flight/index', [StudentController::class, 'indexSimulator']);
     Route::get('/flight/index/{name}', [StudentController::class, 'getStudentSimulatorByName']);
-    Route::get('/flight/report/{id}', [StudentController::class, 'getInfoVueloAlumno']);
+    Route::get('/flight/report/{id_student?}', [StudentController::class, 'getInfoVueloAlumno']);
     Route::get('/flight/employees/bystudent/{id}', [StudentController::class, 'getEmployeesByStudent']);
     Route::post('/flight/store', [StudentController::class, 'storeFlight']);
 
@@ -331,4 +333,7 @@ Route::prefix('/options')->group(function () {
 });
 
 
-
+Route::prefix('/files')->middleware('auth:sanctum')->group(function () {
+    Route::get('/student/index/{id_student}', [AcademicFileController::class, 'index']);
+    Route::post('/store', [AcademicFileController::class, 'store']);
+});
