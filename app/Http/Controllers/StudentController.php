@@ -1177,4 +1177,38 @@ class StudentController extends Controller
     }
 }
 
+    public function studentPendingPayments(){
+        try{
+            $user = Auth::user();
+            $student = Student::where('user_identification', $user->user_identification)->first();
+
+            $flightPayments = DB::table('flight_payments')
+                ->where('id_student', $student->id)
+                ->where('payment_status', 'pendiente')
+                ->select('total as amount', 'payment_status as status', DB::raw("'No especificada' as payment_date"), DB::raw("'Flight Payment' as concept"))
+                ->get();
+
+            $monthlyPayments = DB::table('monthly_payments')
+                ->where('id_student', $student->id)
+                ->whereIn('status', ['pending', 'owed'])
+                ->select('amount', 'status', 'payment_date', 'concept')
+                ->get();
+
+            $orders = DB::table('orders')
+                ->join('order_details', 'orders.id', '=', 'order_details.id_order')
+                ->join('products', 'order_details.id_product', '=', 'products.id')
+                ->where('id_client', $student->id)
+                ->where('payment_status', 'pendiente')
+                ->select(DB::raw('SUM(products.price * order_details.quantity) as amount'), 'payment_status as status', 'order_date as payment_date', 'products.name as concept')
+                ->groupBy('orders.id', 'products.name', 'order_date', 'payment_status')
+                ->get();
+
+            $pendingPayments = $flightPayments->concat($monthlyPayments)->concat($orders);
+
+            return response()->json(['pending_payments' => $pendingPayments], 200);
+        }catch(\Exception $e){
+            return response()->json(["error" => "Internal Server Error"], 500);
+        }
+    }
+
 }
