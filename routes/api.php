@@ -115,7 +115,7 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::get('/student/get/profile-info', [StudentController::class, 'studentInfo']); // Esto puede hacerlo: estudiante
     Route::get('/student/get/subjects', [StudentController::class, 'getStudentSubjectsAsStudent']); // Esto puede hacerlo: estudiante
     Route::get('/student/incomes', [StudentController::class, 'getStudentIncomes']); //Esto peude hacerlo un estudiante
-    Route::get('/student/pending-payments', [StudentController::class, 'studentPendingPayments']); //Esto peude hacerlo un estudiantes
+    Route::get('/student/pending-payments/{id?}', [StudentController::class, 'studentPendingPayments'])->where('id', '[0-9]+'); //Esto peude hacerlo un estudiantes
     Route::delete('/delete/access-user/{id}', [StudentController::class, 'deleteAccessUser'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
     Route::post('/create/access-user/{id}', [StudentController::class, 'createAccessUser'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
 

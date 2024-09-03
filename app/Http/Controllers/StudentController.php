@@ -1207,10 +1207,15 @@ public function getInfoVueloAlumno(int $id = null)
     }
 }
 
-    public function studentPendingPayments(){
+    public function studentPendingPayments($id = null){
         try{
-            $user = Auth::user();
-            $student = Student::where('user_identification', $user->user_identification)->first();
+
+            if($id){
+                $student = Student::find($id);
+            }else{
+                $user = Auth::user();
+                $student = Student::where('user_identification', $user->user_identification)->first();
+            }
 
             $flightPayments = DB::table('flight_payments')
                 ->where('id_student', $student->id)
