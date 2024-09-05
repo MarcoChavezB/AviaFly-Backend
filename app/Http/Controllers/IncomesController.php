@@ -199,6 +199,7 @@ class IncomesController extends Controller
         $startDate = $request->get('start_date', null);
         $endDate = $request->get('end_date', null);
         $studentFilter = $request->get('student_filter', null);
+        $baseFilter = $request->get('base_filter', null);
 
         $query = DB::table('income_details')
             ->join('incomes', 'income_details.id', '=', 'incomes.income_details_id')
@@ -223,6 +224,11 @@ class IncomesController extends Controller
             });
         }
 
+        if ($baseFilter) {
+            $query->join('employees', 'income_details.employee_id', '=', 'employees.id')
+                ->where('employees.id_base', $baseFilter);
+        }
+
         $incomes = $query->orderBy('income_details.payment_date', 'desc')
             ->paginate($perPage);
 
@@ -234,9 +240,12 @@ class IncomesController extends Controller
             'displaying_to' => $incomes->lastItem(),
         ];
 
+        $bases = Base::all();
+
         return response()->json([
             'incomes' => $incomes->items(),
             'pagination_data' => $paginationData,
+            'bases' => $bases
         ]);
     }
 
