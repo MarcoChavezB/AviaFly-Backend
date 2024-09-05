@@ -695,7 +695,7 @@ public function getInfoVueloAlumno(int $id = null)
             'student_id' => 'required|exists:students,id',
             'name' => 'required|string',
             'last_names' => 'required|string',
-            'curp' => 'required|string',
+            'curp' => 'required|string|unique:students,curp,' . $request->student_id,
             'phone' => 'required|string',
             'cellphone' => 'required|string',
             'email' => 'required|email|unique:students,email,' . $request->student_id,
@@ -711,6 +711,7 @@ public function getInfoVueloAlumno(int $id = null)
             'last_names.string' => 'El apellido no es válido',
             'curp.required' => 'La CURP es requerida',
             'curp.string' => 'La CURP no es válida',
+            'curp.unique' => 'La CURP ya está en uso',
             'phone.required' => 'El teléfono es requerido',
             'phone.string' => 'El teléfono no es válido',
             'cellphone.required' => 'El celular es requerido',
@@ -1097,35 +1098,71 @@ public function getInfoVueloAlumno(int $id = null)
     }
 
     public function getStudentIncomes(){
-        try {
-            $user = Auth::user();
+    try {
+        $user = Auth::user();
 
-            $student = Student::where('user_identification', $user->user_identification)->first();
-            if (!$student) {
-                return response()->json(['error' => 'Estudiante no encontrado'], 404);
-            }
-
-            $incomes = DB::table('income_details')
-                ->join('incomes', 'income_details.id', '=', 'incomes.income_details_id')
-                ->select('incomes.concept',
-                    'incomes.quantity',
-                    'incomes.total',
-                    'incomes.id',
-                    'income_details.payment_method',
-                    'income_details.payment_date',
-                    'income_details.ticket_path'
-                )
-                ->where('income_details.student_id', $student->id)
-                ->orderBy('income_details.payment_date', 'desc')
-                ->get();
-
-            return response()->json([
-                'incomes' => $incomes
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Ocurrió un error al obtener los ingresos del estudiante'], 500);
+        $student = Student::where('user_identification', $user->user_identification)->first();
+        if (!$student) {
+            return response()->json(['error' => 'Estudiante no encontrado'], 404);
         }
+
+        $incomes = DB::table('income_details')
+            ->join('incomes', 'income_details.id', '=', 'incomes.income_details_id')
+            ->select('incomes.concept',
+                'incomes.quantity',
+                'incomes.total',
+                'incomes.id',
+                'income_details.payment_method',
+                'income_details.payment_date',
+                'income_details.ticket_path'
+            )
+            ->where('income_details.student_id', $student->id)
+            ->orderBy('income_details.payment_date', 'desc')
+            ->get();
+
+        $flightPayments = DB::table('flight_payments')
+            ->join('payments', 'flight_payments.id', '=', 'payments.id_flight')
+            ->select(
+                DB::raw("'Pago de Vuelo' as concept"),
+                DB::raw("'1' as quantity"),
+                'payments.amount as total',
+                'payments.id',
+                'payments.id_payment_method as payment_method',
+                'payments.created_at as payment_date',
+                'payments.payment_ticket as ticket_path'
+            )
+            ->where('flight_payments.id_student', $student->id)
+            ->where('flight_payments.payment_status', 'pagado')
+            ->orderBy('payments.created_at', 'desc')
+            ->get();
+
+        $orders = DB::table('orders')
+            ->select('products.name as concept',
+                'order_details.quantity as quantity',
+                DB::raw('SUM(products.price * order_details.quantity) as total'),
+                'orders.id',
+                'orders.id_payment_method as payment_method',
+                'orders.order_date as payment_date',
+                DB::raw("'' as ticket_path")
+            )
+            ->join('order_details', 'orders.id', '=', 'order_details.id_order')
+            ->join('products', 'order_details.id_product', '=', 'products.id')
+            ->where('orders.id_client', $student->id)
+            ->where('orders.payment_status', 'pagado')
+            ->groupBy('orders.id', 'products.name', 'orders.id_payment_method', 'orders.order_date', 'order_details.quantity')
+            ->orderBy('orders.order_date', 'desc')
+            ->get();
+
+
+        $allPayments = $incomes->concat($flightPayments)->concat($orders);
+
+        return response()->json([
+            'incomes' => $allPayments
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
 
     public function deleteAccessUser($id){
         try{
@@ -1204,5 +1241,48 @@ public function getInfoVueloAlumno(int $id = null)
         return response()->json(["error" => "Internal Server Error"], 500);
     }
 }
+
+    public function studentPendingPayments($id = null){
+        try{
+
+            if($id){
+                $student = Student::find($id);
+            }else{
+                $user = Auth::user();
+                $student = Student::where('user_identification', $user->user_identification)->first();
+            }
+
+            if (!$student) {
+                return response()->json(['error' => 'Estudiante no encontrado'], 404);
+            }
+
+            $flightPayments = DB::table('flight_payments')
+                ->where('id_student', $student->id)
+                ->where('payment_status', 'pendiente')
+                ->select('total as amount', 'payment_status as status', DB::raw("'No especificada' as payment_date"), DB::raw("'Flight Payment' as concept"))
+                ->get();
+
+            $monthlyPayments = DB::table('monthly_payments')
+                ->where('id_student', $student->id)
+                ->whereIn('status', ['pending', 'owed'])
+                ->select('amount', 'status', 'payment_date', 'concept')
+                ->get();
+
+            $orders = DB::table('orders')
+                ->join('order_details', 'orders.id', '=', 'order_details.id_order')
+                ->join('products', 'order_details.id_product', '=', 'products.id')
+                ->where('id_client', $student->id)
+                ->where('payment_status', 'pendiente')
+                ->select(DB::raw('SUM(products.price * order_details.quantity) as amount'), 'payment_status as status', 'order_date as payment_date', 'products.name as concept')
+                ->groupBy('orders.id', 'products.name', 'order_date', 'payment_status')
+                ->get();
+
+            $pendingPayments = $flightPayments->concat($monthlyPayments)->concat($orders);
+
+            return response()->json(['pending_payments' => $pendingPayments], 200);
+        }catch(\Exception $e){
+            return response()->json(["error" => "Internal Server Error"], 500);
+        }
+    }
 
 }
