@@ -66,14 +66,14 @@ class OrderController extends Controller
      *      }
      *  ]
      */
-    public function index($id_student = null)
+    public function index($id_order = null)
     {
         $orders = Order::with(['employee', 'client', 'products', 'productPayments.paymentMethod'])
-                        ->when($id_student, function ($query, $id_student) {
-                            return $query->where('id_client', $id_student);
-                        })
-                       ->orderBy('created_at', 'desc')
-                       ->get();
+            ->when($id_order, function ($query, $id_order) {
+                return $query->where('id', $id_order);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $result = $orders->map(function ($order) {
             $sortedProductPayments = $order->productPayments->sortByDesc('created_at');
@@ -95,6 +95,7 @@ class OrderController extends Controller
             return [
                 'id_order' => $order->id,
                 'employee' => $order->employee->name,
+                'order_ticket' => $order->productPayments->first()->payment_ticket ?? null,
                 'client' => $order->client->name ?? null,
                 'order_date' => $order->order_date,
                 'order_status' => $order->payment_status,
@@ -114,7 +115,8 @@ class OrderController extends Controller
             ];
         });
 
-        return response()->json($result);
+        // Devuelve los datos sin envolver en una respuesta JSON
+        return $result;
     }
     /**
      * Show the form for creating a new resource.
@@ -233,7 +235,8 @@ class OrderController extends Controller
         $product_payment->payment_ticket = $urlTicket;
         $product_payment->save();
 
-        return response()->json(['message' => 'Orden creada con exito'], 201);
+        $data = $this->index($id_order);
+        return response()->json($data, 200);
     }
 
     /**
