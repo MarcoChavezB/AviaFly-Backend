@@ -697,7 +697,7 @@ public function getInfoVueloAlumno(int $id = null)
             'student_id' => 'required|exists:students,id',
             'name' => 'required|string',
             'last_names' => 'required|string',
-            'curp' => 'required|string',
+            'curp' => 'required|string|unique:students,curp,' . $request->student_id,
             'phone' => 'required|string',
             'cellphone' => 'required|string',
             'email' => 'required|email|unique:students,email,' . $request->student_id,
@@ -713,6 +713,7 @@ public function getInfoVueloAlumno(int $id = null)
             'last_names.string' => 'El apellido no es válido',
             'curp.required' => 'La CURP es requerida',
             'curp.string' => 'La CURP no es válida',
+            'curp.unique' => 'La CURP ya está en uso',
             'phone.required' => 'El teléfono es requerido',
             'phone.string' => 'El teléfono no es válido',
             'cellphone.required' => 'El celular es requerido',
@@ -1130,7 +1131,7 @@ public function getInfoVueloAlumno(int $id = null)
                 'payments.id',
                 'payments.id_payment_method as payment_method',
                 'payments.created_at as payment_date',
-                'payments.payment_voucher as ticket_path'
+                'payments.payment_ticket as ticket_path'
             )
             ->where('flight_payments.id_student', $student->id)
             ->where('flight_payments.payment_status', 'pagado')
