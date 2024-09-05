@@ -25,10 +25,10 @@ return new class extends Migration
             $table->string('flight_hour');
             $table->boolean('flight_alone')->default(false);
             $table->boolean('has_report')->default(false);
-            $table->decimal('initial_horometer', 8, 2);
-            $table->decimal('final_horometer', 8, 2);
-            $table->decimal('total_horometer', 8, 2);
-            $table->decimal('final_tacometer', 8, 2);
+            $table->decimal('initial_horometer', 8, 2)->default(0);
+            $table->decimal('final_horometer', 8, 2)->default(0);
+            $table->decimal('total_horometer', 8, 2)->default(0);
+            $table->decimal('final_tacometer', 8, 2)->default(0);
             $table->string('comment')->nullable();
             $table->enum('type_flight', ['simulador', 'vuelo']);
 

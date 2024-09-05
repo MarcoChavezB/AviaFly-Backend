@@ -255,6 +255,7 @@ Route::prefix('/calendars')->group(function () {
 
 Route::prefix('/tikets')->group(function () {
     Route::get('/flight/reservation/{flightHistoryId}', [PDFController::class, 'generateTicket']);
+    Route::get('/{flightHistoryId}', [PDFController::class, 'getReservationTicket']);
 });
 
 
@@ -316,11 +317,12 @@ Route::prefix('/shops')->middleware('auth:sanctum')->group(function () {
     Route::get('/index/{id_student?}', [OrderController::class, 'index']);
     Route::post('/edit', [OrderController::class, 'edit']);
     Route::post('/store/installment', [OrderController::class, 'storeInstallment']);
+    Route::get('/test/{id_order}', [PDFController::class, 'getProductOrderTicket']);
 });
 
 
 Route::prefix('/fingerPrint')->group(function () {
-    Route::post('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
+    Route::get('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
 });
 
 Route::prefix('/arrival')->group(function () {

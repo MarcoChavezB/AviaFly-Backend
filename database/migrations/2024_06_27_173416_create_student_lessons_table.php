@@ -18,8 +18,8 @@ return new class extends Migration
             $table->unsignedBigInteger('id_student');
             $table->foreign('id_student')->references('id')->on('students');
 
-            $table->unsignedBigInteger('id_lesson');
-            $table->foreign('id_lesson')->references('id')->on('lessons');
+            $table->unsignedBigInteger('id_lesson_objetive');
+            $table->foreign('id_lesson_objetive')->references('id')->on('lesson_objetive_sessions');
 
             $table->unsignedBigInteger('id_session');
             $table->foreign('id_session')->references('id')->on('sessions');

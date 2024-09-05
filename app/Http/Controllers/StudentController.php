@@ -544,8 +544,6 @@ public function getInfoVueloAlumno(int $id = null)
         if($this->checkLimitHoursPlane($request->flight_airplane, $request->hours) && $request->flight_type == 'vuelo'){
             return response()->json(["errors" => ["No hay horas disponibles en el avión"]], 402);
         }
-
-
         DB::statement('CALL storeAcademicFlight(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $request->id_student,             // id_student: INT
             $user->id,                        // id_employee: INT
@@ -555,13 +553,13 @@ public function getInfoVueloAlumno(int $id = null)
             $request->flight_hour,            // flight_hour: VARCHAR(10)
             $request->flight_payment_status,  // flight_payment_status: VARCHAR(50)
             $request->hours,                  // hours: INT
-            $request->total,                  // total: INT
+            floatval($request->total),        // total: DECIMAL(8, 2) -- Convertir a decimal
             $request->id_pay_method,          // pay_method: VARCHAR(50)
             $request->due_week,               // due_week: INT
-            $request->installment_value,      // installment_value: DECIMAL(8, 2)
+            floatval($request->installment_value), // installment_value: DECIMAL(8, 2)
             $request->flight_category,        // flight_category: ENUM('VFR', 'IFR', 'IFR_nocturno')
             $request->maneuver,               // maneuver: ENUM('local', 'ruta')
-            $request->hour_instructor_cost,   // hour_instructor_cost: DECIMAL(8, 2)
+            floatval($request->hour_instructor_cost), // hour_instructor_cost: DECIMAL(8, 2)
             $request->equipo,                 // equipo: ENUM('XBPDY', 'simulador', 'vuelo')
             $request->flight_session,         // session_id: INT
             $request->flight_airplane         // airplane_id: INT
@@ -573,7 +571,7 @@ public function getInfoVueloAlumno(int $id = null)
         $lastPaymentInsert = Payments::latest('id')->first();
 
         $PdfController = new PDFController();
-        $urlTicket = $PdfController->generateTicket($last_id_insert->id);
+        $urlTicket = $PdfController->generateTicket($last_id_insert->id, $request->payment_comission);
 
         $lastPaymentInsert->payment_ticket = $urlTicket;
         $lastPaymentInsert->save();

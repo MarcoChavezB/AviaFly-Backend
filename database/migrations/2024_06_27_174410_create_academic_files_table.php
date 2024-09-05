@@ -19,7 +19,6 @@ return new class extends Migration
             $table->foreign('id_section_file')->references('id')->on('section_files');
 
             $table->string('file_name');
-            $table->string('file_descrition');
             $table->timestamps();
         });
     }

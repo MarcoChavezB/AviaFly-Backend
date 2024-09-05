@@ -227,6 +227,11 @@ class OrderController extends Controller
             $productFind->save();
         }
 
+        $pdfController = new PDFController();
+        $urlTicket = $pdfController->generateProductTicket($id_order);
+
+        $product_payment->payment_ticket = $urlTicket;
+        $product_payment->save();
 
         return response()->json(['message' => 'Orden creada con exito'], 201);
     }

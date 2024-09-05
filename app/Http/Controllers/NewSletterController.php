@@ -121,7 +121,6 @@ class NewSletterController extends Controller
     public function create(Request $request)
     {
         $data = $request->all();
-        return response()->json($data);
         $validator = Validator::make($data, [
             'title' => 'required|string',
             'content' => 'required|string',
@@ -148,6 +147,8 @@ class NewSletterController extends Controller
         }
 
         $created_by = Employee::where('user_identification', Auth::user()->user_identification)->first();
+
+        return response()->json($created_by);
         $newSletter = new Newsletter();
 
         $newSletter->title = $data['title'];

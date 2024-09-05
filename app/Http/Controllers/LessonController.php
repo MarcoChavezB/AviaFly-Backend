@@ -16,7 +16,7 @@ class LessonController extends Controller
      */
     public function index()
     {
-        $lessons = Lesson::select('id', 'lesson_title')->get();
+        $lessons = Lesson::select('id', 'name')->get();
         return response()->json($lessons, 200);
     }
 
@@ -107,8 +107,8 @@ class LessonController extends Controller
 
         foreach ($data['lessons'] as $lesson) {
             studentLesson::where('id_student', $data['id_student'])
-                ->where('id_lesson', $lesson['id_lesson'])
-                ->where('id_session', $lesson['id_session'])
+                ->where('id_lesson_objetive', $lesson['id_lesson'])
+                ->where('id_session', $data['id_session'])
                 ->update(['lesson_passed' => $lesson['lesson_approved']]);
         }
 
@@ -126,3 +126,5 @@ class LessonController extends Controller
         //
     }
 }
+
+
