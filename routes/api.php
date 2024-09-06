@@ -62,14 +62,8 @@ Route::prefix('/avia')->group(function () { //root, admin, employee, instructor,
     Route::post('login', [UserController::class, 'login']);
 
     Route::middleware(['auth:sanctum'])->group(function () {
-        Route::get('/auth/check', function () {
-            return response()->json([
-                true
-            ]);
-        });
-
-        Route::post('logout', [UserController::class, 'logout']);
-
+        Route::post('logout', [UserController::class, 'logout'])->middleware('role:root,admin,employee,instructor,student,flight_instructor');
+        Route::get('bases-careers-turns', [BaseController::class, 'getBasesWithCareersAndTurns'])->middleware('role:root,admin,employee');
     });
 });
 
