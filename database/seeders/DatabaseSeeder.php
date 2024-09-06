@@ -17,6 +17,7 @@ use App\Models\FlightObjetive;
 use App\Models\InfoFlight;
 use App\Models\Lesson;
 use App\Models\LessonObjetiveSession;
+use App\Models\Option;
 use App\Models\PaymentMethod;
 use App\Models\Payments;
 use App\Models\SectionFile;
@@ -27,6 +28,7 @@ use App\Models\Subject;
 use App\Models\TeacherSubjectTurn;
 use App\Models\Turn;
 use App\Models\User;
+use Dompdf\Options;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -1126,6 +1128,15 @@ class DatabaseSeeder extends Seeder
             AcademicFile::create($file);
         };
 
+
+        Option::create(
+            [
+                'option_type' => 'can_reservate_flight',
+                'is_active' => 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
+        );
     }
 
 }
