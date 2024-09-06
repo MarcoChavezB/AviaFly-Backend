@@ -155,9 +155,11 @@ class StudentController extends Controller
             $user->id_base = $request->base;
             $user->save();
 
-            ProcessStudentCreation::dispatch($student, $request->all());
+
+            ProcessStudentCreation::dispatchAfterResponse($student, $request->all());
 
             return response()->json($user->user_identification, 201);
+
         } catch (\Exception $e) {
             return response()->json(["error" => $e->getMessage()], 500);
         }

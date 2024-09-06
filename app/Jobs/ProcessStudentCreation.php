@@ -11,7 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 
-class ProcessStudentCreation implements ShouldQueue
+class ProcessStudentCreation
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
