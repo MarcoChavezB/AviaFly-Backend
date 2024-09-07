@@ -5,14 +5,11 @@ use App\Http\Controllers\AcademicFileController;
 use App\Http\Controllers\AirPlaneController;
 use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\CareerController;
-use App\Http\Controllers\ContactController;
 use App\Http\Controllers\IncomesController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\SubjectController;
-use App\Http\Controllers\TurnController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CourseController;
 use App\Http\Controllers\BaseController;
 use App\Http\Controllers\CheckInRecordsController;
 use App\Http\Controllers\ConsumableController;
@@ -85,34 +82,42 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [StudentController::class, 'index']);
     Route::get('/index/{identificator}', [StudentController::class, 'indexByName']);
     Route::get('/indexId/{id_student}', [StudentController::class, 'indexId']);
-    Route::post('/enroll', [CourseController::class, 'create']);
-    Route::post('/create', [StudentController::class, 'create']); // Esto puede hacerlo: root, admin
-    Route::get('/show/{id}', [StudentController::class, 'show'])->where('id', '[0-9]+');
-    Route::put('/update/grade', [StudentController::class, 'updateGrade']);
+
+
+    Route::middleware('role:root,admin,employee')->group(function (){ /**/
+        Route::post('/create', [StudentController::class, 'create']);
+        Route::get('/show/{id}', [StudentController::class, 'show'])->where('id', '[0-9]+');
+        Route::put('/update/grade', [StudentController::class, 'updateGrade']);
+        Route::get('/get', [StudentController::class, 'getStudents']);
+        Route::get('/get/subjects/{id}', [StudentController::class, 'getStudentSubjects'])->where('id', '[0-9]+');
+        Route::post('/add/subject', [StudentController::class, 'addSubjectToStudent']);
+        Route::delete('/delete/subject', [StudentController::class, 'deleteSubjectFromStudent']);
+        Route::put('/change/instructor', [StudentController::class, 'changeInstructorFromStudentSubject']);
+        Route::put('/update', [StudentController::class, 'update']);
+        Route::get('/student/owed-monthly-payments/{id}', [StudentController::class, 'getStudentAndOwedMonthlyPayments'])->where('id', '[0-9]+');
+        Route::get('/get/name-identification/{id}', [StudentController::class, 'getStudentNameAndIdentification'])->where('id', '[0-9]+');
+    });
+
+    Route::middleware('role:student')->group(function (){ /**/
+        Route::get('/student/get/profile-info', [StudentController::class, 'studentInfo']);
+        Route::get('/student/get/subjects', [StudentController::class, 'getStudentSubjectsAsStudent']);
+        Route::get('/student/incomes', [StudentController::class, 'getStudentIncomes']);
+    });
+
+    Route::get('/student/pending-payments/{id?}', [StudentController::class, 'studentPendingPayments'])->where('id', '[0-9]+')
+        ->middleware('role:student,root,admin,employee');
+
+    Route::middleware('role:admin,root')->group(function (){ /**/
+        Route::delete('/delete/access-user/{id}', [StudentController::class, 'deleteAccessUser'])->where('id', '[0-9]+');
+        Route::post('/create/access-user/{id}', [StudentController::class, 'createAccessUser'])->where('id', '[0-9]+');
+    });
+
+
     Route::get('/flight/index', [StudentController::class, 'indexSimulator']);
     Route::get('/flight/index/{name}', [StudentController::class, 'getStudentSimulatorByName']);
     Route::get('/flight/report/{id_student?}', [StudentController::class, 'getInfoVueloAlumno']);
     Route::get('/flight/employees/bystudent/{id}', [StudentController::class, 'getEmployeesByStudent']);
     Route::post('/flight/store', [StudentController::class, 'storeFlight']);
-
-    Route::get('/get', [StudentController::class, 'getStudents']); // Esto puede hacerlo: root, admin
-    Route::get('/get/subjects/{id}', [StudentController::class, 'getStudentSubjects'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
-    Route::post('/add/subject', [StudentController::class, 'addSubjectToStudent']); // Esto puede hacerlo: root, admin
-    Route::delete('/delete/subject', [StudentController::class, 'deleteSubjectFromStudent']); // Esto puede hacerlo: root, admin
-    Route::put('/change/instructor', [StudentController::class, 'changeInstructorFromStudentSubject']); // Esto puede hacerlo: root, admin
-    Route::put('/update', [StudentController::class, 'update']); // Esto puede hacerlo: root, admin
-    Route::get('/student/monthly-payments/{id}', [StudentController::class, 'getStudentMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
-    Route::get('/student/owed-monthly-payments/{id}', [StudentController::class, 'getStudentAndOwedMonthlyPayments'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
-    Route::get('/get/name-identification/{id}', [StudentController::class, 'getStudentNameAndIdentification'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
-
-
-    Route::get('/student/get/profile-info', [StudentController::class, 'studentInfo']); // Esto puede hacerlo: estudiante
-    Route::get('/student/get/subjects', [StudentController::class, 'getStudentSubjectsAsStudent']); // Esto puede hacerlo: estudiante
-    Route::get('/student/incomes', [StudentController::class, 'getStudentIncomes']); //Esto peude hacerlo un estudiante
-    Route::get('/student/pending-payments/{id?}', [StudentController::class, 'studentPendingPayments'])->where('id', '[0-9]+'); //Esto peude hacerlo un estudiantes
-    Route::delete('/delete/access-user/{id}', [StudentController::class, 'deleteAccessUser'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
-    Route::post('/create/access-user/{id}', [StudentController::class, 'createAccessUser'])->where('id', '[0-9]+'); // Esto puede hacerlo: root, admin
-
 });
 
 Route::prefix('/bases')->middleware(['auth:sanctum', 'role:root,admin,employee,instructor,flight_instructor,student'])->group(function () {
@@ -120,70 +125,53 @@ Route::prefix('/bases')->middleware(['auth:sanctum', 'role:root,admin,employee,i
 });
 
 Route::prefix('/instructors')->middleware('auth:sanctum')->group(function () {
-    Route::post('/create', [InstructorController::class, 'create']);
+
     Route::get('/index', [InstructorController::class, 'index']);
 
-    Route::get('/get/careers', [InstructorController::class, 'getInstructorCareers']); // Esto puede hacerlo: instructor
-    Route::get('/get/subjects', [InstructorController::class, 'getInstructorSubjects']); // Esto puede hacerlo: instructor
-    Route::get('/get/students', [InstructorController::class, 'getStudentsByInstructor']); // Esto puede hacerlo: instructor
-    Route::get('/get/instructors-subjects', [InstructorController::class, 'getInstructorsSubjects']); // Esto puede hacerlo: root, admin
-    Route::put('/update/instructors-subjects', [InstructorController::class, 'updateInstructorsSubjects']); // Esto puede hacerlo: root, admin
-    Route::put('/update/student/grade', [InstructorController::class, 'updateStudentGrade']); // Esto puede hacerlo: instructor
-    Route::get('/get/instructors-and-turns', [InstructorController::class, 'getInstructorsAndTurns']); // Esto puede hacerlo: root, admin
-    Route::get('/get/instructor-students/{id}', [InstructorController::class, 'getInstructorStudents'])->where('id', '[0-9]+'); // Esto puede hacerlo: instructor
-    Route::get('/get/instructor-active-subjects', [InstructorController::class, 'getInstructorActiveSubjects'])->where('id', '[0-9]+'); // Esto puede hacerlo: instructor
-    Route::put('/update/student-grade', [InstructorController::class, 'updateStudentSubjectGrade']); // Esto puede hacerlo: instructor
+    Route::middleware('role:admin,root')->group(function () { /**/
+        Route::post('/create', [InstructorController::class, 'create']);
+        Route::put('/update/instructors-subjects', [InstructorController::class, 'updateInstructorsSubjects']); // Esto puede hacerlo: root, admin
+        Route::get('/get/instructors-subjects', [InstructorController::class, 'getInstructorsSubjects']);
+        Route::get('/get/instructors-and-turns', [InstructorController::class, 'getInstructorsAndTurns']);
+    });
 
+    Route::middleware('role:instructor')->group(function () {
+        Route::get('/get/instructor-students/{id}', [InstructorController::class, 'getInstructorStudents'])->where('id', '[0-9]+');
+        Route::get('/get/instructor-active-subjects', [InstructorController::class, 'getInstructorActiveSubjects'])->where('id', '[0-9]+');
+        Route::put('/update/student-grade', [InstructorController::class, 'updateStudentSubjectGrade']);
+    });
 });
 
-Route::prefix('/careers')->group(function () {
-    Route::get('/get', [CareerController::class, 'getCareers']);
-    Route::get('/get-with-subjects', [CareerController::class, 'getCareersWithSubjects']);
-    Route::middleware('auth:sanctum')->group(function () {
+Route::prefix('/careers')->middleware('auth:sanctum')->group(function () {
+    Route::middleware('role:admin,root')->group(function (){
+        Route::get('/get', [CareerController::class, 'getCareers']);
         Route::get('/index', [CareerController::class, 'index']);
         Route::post('/create', [CareerController::class, 'create']);
         Route::put('/update', [CareerController::class, 'update']);
     });
 });
 
-Route::prefix('/incomes')->group(function (){
-    Route::middleware('auth:sanctum')->group(function () {
-            Route::post('/tuition/create', [IncomesController::class, 'createTuitionIncome']);
-            Route::post('/flight-credit/create', [IncomesController::class, 'createIncomes']);
-            Route::get('/get/all', [IncomesController::class, 'index']);
-            Route::get('/show/{id}', [IncomesController::class, 'show'])->where('id', '[0-9]+');
+Route::prefix('/incomes')->middleware('auth:sanctum')->group(function (){
+    Route::middleware('role:root,admin,employee')->group(function (){
+        Route::post('/create/income', [IncomesController::class, 'createIncomes']);
+        Route::get('/get/all', [IncomesController::class, 'index']);
+        Route::get('/show/{id}', [IncomesController::class, 'show'])->where('id', '[0-9]+');
     });
 });
 
 
-Route::prefix('/subjects')->group(function () {
-    Route::get('/get', [SubjectController::class, 'getSubjects']);
+Route::prefix('/subjects')->middleware('auth:sanctum')->group(function () {
     Route::get('/get-info-calendar/{id_career}', [SubjectController::class, 'getSubjectsInfoCalendar']);
 
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/create', [SubjectController::class, 'create']); // Esto puede hacerlo: root, admin
-        Route::delete('/destroy', [SubjectController::class, 'destroy']); // Esto puede hacerlo: root, admin
-        Route::get('/ending-soon', [SubjectController::class, 'getSubjectsEndingSoon']); // Esto puede hacerlo: root, admin
+    Route::middleware('role:admin,root')->group(function () {
+        Route::post('/create', [SubjectController::class, 'create']);
+        Route::delete('/destroy', [SubjectController::class, 'destroy']);
     });
 });
 
 Route::prefix('/employes')->middleware('auth:sanctum')->group(function () {
     Route::get('/get/tasks', [UserController::class, 'getEmployes']);
 });
-
-Route::prefix('/contacts')->group(function () {
-    Route::post('/create', [ContactController::class, 'create']);
-    Route::get('/get', [ContactController::class, 'index2']);
-    Route::get('/show/{id}', [ContactController::class, 'show'])->where('id', '[0-9]+');
-    Route::delete('/destroy/{id}', [ContactController::class, 'destroy'])->where('id', '[0-9]+');
-    Route::put('/update/{id}', [ContactController::class, 'update'])->where('id', '[0-9]+');
-    Route::get('/index', [ContactController::class, 'index2']);
-});
-
-Route::prefix('/turns')->group(function () {
-    Route::get('/get', [TurnController::class, 'index']);
-});
-
 
 Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get', [InfoFlightController::class, 'index']);
@@ -200,10 +188,14 @@ Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
     Route::post('/change/status', [PaymentsController::class, 'changeFlightPaymentStatus']);
 });
 
-Route::prefix('/employees')->group(function () {
-    Route::middleware('auth:sanctum')->group(function () {
+Route::prefix('/employees')->middleware('auth:sanctum')->group(function () {
+
+    Route::middleware('role:root,admin,employee')->group(function (){
         Route::get('/index', [EmployeeController::class, 'index']);
         Route::get('/show/{id}', [EmployeeController::class, 'show'])->where('id', '[0-9]+');
+    });
+
+    Route::middleware('role:root,admin')->group(function (){
         Route::put('/update/{id}', [EmployeeController::class, 'update'])->where('id', '[0-9]+');
         Route::put('/update/password/{id}', [EmployeeController::class, 'updatePassword'])->where('id', '[0-9]+');
         Route::delete('/delete/access-user/{id}', [EmployeeController::class, 'deleteAccessUser'])->where('id', '[0-9]+');
