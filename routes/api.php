@@ -102,6 +102,7 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
         Route::get('/student/get/profile-info', [StudentController::class, 'studentInfo']);
         Route::get('/student/get/subjects', [StudentController::class, 'getStudentSubjectsAsStudent']);
         Route::get('/student/incomes', [StudentController::class, 'getStudentIncomes']);
+        Route::put('/update/password', [StudentController::class, 'updateStudentPassword']);
     });
 
     Route::get('/student/pending-payments/{id?}', [StudentController::class, 'studentPendingPayments'])->where('id', '[0-9]+')

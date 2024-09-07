@@ -16,6 +16,7 @@ use Faker\Provider\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class StudentController extends Controller
@@ -1284,6 +1285,49 @@ public function getInfoVueloAlumno(int $id = null)
             return response()->json(['pending_payments' => $pendingPayments], 200);
         }catch(\Exception $e){
             return response()->json(["error" => "Internal Server Error"], 500);
+        }
+    }
+
+
+    public function updateStudentPassword(){
+        try {
+            $user = Auth::user();
+            $student = Student::where('user_identification', $user->user_identification)->first();
+
+            if (!$student) {
+                return response()->json(['error' => 'Estudiante no encontrado'], 404);
+            }
+
+            $validator = Validator::make(request()->all(), [
+                'current_password' => 'required',
+                'new_password' => 'required|min:6',
+                'confirm_password' => 'required|same:new_password',
+            ], [
+                'current_password.required' => 'La contraseña actual es requerida',
+                'current_password.string' => 'La contraseña actual no es válida',
+                'new_password.required' => 'La nueva contraseña es requerida',
+                'new_password.string' => 'La nueva contraseña no es válida',
+                'new_password.min' => 'La nueva contraseña debe tener al menos 6 caracteres',
+                'confirm_password.required' => 'La confirmación de la contraseña es requerida',
+                'confirm_password.same' => 'Las contraseñas no coinciden',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(["errors" => $validator->errors()], 400);
+            }
+
+            if (!Hash::check(request('current_password'), $user->password)) {
+                return response()->json(['errors' => ['password' => ['La contraseña actual no es correcta']]], 400);
+            }
+
+            $user->password = bcrypt(request('new_password'));
+            $user->save();
+
+            DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
+
+            return response()->json(['msg' => 'Contraseña actualizada'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Internal Server Error'], 500);
         }
     }
 
