@@ -199,7 +199,7 @@ class IncomesController extends Controller
         $startDate = $request->get('start_date', null);
         $endDate = $request->get('end_date', null);
         $studentFilter = $request->get('student_filter', null);
-        $baseFilter = $request->get('base_filter', null);
+        $baseFilter = $request->get('base_filter', 0);
 
         $query = DB::table('income_details')
             ->join('incomes', 'income_details.id', '=', 'incomes.income_details_id')
@@ -224,7 +224,7 @@ class IncomesController extends Controller
             });
         }
 
-        if ($baseFilter) {
+        if ($baseFilter != 0) {
             $query->join('employees', 'income_details.employee_id', '=', 'employees.id')
                 ->where('employees.id_base', $baseFilter);
         }

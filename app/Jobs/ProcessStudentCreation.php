@@ -4,14 +4,12 @@ namespace App\Jobs;
 
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 
-class ProcessStudentCreation implements ShouldQueue
+class ProcessStudentCreation
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -45,7 +43,7 @@ class ProcessStudentCreation implements ShouldQueue
             'id_student' => $this->student->id,
             'payment_date' => $this->student->created_at,
             'amount' => $career->registration_fee,
-            'concept' => 'Inscripción'.'_'.$career->name,
+            'concept' => 'Inscripción'.' '.$career->name,
             'status' => 'pending',
         ]);
 
@@ -57,7 +55,7 @@ class ProcessStudentCreation implements ShouldQueue
                 'id_student' => $this->student->id,
                 'payment_date' => $paymentDate,
                 'amount' => $career->monthly_fee,
-                'concept' => 'Mensualidad'.' '.$career->name.' '.$paymentDate,
+                'concept' => 'Mensualidad'.' '.$career->name.' '.$paymentDate->format('Y-m-d'),
                 'status' => 'pending',
             ]);
         }
