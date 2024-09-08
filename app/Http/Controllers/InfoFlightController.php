@@ -172,8 +172,9 @@ class InfoFlightController extends Controller
     }
 
 
-function flightRequestIndex(){
-    $canReservate = Option::where('option_type', 'can_reservate_flight')->get('is_active')->first();
+function flightRequestIndex() {
+    $canReservate = Option::where('option_type', 'can_reservate_flight')->pluck('is_active')->first();
+
     $results = DB::table('flight_payments')
         ->select(
             'students.id as student_id',
@@ -192,7 +193,7 @@ function flightRequestIndex(){
             'flight_history.flight_status as flight_status',
             'payment_methods.type as payment_method',
             'flight_history.flight_client_status',
-            DB::raw("'{$canReservate->is_active}' as can_reservate")
+            DB::raw("'{$canReservate}' as can_reservate")
         )
         ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
         ->join('payments', 'flight_payments.id', '=', 'payments.id_flight')
@@ -227,6 +228,12 @@ function flightRequestIndex(){
         ->orderBy('flight_history.created_at', 'desc')
         ->get();
 
+    if ($results->isEmpty()) {
+        // Retornar un arreglo con un objeto que contenga can_reservate si no hay resultados
+        return response()->json([['can_reservate' => (bool) $canReservate]]);
+    }
+
+    // Procesar resultados y agregar información de vuelos conflictivos
     foreach ($results as $result) {
         $conflictingFlights = $this->OtherFlightReservedRequest($result->flight_date, $result->flight_hour, $result->flight_hours, $result->flight_type);
 
@@ -240,6 +247,12 @@ function flightRequestIndex(){
             return ['id_flight' => $flight->id_flight];
         })->values()->toArray();
     }
+
+    // Agregar can_reservate a cada resultado
+    $results = $results->map(function($result) use ($canReservate) {
+        $result->can_reservate = (bool) $canReservate;
+        return $result;
+    });
 
     return response()->json($results);
 }

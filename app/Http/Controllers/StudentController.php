@@ -673,13 +673,15 @@ public function getInfoVueloAlumno(int $id = null)
     function getEmployeesByStudent(int $id)
     {
         $employees = DB::select("
-        select DISTINCT
-            employees.id,
-            employees.name as instructor
-        FROM students
-        LEFT JOIN student_subjects ON students.id = student_subjects.id_student
-        LEFT JOIN employees ON student_subjects.id_teacher = employees.id
-        WHERE students.id = $id and employees.user_type = 'instructor'");
+            SELECT DISTINCT
+                employees.id,
+                employees.name AS instructor,
+                employees.user_type
+            FROM employees
+            LEFT JOIN student_subjects ON employees.id = student_subjects.id_teacher
+            LEFT JOIN students ON student_subjects.id_student = students.id
+            WHERE employees.user_type = 'instructor' OR employees.user_type = 'flight_instructor';
+        ");
         return response()->json($employees, 200);
     }
 

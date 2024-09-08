@@ -63,7 +63,6 @@ Route::prefix('/avia')->group(function () { //root, admin, employee, instructor,
     Route::post('login', [UserController::class, 'login']);
 
     Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/user/data', [UserController::class, 'getUserData']);
         Route::get('/auth/check', function () {
             return response()->json([
                 true
@@ -71,18 +70,18 @@ Route::prefix('/avia')->group(function () { //root, admin, employee, instructor,
         });
 
         Route::post('logout', [UserController::class, 'logout']);
-        Route::get('bases-careers-turns', [BaseController::class, 'getBasesWithCareersAndTurns'])->middleware('role:root,admin,employee');
+
     });
 });
 
-Route::prefix('/analitics')->middleware('auth:sanctum')->group(function () {
+Route::prefix('/analitics')->group(function () {
     Route::get('/get/principal', [AnalyticController::class, 'getCardData']);
     Route::get('/get/enrollments/year', [AnalyticController::class, 'getEnrollmentsYear']);
     Route::get('/get/activity/week', [AnalyticController::class, 'getWeekActivity']);
     Route::get('/get/debt', [AnalyticController::class, 'getTotalDebt']);
 });
 
-Route::prefix('/pendings')->middleware('auth:sanctum')->middleware('auth:sanctum')->group(function () {
+Route::prefix('/pendings')->middleware('auth:sanctum')->group(function () {
     Route::get('/get/all', [PendingController::class, 'index']);
     Route::delete('/destroy/{id}', [PendingController::class, 'destroy']);
     Route::post('/create', [PendingController::class, 'create']);
@@ -219,14 +218,14 @@ Route::prefix('/employees')->group(function () {
     });
 });
 
-Route::prefix('/products')->middleware(['auth:sanctum', 'role:root, admin,employee'])->group(function () {
-    Route::get('/index/{name?}', [ProductController::class, 'index']);
+Route::prefix('/products')->middleware('auth:sanctum')->group(function () {
+    Route::get('/index/{name?}', [ProductController::class, 'index'])->middleware(userType::class . ':root, employee');
     Route::post('/store', [ProductController::class, 'store']);
     Route::put('/update/{id_product}', [ProductController::class, 'update']);
     Route::post('/filters', [ProductController::class, 'filters']);
 });
 
-Route::prefix('/enum/values')->middleware('auth:sanctum')->group(function () {
+Route::prefix('/enum/values')->group(function () {
     Route::get('/flight/equipo', [InfoFlightController::class, 'getEquipFlight']);
     Route::get('/flight/flight_type', [InfoFlightController::class, 'getFlightType']);
     Route::get('/flight/flight_category', [InfoFlightController::class, 'getFlightCategory']);
@@ -237,22 +236,18 @@ Route::prefix('/reports')->group(function () {
     Route::post('/store', [FlightHistoryController::class, 'storeReport']);
     Route::get('/index/student/{id_flight}', [FlightHistoryController::class, 'indexReport']);
     Route::post('/update/total', [FlightPaymentController::class, 'updateTotalPrice']);
+    Route::get('/index/students', [StudentController::class, 'indexStudentsReport']);
+    Route::post('/index/students/filter', [FlightHistoryController::class, 'indexStudentsFilter']);
     Route::get('/all/info/{id_flight}', [FlightHistoryController::class, 'getAllInfoReport']);
     Route::get('/index/schedule', [FlightHistoryController::class, 'getSchedule']);
 });
 
-Route::prefix('/reports')->group(function () {
-    Route::post('/index/students/filter', [FlightHistoryController::class, 'indexStudentsFilter']);
-    Route::get('/index/students', [StudentController::class, 'indexStudentsReport']);
-});
 
-
-
-Route::prefix('/prices')->middleware('auth:sanctum')->group(function () {
+Route::prefix('/prices')->group(function () {
     Route::post('/flight', [FlightPaymentController::class, 'getFlightPrice']);
 });
 
-Route::prefix('/calendars')->middleware('auth:sanctum')->group(function () {
+Route::prefix('/calendars')->group(function () {
     Route::get('/flight/reservate', [FlightHistoryController::class, 'getFlightReservations']);
     Route::get('/flight/types/{flight_type}', [FlightHistoryController::class, 'getFLightTypes']);
     Route::get('/flight/reservate/{id_student}', [FlightHistoryController::class, 'getFLightReservationsById']);
@@ -260,19 +255,19 @@ Route::prefix('/calendars')->middleware('auth:sanctum')->group(function () {
 });
 
 
-Route::prefix('/tikets')->middleware('auth:sanctum')->group(function () {
+Route::prefix('/tikets')->group(function () {
     Route::get('/flight/reservation/{flightHistoryId}', [PDFController::class, 'generateTicket']);
     Route::get('/{flightHistoryId}', [PDFController::class, 'getReservationTicket']);
 });
 
 
-Route::prefix('/lessons')->middleware('auth:sanctum')->group(function () {
+Route::prefix('/lessons')->group(function () {
     Route::get('/index', [LessonController::class, 'index']);
     Route::get('/index/{id_flight}', [LessonController::class, 'indexByFlight']);
     Route::put('/update', [LessonController::class, 'update']);
 });
 
-Route::prefix('/infoflights')->middleware('auth:sanctum')->group(function () {
+Route::prefix('/infoflights')->group(function () {
     Route::get('/sessions/index/{id_student}/{id_flight?}', [SessionController::class, 'syllabus']);
     Route::get('/index/syllabus/edit/{id_flight}/{id_student}', [SessionController::class, 'indexEditSyllabus']);
     Route::get('/syllabus/lessons/{id_student}', [SessionController::class, 'showLessons']);
@@ -310,9 +305,6 @@ Route::prefix('/newsletters')->middleware('auth:sanctum')->group(function () {
     Route::post('/edit', [NewSletterController::class, 'edit']);
 });
 
-Route::prefix('/newsletters')->middleware('auth:sanctum', 'role:root, admin, intructor, flight_instructor, employee')->group(function () {
-    Route::post('/store', [NewSletterController::class, 'create']);
-});
 
 Route::prefix('/payment_methods')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [PaymentMethodController::class, 'index']);
@@ -336,17 +328,22 @@ Route::prefix('/fingerPrint')->group(function () {
     Route::get('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
 });
 
-Route::prefix('/arrival')->middleware('auth:sanctum')->group(function () {
+Route::prefix('/arrival')->group(function () {
     Route::get('/index', [CheckInRecordsController::class, 'index']);
 });
 
-Route::prefix('/options')->middleware(['auth:sanctum', 'role:root,admin,employee'])->group(function () {
-    Route::get('/change/flight/request', [OptionController::class, 'changeFlightRequest']);
+Route::prefix('/options')->group(function () {
+    Route::get('/change/flight/request', [OptionController::class, 'changeFlightRequest'])->middleware(userType::class . ':root, admin, employee');
 });
 
 
-Route::prefix('/files')->middleware('auth:sanctum', 'role: root, admin, employee')->group(function () {
-    Route::get('/student/index/{id_student}', [AcademicFileController::class, 'index']);
-    Route::post('/store', [AcademicFileController::class, 'store']);
+Route::prefix('/files')->middleware('auth:sanctum')->group(function () {
+    Route::get('/student/index/{id_student}', [AcademicFileController::class, 'index'])->middleware(userType::class . ':root, admin, employee');
+    Route::post('/store', [AcademicFileController::class, 'store'])->middleware(userType::class . ':root, admin, employee');
+    Route::get('/test', function() {
+        return response()->json([
+            'message' => 'Hello World'
+        ]);
+})->middleware(userType::class . ':admin, employee');
 });
 

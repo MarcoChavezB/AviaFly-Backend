@@ -69,7 +69,7 @@ class FlightCustomerController extends Controller
             $flightCustomerArray = [
                 'id_reservation' => $flightCustomer->id,
                 'id_flight_type' => $flightCustomer->info_flight->id,
-                'id_airplane' => $flightCustomer->airplane->id,
+                'id_airplane' => $flightCustomer->airplane?->id ?? 0,
                 'flight_type' => $flightCustomer->info_flight->equipo,
                 'reservation_status' => $flightCustomer->flight_status,
                 'employee' => $flightCustomer->employee->name,

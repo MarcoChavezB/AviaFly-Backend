@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('content', 1999);
             $table->string('file')->nullable();
 
-            $table->enum('direct_to', ['todos', 'empleados', 'instructores', 'estudiantes']);
+            $table->enum('direct_to', ['todos', 'empleados', 'instructores', 'estudiantes', 'flight_instructor']);
             $table->date('start_at');
             $table->date('expired_at');
 

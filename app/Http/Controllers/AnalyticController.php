@@ -52,30 +52,32 @@ class AnalyticController extends Controller
 
 
 function getTotalDebt() {
-    $students = DB::select("SELECT
-    students.id,
-    students.name,
-    students.last_names,
-    students.cellphone,
-    COALESCE(inscription.total_inscription_debt, 0) AS total_inscription_debt,
-    COALESCE(flight.total_flight_debt, 0) AS total_flight_debt,
-    COALESCE(inscription.total_inscription_debt, 0) + COALESCE(flight.total_flight_debt, 0) AS total_debt
-FROM students
-LEFT JOIN (
-    SELECT
-        id_student,
-        SUM(amount) AS total_inscription_debt
-    FROM monthly_payments
-    WHERE status = 'pending' AND payment_date = CURDATE() OR payment_date < CURDATE()
-    GROUP BY id_student
-) AS inscription ON inscription.id_student = students.id
-LEFT JOIN (
-    SELECT
-        id_student,
-        SUM(total) AS total_flight_debt
-    FROM flight_payments
-    WHERE payment_status = 'pendiente' GROUP BY id_student
-) AS flight ON flight.id_student = students.id;");
+    $students = DB::select("
+select
+        students.id,
+        students.name,
+        students.last_names,
+        students.cellphone,
+        COALESCE(inscription.total_inscription_debt, 0) AS total_inscription_debt,
+        COALESCE(flight.total_flight_debt, 0) AS total_flight_debt,
+        COALESCE(inscription.total_inscription_debt, 0) + COALESCE(flight.total_flight_debt, 0) AS total_debt
+    FROM students
+    LEFT JOIN (
+        SELECT
+            id_student,
+            SUM(amount) AS total_inscription_debt
+        FROM monthly_payments
+        WHERE status = 'pending' AND (payment_date = CURDATE() OR payment_date < CURDATE())
+        GROUP BY id_student
+    ) AS inscription ON inscription.id_student = students.id
+    LEFT JOIN (
+        SELECT
+            id_student,
+            SUM(total) AS total_flight_debt
+        FROM flight_payments
+        WHERE payment_status = 'pendiente' GROUP BY id_student
+    ) AS flight ON flight.id_student = students.id;
+");
 
     return response()->json($students);
 }
