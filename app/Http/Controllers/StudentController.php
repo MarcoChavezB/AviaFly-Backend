@@ -1231,11 +1231,6 @@ public function getInfoVueloAlumno(int $id = null)
         DB::transaction(function() use ($student) {
             $user = User::where('user_identification', $student->user_identification)->first();
 
-            if($user){
-                DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
-                $user->delete();
-            }
-
             $student->delete();
         });
 

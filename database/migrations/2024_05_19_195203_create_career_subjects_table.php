@@ -16,9 +16,9 @@ return new class extends Migration
         Schema::create('career_subjects', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_career');
-            $table->foreign('id_career')->references('id')->on('careers');
+            $table->foreign('id_career')->references('id')->on('careers')->onDelete('cascade');
             $table->unsignedBigInteger('id_subject');
-            $table->foreign('id_subject')->references('id')->on('subjects');
+            $table->foreign('id_subject')->references('id')->on('subjects')->onDelete('cascade');
             $table->timestamps();
         });
     }

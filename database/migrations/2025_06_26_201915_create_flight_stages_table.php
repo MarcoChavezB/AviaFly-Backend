@@ -16,10 +16,10 @@ return new class extends Migration
         Schema::create('flight_stages', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_flight');
-            $table->foreign('id_flight')->references('id')->on('flight_history');
+            $table->foreign('id_flight')->references('id')->on('flight_history')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_stage');
-            $table->foreign('id_stage')->references('id')->on('stages');
+            $table->foreign('id_stage')->references('id')->on('stages')->onDelete('cascade');
             $table->timestamps();
         });
     }

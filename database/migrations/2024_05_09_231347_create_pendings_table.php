@@ -23,10 +23,10 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unsignedBigInteger('id_created_by');
-            $table->foreign('id_created_by')->references('id')->on('users');
+            $table->foreign('id_created_by')->references('id')->on('users')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_assigned_to')->nullable();
-            $table->foreign('id_assigned_to')->references('id')->on('users');
+            $table->foreign('id_assigned_to')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

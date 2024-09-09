@@ -17,16 +17,16 @@ return new class extends Migration
                 $table->id();
 
                 $table->unsignedBigInteger('id_student')->nullable();
-                $table->foreign('id_student')->references('id')->on('students')->nullable();
+                $table->foreign('id_student')->references('id')->on('students')->onDelete('cascade');
 
                 $table->unsignedBigInteger('id_flight');
-                $table->foreign('id_flight')->references('id')->on('flight_history');
+                $table->foreign('id_flight')->references('id')->on('flight_history')->onDelete('cascade');
 
                 $table->unsignedBigInteger('id_instructor');
-                $table->foreign('id_instructor')->references('id')->on('employees');
+                $table->foreign('id_instructor')->references('id')->on('employees')->onDelete('cascade');
 
                 $table->unsignedBigInteger('id_employee')->nullable();
-                $table->foreign('id_employee')->references('id')->on('employees')->nullable();
+                $table->foreign('id_employee')->references('id')->on('employees')->onDelete('cascade');
 
                 $table->decimal('total', 8, 2);
                 $table->enum('payment_status', ['pendiente', 'pagado', 'cancelado']);

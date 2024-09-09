@@ -20,7 +20,7 @@ return new class extends Migration
             $table->time('arrival_time');
 
             $table->unsignedBigInteger('id_employee');
-            $table->foreign('id_employee')->references('id')->on('employees');
+            $table->foreign('id_employee')->references('id')->on('employees')->onDelete('cascade');
 
             $table->timestamps();
         });

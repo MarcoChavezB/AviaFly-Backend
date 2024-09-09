@@ -32,13 +32,10 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unsignedBigInteger('id_career');
-            $table->foreign('id_career')->references('id')->on('careers');
-
-            $table->unsignedBigInteger('id_created_by')->nullable();
-            $table->foreign('id_created_by')->references('id')->on('users');
+            $table->foreign('id_career')->references('id')->on('careers')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_base');
-            $table->foreign('id_base')->references('id')->on('bases');
+            $table->foreign('id_base')->references('id')->on('bases')->onDelete('cascade');
 
         });
     }

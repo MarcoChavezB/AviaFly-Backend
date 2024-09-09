@@ -17,13 +17,13 @@ return new class extends Migration
             $table->id();
 
             $table->unsignedBigInteger('id_new_sletter');
-            $table->foreign('id_new_sletter')->references('id')->on('new_sletters');
+            $table->foreign('id_new_sletter')->references('id')->on('new_sletters')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_student')->nullable();
-            $table->foreign('id_student')->references('id')->on('students')->nullable();
+            $table->foreign('id_student')->references('id')->on('students')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_employee')->nullable();
-            $table->foreign('id_employee')->references('id')->on('employees')->nullable();
+            $table->foreign('id_employee')->references('id')->on('employees')->onDelete('cascade');
 
             $table->boolean('is_read')->default(false);
             $table->timestamps();

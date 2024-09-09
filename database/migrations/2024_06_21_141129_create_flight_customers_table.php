@@ -42,19 +42,19 @@ return new class extends Migration
             $table->string('flight_type')->default('recreativo');
 
             $table->unsignedBigInteger('id_employee');
-            $table->foreign('id_employee')->references('id')->on('employees');
+            $table->foreign('id_employee')->references('id')->on('employees')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_flight');
-            $table->foreign('id_flight')->references('id')->on('info_flights');
+            $table->foreign('id_flight')->references('id')->on('info_flights')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_air_planes')->nullable();
-            $table->foreign('id_air_planes')->references('id')->on('air_planes')->nullable();
+            $table->foreign('id_air_planes')->references('id')->on('air_planes')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_payment_method');
-            $table->foreign('id_payment_method')->references('id')->on('payment_methods');
+            $table->foreign('id_payment_method')->references('id')->on('payment_methods')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_pilot');
-            $table->foreign('id_pilot')->references('id')->on('employees');
+            $table->foreign('id_pilot')->references('id')->on('employees')->onDelete('cascade');
 
             $table->timestamps();
         });
