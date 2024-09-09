@@ -113,6 +113,7 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin,root')->group(function (){ /**/
         Route::delete('/delete/access-user/{id}', [StudentController::class, 'deleteAccessUser'])->where('id', '[0-9]+');
         Route::post('/create/access-user/{id}', [StudentController::class, 'createAccessUser'])->where('id', '[0-9]+');
+        Route::delete('/delete/{id}', [StudentController::class, 'deleteStudent'])->where('id', '[0-9]+');
     });
 
 
@@ -297,7 +298,7 @@ Route::prefix('/newsletters')->middleware('auth:sanctum')->group(function () {
     Route::post('/edit', [NewSletterController::class, 'edit']);
 });
 
-Route::prefix('/newsletters')->middleware('auth:sanctum', 'role:root, admin, intructor, flight_instructor, employee')->group(function () {
+Route::prefix('/newsletters')->middleware(['auth:sanctum', 'role:root, admin, instructor, flight_instructor, employee'])->group(function () {
     Route::post('/store', [NewSletterController::class, 'create']);
 });
 
@@ -332,7 +333,7 @@ Route::prefix('/options')->middleware(['auth:sanctum', 'role:root,admin,employee
 });
 
 
-Route::prefix('/files')->middleware('auth:sanctum', 'role: root, admin, employee')->group(function () {
+Route::prefix('/files')->middleware(['auth:sanctum', 'role: root,admin,employee'])->group(function () {
     Route::get('/student/index/{id_student}', [AcademicFileController::class, 'index']);
     Route::post('/store', [AcademicFileController::class, 'store']);
 });
