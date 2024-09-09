@@ -66,6 +66,59 @@ class OrderController extends Controller
      *      }
      *  ]
      */
+
+    public function indexStudent($student = null)
+    {
+        $orders = Order::with(['employee', 'client', 'products', 'productPayments.paymentMethod'])
+            ->when($student, function ($query, $student) {
+                return $query->where('orders.id_client', $student);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $result = $orders->map(function ($order) {
+            $sortedProductPayments = $order->productPayments->sortByDesc('created_at');
+
+            $installments = $sortedProductPayments->map(function ($payment) {
+                return [
+                    'id_installment' => $payment->id,
+                    'payment_method' => $payment->paymentMethod->type,
+                    'installment_date' => $payment->created_at->toDateString(),
+                    'installment_value' => $payment->amount,
+                ];
+            });
+
+            // Calcular el total de installments
+            $totalInstallments = $installments->sum(function ($installment) {
+                return $installment['installment_value'];
+            });
+
+            return [
+                'id_order' => $order->id,
+                'employee' => $order->employee->name,
+                'order_ticket' => $order->productPayments->first()->payment_ticket ?? null,
+                'client' => $order->client->name ?? null,
+                'order_date' => $order->order_date,
+                'order_status' => $order->payment_status,
+                'total' => $order->total,
+                'payment_method' => $order->paymentMethod->type,
+                'total_installments' => $totalInstallments,
+                'restant_debt' => $order->total - $totalInstallments,
+                'installments' => $installments->values(),
+                'products' => $order->products->map(function ($product) {
+                    return [
+                        'id_product' => $product->id,
+                        'product_name' => $product->name,
+                        'quantity' => $product->pivot->quantity,
+                        'price' => $product->price,
+                    ];
+                }),
+            ];
+        });
+
+        // Devuelve los datos sin envolver en una respuesta JSON
+        return $result;
+    }
     public function index($id_order = null)
     {
         $orders = Order::with(['employee', 'client', 'products', 'productPayments.paymentMethod'])

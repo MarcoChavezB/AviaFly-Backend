@@ -20,11 +20,11 @@ class userType
         $token = $request->bearerToken();
 
         if (!$token) {
-            return response()->json(['error' => 'Token de autenticación no proporcionado'], 401);
+            return response()->json(['error' => 'Auth token not valid'], 401);
         }
 
         if (!Auth::guard('sanctum')->check()) {
-            return response()->json(['error' => 'Token de autenticación no válido'], 401);
+            return response()->json(['error' => 'Auth token not valid'], 401);
         }
 
         foreach ($userTypes as $userType) {

@@ -358,6 +358,7 @@ class FlightHistoryController extends Controller
 
         // Obtener el vuelo y el avión
         $flight = flightHistory::find($data['id_flight']);
+
         if (!$flight) {
             return response()->json(['msg' => 'Vuelo no encontrado'], 404);
         }
@@ -367,7 +368,6 @@ class FlightHistoryController extends Controller
             return response()->json(['msg' => 'Avión no encontrado'], 404);
         }
 
-        // Verificar el horómetro inicial
         if ($data['horometroInicial'] < $flight->initial_horometer) {
             return response()->json([
                 'msg' => 'El horómetro inicial no puede ser menor al horómetro inicial del vuelo'
@@ -375,7 +375,6 @@ class FlightHistoryController extends Controller
         }
 
 
-        // Actualizar el vuelo con los datos proporcionados
         $flight->flight_alone = $data['flight_alone'];
         $flight->initial_horometer = $data['horometroInicial'];
         $flight->final_horometer = $data['horometroFinal'];
@@ -384,10 +383,8 @@ class FlightHistoryController extends Controller
         $flight->comment = $data['comments'];
         $flight->has_report = 1;
 
-        // Guardar los cambios
         $flight->save();
 
-        // Consultar la diferencia de tacómetro
         $tacometer_difference = DB::select("
             WITH RankedFlights AS (
                 SELECT
@@ -421,59 +418,61 @@ class FlightHistoryController extends Controller
         start:fligt_dateTflight_hour
         end: fligt_dateTflight_hour + flight_hours
      */
-    public function getFlightReservations()
-    {
-        $canReservate = Option::select('option_type', 'is_active')
-            ->where('option_type', 'can_reservate_flight')
-            ->first();
+public function getFlightReservations()
+{
+    $canReservate = Option::select('option_type', 'is_active')
+        ->where('option_type', 'can_reservate_flight')
+        ->first();
 
+    $flightHistories = FlightHistory::select('flight_status', 'id', 'type_flight', 'flight_date', 'flight_hour', 'hours')
+        ->groupBy('flight_status', 'type_flight', 'flight_date', 'flight_hour', 'hours', 'id')
+        ->where('flight_client_status', 'aceptado')
+        ->get();
 
-        $flightHistories = FlightHistory::select('flight_status', 'id', 'type_flight', 'flight_date', 'flight_hour', 'hours')
-            ->groupBy('flight_status', 'type_flight', 'flight_date', 'flight_hour', 'hours', 'id')
-            ->where('flight_client_status', 'aceptado')
-            ->get();
+    $flightHistories = $flightHistories->isEmpty() ? new Collection() : $flightHistories->map(function ($flight) use ($canReservate) {
+        $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
+        $end = $start->copy()->addHours($flight->hours);
 
-        $flightHistories = $flightHistories->isEmpty() ? new Collection() : $flightHistories->map(function ($flight) use ($canReservate) {
-            $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
-            $end = $start->copy()->addHours($flight->hours);
+        return [
+            'id' => $flight->id,
+            'flight_status' => $flight->flight_status,
+            'title' => $flight->type_flight,
+            'start' => $start->toIso8601String(),
+            'end' => $end->toIso8601String(),
+            'source' => 'flight_history',
+            'can_reservate' => $canReservate->is_active
+        ];
+    });
 
-            return [
-                'id' => $flight->id,
-                'flight_status' => $flight->flight_status,
-                'title' => $flight->type_flight,
-                'start' => $start->toIso8601String(),
-                'end' => $end->toIso8601String(),
-                'source' => 'flight_history',
-                'can_reservate' => $canReservate->is_active
-            ];
-        });
+    $flightCustomers = FlightCustomer::select('payment_status as flight_status', 'id', 'flight_type as type_flight', 'reservation_date as flight_date', 'reservation_hour as flight_hour', 'flight_hours as hours')
+        ->groupBy('payment_status', 'flight_type', 'reservation_date', 'reservation_hour', 'flight_hours', 'id')
+        ->get();
 
-        $flightCustomers = FlightCustomer::select('payment_status as flight_status', 'id', 'flight_type as type_flight', 'reservation_date as flight_date', 'reservation_hour as flight_hour', 'flight_hours as hours')
-            ->groupBy('payment_status', 'flight_type', 'reservation_date', 'reservation_hour', 'flight_hours', 'id')
-            ->get();
+    $flightCustomers = $flightCustomers->isEmpty() ? new Collection() : $flightCustomers->map(function ($flight) use ($canReservate) {
+        $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
+        $end = $start->copy()->addHours($flight->hours);
 
-        $flightCustomers = $flightCustomers->isEmpty() ? new Collection() : $flightCustomers->map(function ($flight) use ($canReservate) {
-            $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
-            $end = $start->copy()->addHours($flight->hours);
+        return [
+            'id' => $flight->id,
+            'flight_status' => $flight->flight_status,
+            'title' => $flight->type_flight,
+            'start' => $start->toIso8601String(),
+            'end' => $end->toIso8601String(),
+            'source' => 'flight_customers',
+            'can_reservate' => $canReservate->is_active
+        ];
+    });
 
-            return [
-                'id' => $flight->id,
-                'flight_status' => $flight->flight_status,
-                'title' => $flight->type_flight,
-                'start' => $start->toIso8601String(),
-                'end' => $end->toIso8601String(),
-                'source' => 'flight_customers',
-                'can_reservate' => $canReservate->is_active // Debería aparecer aquí
-            ];
-        });
+    $flights = $flightHistories->merge($flightCustomers);
 
-        $flights = $flightHistories->merge($flightCustomers);
-
-        // Inspección adicional
-        // dd($flights);
-
-        return response()->json($flights);
+    if ($flights->isEmpty()) {
+        // Retornar un arreglo con un objeto que contenga can_reservate
+        return response()->json([['can_reservate' => $canReservate->is_active]]);
     }
+
+    // Retornar los vuelos en el formato requerido si hay datos
+    return response()->json($flights);
+}
 
     /**
         filtros para el reporte de vuelos

@@ -16,6 +16,19 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
 
+    public function getUserData(){
+        $user = Auth::user();
+        $userType = $user->user_type;
+
+        if($user->user_type == 'student'){
+            $user = Student::where('user_identification', $user->user_identification)->first();
+            $userType = 'student';
+        }else {
+            $user = Employee::where('user_identification', $user->user_identification)->first();
+        }
+        return response()->json($user, 200);
+    }
+
     public function login(Request $request){
         $validator = Validator::make($request->all(), [
             'user_identification' => 'required|string',

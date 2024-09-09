@@ -68,6 +68,10 @@ class NewSletterController extends Controller
                     $newSlettersQuery->where('new_sletters.direct_to', 'instructores')
                         ->orWhere('new_sletters.direct_to', 'todos');
                     break;
+                case 'flight_instructor':
+                    $newSlettersQuery->where('new_sletters.direct_to', 'flight_instructor')
+                        ->orWhere('new_sletters.direct_to', 'todos');
+                    break;
             }
         }
 
@@ -126,7 +130,7 @@ class NewSletterController extends Controller
             'content' => 'required|string',
             'start_date' => 'required|date',
             'expired_date' => 'required|date',
-            'direct_to' => 'required|in:todos,empleados,instructores,estudiantes',
+            'direct_to' => 'required|in:todos,empleados,instructores,estudiantes,flight_instructor',
             'base_id' => 'required|numeric',
             'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf'
         ], [
@@ -148,7 +152,6 @@ class NewSletterController extends Controller
 
         $created_by = Employee::where('user_identification', Auth::user()->user_identification)->first();
 
-        return response()->json($created_by);
         $newSletter = new Newsletter();
 
         $newSletter->title = $data['title'];
@@ -202,7 +205,6 @@ class NewSletterController extends Controller
             'created_by' => 'string',
             'title' => 'string',
             'content' => 'string',
-            'direct_to' => 'in:todos,empleados,instructores,estudiantes',
             'file' => 'nullable|file',
             'start_date' => 'date',
             'expired_date' => 'date',
@@ -215,7 +217,6 @@ class NewSletterController extends Controller
             'created_by.string' => 'El creador debe ser un string.',
             'title.string' => 'El título debe ser un string.',
             'content.string' => 'El contenido debe ser un string.',
-            'direct_to.in' => 'El destinatario debe ser uno de los siguientes: todos, empleados, instructores, estudiantes.',
             'file.nullable' => 'El archivo debe ser nulo.',
             'start_date.date' => 'La fecha de inicio debe ser una fecha.',
             'expired_date.date' => 'La fecha de expiración debe ser una fecha.',

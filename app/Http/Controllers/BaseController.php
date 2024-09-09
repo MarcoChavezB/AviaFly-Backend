@@ -47,7 +47,6 @@ class BaseController extends Controller
             return response()->json(["message" => "Internal Server Error"], 500);
         }
     }
-
     public function getBasesWithCareersAndTurns()
     {
         try {
