@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('monthly_payments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_student');
-            $table->foreign('id_student')->references('id')->on('students');
+            $table->foreign('id_student')->references('id')->on('students')->onDelete('cascade');
             $table->enum('status', ['pending', 'paid', 'owed']);
             $table->date('payment_date');
             $table->double('amount');

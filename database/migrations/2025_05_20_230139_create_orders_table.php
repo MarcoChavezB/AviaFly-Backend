@@ -23,16 +23,16 @@ return new class extends Migration
             $table->enum('payment_status', ['pendiente', 'pagado', 'cancelado']);
 
             $table->unsignedBigInteger('id_client')->nullable();
-            $table->foreign('id_client')->references('id')->on('students')->nullable();
+            $table->foreign('id_client')->references('id')->on('students')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_discount')->nullable();
-            $table->foreign('id_discount')->references('id')->on('discounts')->nullOnDelete();
+            $table->foreign('id_discount')->references('id')->on('discounts')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_employe');
-            $table->foreign('id_employe')->references('id')->on('employees');
+            $table->foreign('id_employe')->references('id')->on('employees')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_payment_method');
-            $table->foreign('id_payment_method')->references('id')->on('payment_methods');
+            $table->foreign('id_payment_method')->references('id')->on('payment_methods')->onDelete('cascade');
 
             $table->timestamps();
         });

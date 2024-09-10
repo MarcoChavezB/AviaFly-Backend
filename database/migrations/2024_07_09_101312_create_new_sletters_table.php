@@ -26,10 +26,10 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
 
             $table->unsignedBigInteger('created_by');
-            $table->foreign('created_by')->references('id')->on('employees');
+            $table->foreign('created_by')->references('id')->on('employees')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_base');
-            $table->foreign('id_base')->references('id')->on('bases');
+            $table->foreign('id_base')->references('id')->on('bases')->onDelete('cascade');
 
             $table->timestamps();
         });

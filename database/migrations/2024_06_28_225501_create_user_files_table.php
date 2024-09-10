@@ -17,10 +17,10 @@ return new class extends Migration
             $table->id();
 
             $table->unsignedBigInteger('id_user');
-            $table->foreign('id_user')->references('id')->on('users');
+            $table->foreign('id_user')->references('id')->on('users')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_file');
-            $table->foreign('id_file')->references('id')->on('academic_files');
+            $table->foreign('id_file')->references('id')->on('academic_files')->onDelete('cascade');
 
             $table->string('file_path')->nullable();
 

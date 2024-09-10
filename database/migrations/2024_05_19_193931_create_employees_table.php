@@ -27,7 +27,7 @@ return new class extends Migration
             $table->decimal('weight', 10, 2)->nullable();
 
             $table->unsignedBigInteger('id_base');
-            $table->foreign('id_base')->references('id')->on('bases');
+            $table->foreign('id_base')->references('id')->on('bases')->onDelete('cascade');
             $table->timestamps();
         });
     }

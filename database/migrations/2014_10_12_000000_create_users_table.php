@@ -22,7 +22,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
 
-            $table->foreign('id_base')->references('id')->on('bases');
+            $table->foreign('id_base')->references('id')->on('bases')->onDelete('cascade');
         });
     }
 

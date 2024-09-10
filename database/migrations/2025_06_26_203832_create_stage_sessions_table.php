@@ -16,10 +16,10 @@ return new class extends Migration
         Schema::create('stage_sessions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_stage');
-            $table->foreign('id_stage')->references('id')->on('stages');
+            $table->foreign('id_stage')->references('id')->on('stages')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_session');
-            $table->foreign('id_session')->references('id')->on('sessions');
+            $table->foreign('id_session')->references('id')->on('sessions')->onDelete('cascade');
             $table->timestamps();
         });
     }

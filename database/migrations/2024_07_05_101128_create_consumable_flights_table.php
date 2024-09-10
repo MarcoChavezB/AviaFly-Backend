@@ -18,9 +18,9 @@ return new class extends Migration
             $table->unsignedBigInteger('id_consumable');
             $table->unsignedBigInteger('id_plane');
             $table->unsignedBigInteger('id_employee');
-            $table->foreign('id_consumable')->references('id')->on('consumables');
-            $table->foreign('id_plane')->references('id')->on('air_planes');
-            $table->foreign('id_employee')->references('id')->on('employees');
+            $table->foreign('id_consumable')->references('id')->on('consumables')->onDelete('cascade');
+            $table->foreign('id_plane')->references('id')->on('air_planes')->onDelete('cascade');
+            $table->foreign('id_employee')->references('id')->on('employees')->onDelete('cascade');
 
             $table->date('date');
             $table->string('hour');

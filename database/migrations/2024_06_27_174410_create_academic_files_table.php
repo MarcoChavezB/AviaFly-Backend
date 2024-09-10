@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('academic_files', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_section_file');
-            $table->foreign('id_section_file')->references('id')->on('section_files');
+            $table->foreign('id_section_file')->references('id')->on('section_files')->onDelete('cascade');
 
             $table->string('file_name');
             $table->timestamps();

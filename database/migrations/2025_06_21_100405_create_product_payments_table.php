@@ -16,10 +16,10 @@ return new class extends Migration
         Schema::create('product_payments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_order');
-            $table->foreign('id_order')->references('id')->on('orders');
+            $table->foreign('id_order')->references('id')->on('orders')->onDelete('cascade');
             $table->decimal('amount', 8, 2);
             $table->unsignedBigInteger('id_payment_method');
-            $table->foreign('id_payment_method')->references('id')->on('payment_methods');
+            $table->foreign('id_payment_method')->references('id')->on('payment_methods')->onDelete('cascade');
             $table->string('payment_ticket')->nullable();
             $table->string('payment_voucher')->nullable();
             $table->timestamps();
