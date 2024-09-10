@@ -89,68 +89,76 @@ class InfoFlightController extends Controller
      *
      * */
 
-    function flightHistory($id_student) {
-        $results = DB::table('flight_payments')
-            ->select(
-                'students.id as student_id',
-                'flight_history.id as id_flight',
-                'students.name as student_name',
-                'students.user_identification as student_identification',
-                'employees.name as instructor_name',
-                'flight_history.type_flight as flight_type',
-                'flight_history.flight_category as flight_category',
-                'flight_history.maneuver',
-                'flight_history.flight_date as flight_date',
-                'flight_history.flight_hour as flight_hour',
-                'flight_history.hours as flight_hours',
-                'sessions.name as session_name',
-                'flight_payments.total as total',
-                'flight_history.flight_status as flight_status',
-                'payment_methods.type as payment_method',
-            )
-            ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
-            ->join('payments', 'flight_payments.id', '=', 'payments.id_flight')
-            ->join('payment_methods', 'payments.id_payment_method', '=', 'payment_methods.id')
-            ->join('students', 'flight_payments.id_student', '=', 'students.id')
-            ->join('employees', 'flight_payments.id_instructor', '=', 'employees.id')
-            ->leftJoin('sessions', 'flight_history.id_session', '=', 'sessions.id')
-            ->leftJoin('lesson_objetive_sessions', 'lesson_objetive_sessions.id_session', '=', 'sessions.id')
-            ->leftJoin('flight_objetives', 'flight_objetives.id', '=', 'lesson_objetive_sessions.id_flight_objetive')
-            ->leftJoin('lessons', 'lessons.id', '=', 'lesson_objetive_sessions.id_lesson')
-            ->leftJoin('stage_sessions', 'stage_sessions.id_session', '=', 'sessions.id')
-            ->leftJoin('stages', 'stages.id', '=', 'stage_sessions.id_stage')
-            ->where('students.id', $id_student)
-            ->where('flight_history.flight_client_status', 'aceptado')
-            ->groupBy(
-                'employees.name',
-                'flight_history.id',
-                'flight_history.type_flight',
-                'flight_history.flight_category',
-                'flight_history.flight_date',
-                'flight_history.flight_hour',
-                'flight_history.hours',
-                'sessions.name',
-                'flight_payments.total',
-                'students.id',
-                'students.user_identification',
-                'students.name',
-                'flight_history.flight_status',
-                'flight_history.maneuver',
-                'payment_methods.type'
-            )
-            ->orderBy('flight_history.created_at', 'desc')
-            ->get();
+function flightHistory($id_student) {
+    $results = DB::table('flight_payments')
+        ->select(
+            'students.id as student_id',
+            'flight_history.id as id_flight',
+            'students.name as student_name',
+            'students.user_identification as student_identification',
+            'employees.name as instructor_name',
+            'flight_history.type_flight as flight_type',
+            'flight_history.flight_category as flight_category',
+            'flight_history.maneuver',
+            'flight_history.flight_date as flight_date',
+            'flight_history.flight_hour as flight_hour',
+            'flight_history.hours as flight_hours',
+            'sessions.name as session_name',
+            'flight_payments.total as total',
+            'flight_history.flight_status as flight_status',
+            'payment_methods.type as payment_method'
+        )
+        ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
+        ->join('payments', 'flight_payments.id', '=', 'payments.id_flight')
+        ->join('payment_methods', 'payments.id_payment_method', '=', 'payment_methods.id')
+        ->join('students', 'flight_payments.id_student', '=', 'students.id')
+        ->join('employees', 'flight_payments.id_instructor', '=', 'employees.id')
+        ->leftJoin('sessions', 'flight_history.id_session', '=', 'sessions.id')
+        // Modifica y revisa los LEFT JOIN según corresponda
+        ->where('students.id', $id_student)
+        ->where('flight_history.flight_client_status', 'aceptado')
+        ->distinct() // Evita duplicados
+        ->groupBy(
+            'students.id',
+            'flight_history.id',
+            'employees.name',
+            'flight_history.type_flight',
+            'flight_history.flight_category',
+            'flight_history.flight_date',
+            'flight_history.flight_hour',
+            'flight_history.hours',
+            'sessions.name',
+            'flight_payments.total',
+            'flight_history.flight_status',
+            'flight_history.maneuver',
+            'payment_methods.type',
+            'students.user_identification',
+            'students.name'
+        )
+        ->orderBy('flight_history.created_at', 'desc')
+        ->get();
 
-        $result = [];
-        foreach($results as $data) {
-            if (!isset($result[$data->student_id])) {
-                $result[$data->student_id] = [
-                    'student_id' => $data->student_id,
-                    'student_name' => $data->student_name,
-                    'student_identification' => $data->student_identification,
-                    'flights' => []
-                ];
+    $result = [];
+    foreach ($results as $data) {
+        if (!isset($result[$data->student_id])) {
+            $result[$data->student_id] = [
+                'student_id' => $data->student_id,
+                'student_name' => $data->student_name,
+                'student_identification' => $data->student_identification,
+                'flights' => []
+            ];
+        }
+
+        // Evitar duplicados manualmente (opcional)
+        $exists = false;
+        foreach ($result[$data->student_id]['flights'] as $flight) {
+            if ($flight['id_flight'] == $data->id_flight) {
+                $exists = true;
+                break;
             }
+        }
+
+        if (!$exists) {
             $result[$data->student_id]['flights'][] = [
                 'instructor_name' => $data->instructor_name,
                 'payment_method' => $data->payment_method,
@@ -167,9 +175,10 @@ class InfoFlightController extends Controller
                 'total' => $data->total
             ];
         }
-
-        return response()->json(array_values($result));
     }
+
+    return response()->json(array_values($result));
+}
 
 
 function flightRequestIndex() {
