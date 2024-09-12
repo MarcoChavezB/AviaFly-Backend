@@ -1222,6 +1222,24 @@ public function getInfoVueloAlumno(int $id = null)
         }
     }
 
+    public function deleteDirectory($dirPath) {
+        if (! is_dir($dirPath)) {
+            throw new InvalidArgumentException("$dirPath must be a directory");
+        }
+        if (substr($dirPath, strlen($dirPath) - 1, 1) != '/') {
+            $dirPath .= '/';
+        }
+        $files = glob($dirPath . '*', GLOB_MARK);
+        foreach ($files as $file) {
+            if (is_dir($file)) {
+                self::deleteDirectory($file);
+            } else {
+                unlink($file);
+            }
+        }
+        rmdir($dirPath);
+    }
+
     public function deleteStudent($id){
     try{
         $student = Student::find($id);
@@ -1233,6 +1251,13 @@ public function getInfoVueloAlumno(int $id = null)
         DB::transaction(function() use ($student) {
             $user = User::where('user_identification', $student->user_identification)->first();
             DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
+
+            $studentBase = Base::find($student->id_base);
+            $baseName = strtolower($studentBase->name);
+            $baseName = str_replace(['á', 'é', 'í', 'ó', 'ú'], ['a', 'e', 'i', 'o', 'u'], $baseName);
+
+            $folderPath = public_path("bases/{$baseName}/{$student->user_identification}");
+            $this->deleteDirectory($folderPath);
 
             $user->delete();
             $student->delete();
