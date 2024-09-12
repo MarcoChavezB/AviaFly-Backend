@@ -15,6 +15,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\TicketController;
+use App\Mail\FlightStatusNotify;
 use App\Mail\RequestFlight;
 use App\Mail\RequestFlightAccepted;
 use App\Mail\RequestFlightDeclined;
@@ -22,6 +23,7 @@ use App\Models\Employee;
 use App\Models\Option;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use stdClass;
 
 class FlightHistoryController extends Controller
 {
@@ -89,47 +91,40 @@ class FlightHistoryController extends Controller
     }
 
 
-    public function indexReport(int $id_flight)
-    {
-        $report = Student::select(
-            'flight_history.id as id_flight',
-            'flight_history.flight_status',
-            'flight_payments.payment_status',
-            'students.name',
-            'students.last_names',
-            'flight_history.type_flight',
-            'flight_payments.total',
-            'flight_history.initial_horometer',
-            'flight_history.final_horometer',
-            'flight_history.total_horometer',
-            'flight_history.final_tacometer',
-            'flight_history.comment',
-            'flight_history.flight_date'
-        )
-            ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
-            ->join('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
-            ->where('flight_history.id', $id_flight)
-            ->where('flight_history.flight_client_status', 'aceptado')
-            ->orderBy('flight_history.created_at', 'desc')
-            ->groupBy(
-                'students.name',
-                'students.last_names',
-                'flight_history.type_flight',
-                'flight_payments.total',
-                'flight_history.initial_horometer',
-                'flight_history.final_horometer',
-                'flight_history.total_horometer',
-                'flight_history.final_tacometer',
-                'flight_history.comment',
-                'flight_history.flight_date',
-                'flight_history.id',
-                'flight_history.flight_status',
-                'flight_payments.payment_status',
-            )
-            ->get();
+public function indexReport(int $id_flight)
+{
+    $report = Student::select(
+        'flight_history.id as id_flight',
+        'flight_history.flight_status',
+        'flight_payments.payment_status',
+        'students.name',
+        'students.last_names',
+        'flight_history.type_flight',
+        'flight_payments.total',
+        'flight_history.initial_horometer',
+        'flight_history.final_horometer',
+        'flight_history.total_horometer',
+        'flight_history.final_tacometer',
+        'flight_history.comment',
+        'flight_history.flight_date',
+        'payments.payment_ticket'
+    )
+    ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')
+    ->join('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
+    ->join('payments', 'payments.id_flight', '=', 'flight_history.id')
+    ->where('flight_history.id', $id_flight)
+    ->where('flight_history.flight_client_status', 'aceptado')
+    ->orderBy('flight_history.created_at', 'desc')
+    ->first();  // Obtiene el primer registro
 
-        return response()->json($report, 200);
+    if ($report) {
+        $reportArray = $report->toArray();  // Convierte el modelo a un arreglo
+    } else {
+        $reportArray = [];  // Retorna un arreglo vacío si no hay resultados
     }
+
+    return response()->json([$reportArray], 200);  // Devuelve el arreglo como un JSON
+}
 
     function flightsData(int $id_student, int $flightHistory = null)
     {
@@ -145,7 +140,7 @@ class FlightHistoryController extends Controller
             'flight_payments.total as total_dinero',
             DB::raw('COALESCE(SUM(payments.amount), 0) as total_amounts'),
             DB::raw('flight_payments.total - COALESCE(SUM(payments.amount), 0) as deuda_viva'),
-            'payments.id_flight'
+            'payments.id_flight',
         )
             ->leftJoin('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
             ->leftJoin('students', 'students.id', '=', 'flight_payments.id_student')
@@ -173,7 +168,7 @@ class FlightHistoryController extends Controller
 
         $data = $flights->map(function ($flights) {
             $history_amounts = DB::table('payments')
-                ->select('payments.amount', 'payments.created_at', 'payment_methods.type as payment_method')
+                ->select('payments.amount', 'payments.created_at', 'payment_methods.type as payment_method', 'payments.payment_voucher')
                 ->join('payment_methods', 'payment_methods.id', '=', 'payments.id_payment_method')
                 ->where('id_flight', $flights->id_flight)
                 ->get();
@@ -302,13 +297,52 @@ class FlightHistoryController extends Controller
 
 
         $flight = flightHistory::find($data['id_flight']);
+
+
+
+        if (!$flight) {
+            return response()->json([
+                'msg' => 'Vuelo no encontrado'
+            ], 404);
+        }
+
         if ($flight->flight_status == $data['status']) {
             return response()->json([
                 'msg' => 'El vuelo ya está en el estado solicitado'
             ], 400);
         }
         $flight->flight_status = $data['status'];
+
+        $flightPayment = FlightPayment::where('id_flight', $data['id_flight'])->first();
+
+        if($data['status'] == 'cancelado'){
+            $flightPayment->payment_status = "cancelado";
+
+
+            $student = Student::join('flight_payments', 'students.id', '=', 'flight_payments.id_student')
+                ->where('flight_payments.id_flight', $data['id_flight'])
+                ->first();
+
+            $instructor = Employee::join('flight_payments', 'employees.id', '=', 'flight_payments.id_instructor')
+                ->where('flight_payments.id_flight', $data['id_flight'])
+                ->first();
+
+            $details = new stdClass();
+            $details->motive = $data['motive'];
+            $details->details = $data['details'];
+
+            Mail::to($student->email)->send(
+                new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details)
+            );
+
+            Mail::to($instructor->email)->send(
+                new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details)
+            );
+        }
+
+        $flightPayment->save();
         $flight->save();
+
         return response()->json([
             'msg' => 'El vuelo se ha modificado correctamente'
         ], 200);
@@ -466,11 +500,9 @@ public function getFlightReservations()
     $flights = $flightHistories->merge($flightCustomers);
 
     if ($flights->isEmpty()) {
-        // Retornar un arreglo con un objeto que contenga can_reservate
         return response()->json([['can_reservate' => $canReservate->is_active]]);
     }
 
-    // Retornar los vuelos en el formato requerido si hay datos
     return response()->json($flights);
 }
 
@@ -611,6 +643,7 @@ public function getFlightReservations()
         $flights = FlightHistory::select('flight_history.flight_status', 'flight_history.id', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours')
             ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->where('flight_history.type_flight', $fligth_type)
+            ->where('flight_client_status', 'aceptado')
             ->groupBy('flight_history.flight_status', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours', 'flight_history.id')
             ->get();
 

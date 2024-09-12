@@ -30,7 +30,6 @@ class PaymentsController extends Controller
             'id_flight_history' => 'required',
             'installment_value' => 'required',
             'payment_method' => 'required',
-            'flight_status' => 'required',
             'file_transfer' => 'mimes:jpeg,png,jpg,pdf'
         ]);
 

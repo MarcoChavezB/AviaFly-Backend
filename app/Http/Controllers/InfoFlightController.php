@@ -44,21 +44,25 @@ class InfoFlightController extends Controller
         return response()->json($maneuverValues);
     }
 
-    function studentsFlightHistory($student_name = null){
+    function studentsFlightHistory($student_name = null)
+    {
         $reportQuery = FlightPayment::select(
             'students.id as student_id',
             'students.user_identification as student_identification',
             'students.name as student_name',
             'students.last_names as student_last_names',
-            DB::raw('SUM(payments.amount) as total_amount'),
-            DB::raw('COUNT(CASE WHEN flight_history.type_flight = "vuelo" THEN 1 ELSE NULL END) as total_flights'),
-            DB::raw('COUNT(CASE WHEN flight_history.type_flight = "simulador" THEN 1 ELSE NULL END) as total_simulators'),
+            DB::raw('SUM(DISTINCT payments.amount) as total_amount'),
+            DB::raw('COUNT(DISTINCT CASE WHEN flight_history.type_flight = "vuelo" THEN flight_history.id ELSE NULL END) as total_flights'),
+            DB::raw('COUNT(DISTINCT CASE WHEN flight_history.type_flight = "simulador" THEN flight_history.id ELSE NULL END) as total_simulators')
         )
         ->join('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
         ->join('students', 'students.id', '=', 'flight_payments.id_student')
         ->join('payments', 'flight_payments.id', '=', 'payments.id_flight')
-        ->where('students.name' , 'like', '%'.$student_name.'%')
-        ->orWhere('students.last_names' , 'like', '%'.$student_name.'%')
+        ->where(function($query) use ($student_name) {
+            $query->where('students.name', 'like', '%' . $student_name . '%')
+                  ->orWhere('students.last_names', 'like', '%' . $student_name . '%');
+        })
+        ->where('flight_history.flight_client_status', 'aceptado')
         ->groupBy('students.id', 'students.user_identification', 'students.name', 'students.last_names')
         ->get();
 

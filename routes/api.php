@@ -249,7 +249,7 @@ Route::prefix('/calendars')->middleware('auth:sanctum')->group(function () {
 });
 
 
-Route::prefix('/tikets')->middleware(['auth:sanctum', 'role,root,admin,employee'])->group(function () {
+Route::prefix('/tikets')->middleware(['auth:sanctum', 'role:root,admin,employee'])->group(function () {
     Route::get('/flight/reservation/{flightHistoryId}', [PDFController::class, 'generateTicket']);
     Route::get('/{flightHistoryId}', [PDFController::class, 'getReservationTicket']);
 });
@@ -329,7 +329,7 @@ Route::prefix('/options')->middleware(['auth:sanctum', 'role:root,admin,employee
 });
 
 
-Route::prefix('/files')->middleware(['auth:sanctum', 'role: root,admin,employee'])->group(function () {
+Route::prefix('/files')->middleware(['auth:sanctum', 'role:root,admin,employee'])->group(function () {
     Route::get('/student/index/{id_student}', [AcademicFileController::class, 'index']);
     Route::post('/store', [AcademicFileController::class, 'store']);
 });
@@ -338,3 +338,4 @@ Route::prefix('/fingerPrint')->group(function () {
     Route::get('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
 });
 
+Route::get('/test', [UserController::class, 'test']);

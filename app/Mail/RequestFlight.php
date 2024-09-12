@@ -36,7 +36,7 @@ class RequestFlight extends Mailable
     public function envelope()
     {
         return new Envelope(
-            subject: 'Request Flight',
+            subject: 'Peticion de vuelo',
         );
     }
 

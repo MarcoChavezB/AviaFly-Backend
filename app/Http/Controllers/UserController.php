@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
 
+    public function test(){
+
+    }
+
     public function getUserData(){
         $user = Auth::user();
         $userType = $user->user_type;
