@@ -7,8 +7,6 @@ use App\Models\FlightPayment;
 use App\Models\Payments;
 use App\Models\Student;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class PaymentsController extends Controller
@@ -109,7 +107,9 @@ class PaymentsController extends Controller
 
         $payment->save();
 
-        return response()->json($totalInstallments);
+        return response()->json([
+            'url_ticket' => $urlTicket,
+        ], 200);
     }
 
 

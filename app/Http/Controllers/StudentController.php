@@ -959,6 +959,7 @@ public function getInfoVueloAlumno(int $id = null)
             ->join('info_flights', 'flight_history.id_equipo', '=', 'info_flights.id')
             ->groupBy('students.name','students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight', 'flight_history.has_report','students.id' )
             ->orderBy('flight_history.created_at', 'desc')
+            ->where('flight_history.type_flight', 'vuelo')
             ->get();
 
         return response()->json($student, 200);

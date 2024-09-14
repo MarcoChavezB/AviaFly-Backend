@@ -228,13 +228,9 @@ Route::prefix('/reports')->group(function () {
     Route::post('/update/total', [FlightPaymentController::class, 'updateTotalPrice']);
     Route::get('/all/info/{id_flight}', [FlightHistoryController::class, 'getAllInfoReport']);
     Route::get('/index/schedule', [FlightHistoryController::class, 'getSchedule']);
-});
-
-Route::prefix('/reports')->group(function () {
     Route::post('/index/students/filter', [FlightHistoryController::class, 'indexStudentsFilter']);
     Route::get('/index/students', [StudentController::class, 'indexStudentsReport']);
 });
-
 
 
 Route::prefix('/prices')->middleware('auth:sanctum')->group(function () {
@@ -284,6 +280,7 @@ Route::prefix('/customers')->middleware(['auth:sanctum', 'role:root,admin,employ
 
 Route::prefix('/airplanes')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/check/limit/hours', [FlightHistoryController::class, 'checkLimitHoursPlane']);
+    Route::get('/flight/reset/hours', [AirPlaneController::class, 'resetHours']);
 });
 
 Route::prefix('/consumables')->middleware(['auth:sanctum', 'role:root,admin,flight_instructor,employee'])->group(function () {
@@ -338,4 +335,4 @@ Route::prefix('/fingerPrint')->group(function () {
     Route::get('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
 });
 
-Route::get('/test', [UserController::class, 'test']);
+Route::get('/test/{flight}', [PDFController::class, 'queryTicketInstallment']);

@@ -8,6 +8,14 @@ use Illuminate\Http\Request;
 class AirPlaneController extends Controller
 {
 
+    public function resetHours(){
+        $airplane = AirPlane::first();
+        $airplane->tacometer = 0;
+        $airplane->save();
+
+        return response()->json(['message' => 'Hours reseted']);
+    }
+
     public function totalWeightExceded($id_airplane, $total_weight){
         $airplane = AirPlane::find($id_airplane);
         return intval($airplane->limit_weight) < intval($total_weight);

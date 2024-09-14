@@ -20,6 +20,9 @@ class PDFController extends Controller
             abort(404, 'Ticket not found');
         }
 
+        $comission = $response->total * ($response->commission / 100);
+        $totalMoreComission = $response->total + $comission;
+
         $data = [
             'baseData' => (object)[
                 'location' => $response->location,
@@ -33,14 +36,14 @@ class PDFController extends Controller
             ],
             'incomeDetails' => (object)[
                 'payment_method' => $response->payment_method,
-                'commission' => '0.00',
-                'total' => $response->total,
+                'commission' => $comission . ' (' . $response->commission . '%)',
+                'total' => $totalMoreComission,
             ],
             'data' => [
                 [
                     'quantity' => 1,
-                    'concept' => 'Abono de cuota de vuelo',
-                    'total' => $response->total,
+                    'concept' => "Abono de " . $response->item,
+                    'total' => $response->total ,
                 ]
             ],
         ];
@@ -71,14 +74,15 @@ class PDFController extends Controller
                 'payment_methods.type as payment_method',
                 'payments.amount as total',
                 'flight_history.id as flightHistoryId',
+                'flight_history.type_flight as item',
                 'students.id as id_student',
-                'bases.id as id_base'
+                'bases.id as id_base',
+                'payment_methods.commission'
             )
             ->where('flight_history.id', '=', $id_flight_history)
             ->orderBy('payments.created_at', 'desc')
-            ->first(); // Devuelve el primer resultado directamente desde la función
+            ->first();
     }
-
 
 
 

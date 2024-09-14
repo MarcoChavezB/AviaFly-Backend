@@ -105,7 +105,7 @@
             <tbody>
             @foreach($data as $item)
                 <tr>
-                    <td>{{$item['quantity'] >= 0 ? $item['quantity'] : '-'}}</td>
+                    <td>{{$item['quantity']}}</td>
                     <td>{{ $item['concept'] }}</td>
                     <td>${{ $item['total'] }}</td>
                 </tr>
