@@ -43,7 +43,7 @@ class IncomesController extends Controller
     private function generateFileName(string $baseName, string $userIdentification, string $type, ?string $extension = 'pdf'): string
     {
         $prefix = ($type === 'tickets') ? 'ticket_' : 'voucher_';
-        return "bases/{$baseName}/{$userIdentification}/{$type}/{$prefix}" . time() . '.' . $extension;
+        return url("bases/{$baseName}/{$userIdentification}/{$type}/{$prefix}" . time() . '.' . $extension);
     }
 
 
