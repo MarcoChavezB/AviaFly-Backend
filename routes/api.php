@@ -332,7 +332,7 @@ Route::prefix('/files')->middleware(['auth:sanctum', 'role:root,admin,employee']
 });
 
 Route::prefix('/fingerPrint')->group(function () {
-    Route::get('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
+    Route::post('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
 });
 
 Route::get('/test', [StudentController::class, 'index']);
