@@ -335,4 +335,4 @@ Route::prefix('/fingerPrint')->group(function () {
     Route::get('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
 });
 
-Route::get('/test/{flight}', [PDFController::class, 'queryTicketInstallment']);
+Route::get('/test', [StudentController::class, 'index']);

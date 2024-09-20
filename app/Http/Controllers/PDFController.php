@@ -150,7 +150,7 @@ class PDFController extends Controller
             'incomeDetails' => (object)[
                 'payment_method' => $apiData['items'][0]['payment_method'],
                 'commission' => $apiData['discount'],
-                'total' => $apiData['total'],
+                'total' => $apiData['price'],
             ],
             'data' => $apiData['items'],
         ];
@@ -177,6 +177,7 @@ class PDFController extends Controller
             ->join('employees', 'employees.id', '=', 'orders.id_employe')
             ->join('bases', 'bases.id', '=', 'employees.id_base')
             ->join('payment_methods', 'payment_methods.id', '=', 'orders.id_payment_method')
+            ->join('product_payments', 'product_payments.id_order', '=', 'orders.id')
             ->leftJoin('discounts', 'discounts.id', '=', 'orders.id_discount')
             ->select(
                 'orders.id as id_order',
@@ -196,7 +197,8 @@ class PDFController extends Controller
                 'order_details.quantity',
                 'products.name as item',
                 'products.price',
-                'payment_methods.type as payment_method'
+                'payment_methods.type as payment_method',
+                'product_payments.amount as price'
             )
             ->where('orders.id', $orderId)
             ->get();
@@ -216,6 +218,7 @@ class PDFController extends Controller
                     'subtotal' => number_format($result->subtotal, 2, '.', ''),
                     'iva' => number_format($result->iva, 2, '.', ''),
                     'location' => $result->location,
+                    'price' => number_format($result->price, 2, '.', ''),
                     'discount' => $result->discount ? number_format($result->discount, 2, '.', '') : 0,
                     'items' => [], // Inicializamos un array para los productos
                     'total' => number_format($result->total, 2, '.', '')

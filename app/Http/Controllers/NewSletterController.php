@@ -132,7 +132,6 @@ class NewSletterController extends Controller
             'expired_date' => 'required|date',
             'direct_to' => 'required|in:todos,empleados,instructores,estudiantes,flight_instructor',
             'base_id' => 'required|numeric',
-            'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf'
         ], [
             'title.required' => 'El título es requerido.',
             'content.required' => 'El contenido es requerido.',

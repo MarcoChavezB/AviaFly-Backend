@@ -62,11 +62,11 @@ public function store(Request $request)
                             ->where('id_user', $id_student)
                             ->first();
 
-        if($userfile->file_path){
+        if($userfile && $userfile->file_path){
             $filecontroller->deleteFile($userfile->file_path);
         }
 
-        if ($userfile) {
+        if ($userfile && isset($file['file'])) {
             $url = $filecontroller->saveFilePath($file['file'], $student->id_base, "academic_files", $student);
             $userfile->file_path = $url;
             $userfile->save();
