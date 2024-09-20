@@ -204,7 +204,6 @@ class OrderController extends Controller
 
         $data = $request->all();
         $validator = Validator::make($data, [
-            'id_discount' => 'nullable|integer|exists:discounts,id',
             'id_payment_method' => 'required|integer|exists:payment_methods,id',
             'total_price' => 'required',
             'sub_total' => 'required',
