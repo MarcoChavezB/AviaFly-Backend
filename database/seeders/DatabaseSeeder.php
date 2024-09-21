@@ -37,16 +37,21 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // BASES SEEDER
+        $bases = [
+            'Torreón',
+            'Querétaro',
+        ];
 
-        Base::create(['name' => 'Torreón', 'location' => 'Blvd. Independencia #746 Ote. Col. Nueva Los Ángeles. Torreón Coahuila']);
-        Base::create(['name' => 'Querétaro', 'location' => 'Querétaro']);
+        foreach ($bases as $base) {
+            Base::create(['name' => $base, 'location' => $base]);
+        }
         //
 
 
         // CAREERS SEEDER
         // piloto privado id:1
 
-       /* Career::create([
+        Career::create([
             'name' => 'Piloto privado',
             'monthly_payments' => 6,
             'registration_fee' => 4640,
@@ -324,7 +329,7 @@ class DatabaseSeeder extends Seeder
             'id_teacher' => 3,
             'career_subject_id' => 8,
             'id_turn' => 1,
-        ]);*/
+        ]);
 
 
 
@@ -981,8 +986,8 @@ class DatabaseSeeder extends Seeder
         }
 
         Employee::create([
-            'name' => 'Administrador',
-            'last_names' => 'root',
+            'name' => 'marco',
+            'last_names' => 'admin',
             'email' => 'marco1102004@gmail.com',
             'company_email' => 'marco1102004@gmail.com',
             'phone' => '6242647089',
@@ -999,6 +1004,30 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('marco1102004@gmail.com'),
             'id_base' => 1,
         ]);
+
+
+        Employee::create([
+            'name' => 'Alonso',
+            'last_names' => 'root',
+            'email' => 'abrahamreynoso64@gmail.com',
+            'company_email' => 'abrahamreynoso64@gmail.com',
+            'phone' => '8715772525',
+            'cellphone' => '8715772525',
+            'curp' => 'aABM04f110HDGHsRA9',
+            'user_identification' => 'alonso',
+            'user_type' => 'root',
+            'id_base' => 1,
+        ]);
+
+        User::create([
+            'user_identification' => 'alonso',
+            'user_type' => 'root',
+            'password' => bcrypt('token1234'),
+            'id_base' => 1,
+        ]);
+
+
+
 
         $sections = [
             'Permiso de formacion',
