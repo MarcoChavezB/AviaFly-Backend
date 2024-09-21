@@ -169,7 +169,7 @@ class EmployeeController extends Controller
             $user = User::where('user_identification', $employee->user_identification)->first();
 
             if(!$user){
-                return response()->json(['message' => 'El usuario no tiene acceso'], 404);
+                return response()->json(['errors' => ['El usuario no tiene acceso']], 404);
             }
 
             DB::transaction(function() use ($user){
@@ -196,7 +196,7 @@ class EmployeeController extends Controller
             $user = User::where('user_identification', $employee->user_identification)->first();
 
             if($user){
-                return response()->json(['message' => 'El usuario ya tiene acceso'], 400);
+                return response()->json(['errors' => ['El usuario ya tiene acceso']], 400);
             }
 
             $user = User::create([

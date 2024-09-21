@@ -1181,7 +1181,7 @@ public function getInfoVueloAlumno(int $id = null)
             $user = User::where('user_identification', $student->user_identification)->first();
 
             if(!$user){
-                return response()->json(["error" => "El usuario no existe"], 404);
+                return response()->json(["errors" => ["El usuario de acceso no existe"]], 404);
             }
 
             DB::transaction(function() use ($user) {
@@ -1206,7 +1206,7 @@ public function getInfoVueloAlumno(int $id = null)
             $user = User::where('user_identification', $student->user_identification)->first();
 
             if($user){
-                return response()->json(["error" => "El usuario ya existe"], 400);
+                return response()->json(["errors" => ["El usuario ya existe"]], 400);
             }
 
             $user = User::create([
