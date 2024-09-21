@@ -20,7 +20,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .header {
-            background-color: #4CAF50;
+            background-color: #000000; /* Cambiado a color negro */
             color: white;
             padding: 10px 0;
             text-align: center;
@@ -40,7 +40,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Acceso al Sistema</h1>
+            <h1>Aviatraining & Technology</h1>
         </div>
 
         <div class="content">
@@ -55,7 +55,7 @@
 
             <p>Por favor, asegúrese de ingresar su identificación de usuario como matrícula y su CURP como contraseña en el sistema. En caso de que experimente alguna dificultad al acceder o necesite asistencia, no dude en ponerse en contacto con nuestro equipo de soporte a través de los canales oficiales.</p>
 
-            <p>Agradecemos su confianza en nuestro sistema.</p>
+            <p>Agradecemos su confianza en Aviatraining & Technology.</p>
         </div>
 
         <div class="footer">
