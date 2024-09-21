@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\WelcomeSistem;
 use App\Models\Employee;
 use App\Models\StudentSubject;
 use App\Models\TeacherSubjectTurn;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Base;
+use Illuminate\Support\Facades\Mail;
 
 class InstructorController extends Controller
 {
@@ -84,6 +86,9 @@ class InstructorController extends Controller
             $user->user_type = $instructor->user_type;
             $user->id_base = $request->base;
             $user->save();
+
+            Mail::to($instructor->email)
+            ->send(new WelcomeSistem($user->user_identification));
 
             return response()->json($user->user_identification, 201);
         }catch(\Exception $e){
