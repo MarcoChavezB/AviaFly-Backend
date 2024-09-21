@@ -119,7 +119,7 @@ class StudentController extends Controller
             $student = new Student();
             $student->name = $request->name;
             $student->last_names = $request->last_names;
-            $student->curp = $request->curp;
+            $student->curp = strtoupper($request->curp);
             $student->phone = $request->phone;
             $student->cellphone = $request->cellphone;
             $student->email = $request->email;
