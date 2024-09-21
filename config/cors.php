@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['https://aviafly.site/'],
 
     'allowed_origins_patterns' => [],
 
