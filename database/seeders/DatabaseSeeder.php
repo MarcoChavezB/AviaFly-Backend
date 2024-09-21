@@ -37,21 +37,16 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // BASES SEEDER
-        $bases = [
-            'Torreón',
-            'Querétaro',
-        ];
 
-        foreach ($bases as $base) {
-            Base::create(['name' => $base, 'location' => $base]);
-        }
+        Base::create(['name' => 'Torreón', 'location' => 'Blvd. Independencia #746 Ote. Col. Nueva Los Ángeles. Torreón Coahuila']);
+        Base::create(['name' => 'Querétaro', 'location' => 'Querétaro']);
         //
 
 
         // CAREERS SEEDER
         // piloto privado id:1
 
-        Career::create([
+       /* Career::create([
             'name' => 'Piloto privado',
             'monthly_payments' => 6,
             'registration_fee' => 4640,
@@ -329,7 +324,7 @@ class DatabaseSeeder extends Seeder
             'id_teacher' => 3,
             'career_subject_id' => 8,
             'id_turn' => 1,
-        ]);
+        ]);*/
 
 
 
