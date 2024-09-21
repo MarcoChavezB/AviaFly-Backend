@@ -907,7 +907,6 @@ class DatabaseSeeder extends Seeder
         }
 
 
-        echo "Creando consumibles...\n";
         $consumables = [
             "gasolina",
             "aceite"
@@ -918,8 +917,6 @@ class DatabaseSeeder extends Seeder
                 'name' => $consumable,
             ]);
         }
-
-        echo "Creando descuentos...\n";
 
         $discounts = [];
 
@@ -940,8 +937,6 @@ class DatabaseSeeder extends Seeder
         foreach ($discounts as $discount) {
             Discount::create($discount);
         }
-
-        echo "Creando métodos de pago...\n";
 
         $paymentMethods = [
             [
@@ -991,22 +986,22 @@ class DatabaseSeeder extends Seeder
         }
 
         Employee::create([
-            'name' => 'root',
+            'name' => 'Administrador',
             'last_names' => 'root',
             'email' => 'marco1102004@gmail.com',
             'company_email' => 'marco1102004@gmail.com',
-            'phone' => '1234567890',
-            'cellphone' => '1234567890',
-            'curp' => 'AAMM110200HDFLRR00',
-            'user_identification' => '1234567890',
+            'phone' => '6242647089',
+            'cellphone' => '6242647089',
+            'curp' => 'CABM040110HDGHLRA9',
+            'user_identification' => 'CABM040110HDGHLRA9',
             'user_type' => 'root',
             'id_base' => 1,
         ]);
 
         User::create([
-            'user_identification' => '1234567890',
+            'user_identification' => 'CABM040110HDGHLRA9',
             'user_type' => 'root',
-            'password' => bcrypt('1234567890'),
+            'password' => bcrypt('marco1102004@gmail.com'),
             'id_base' => 1,
         ]);
 
