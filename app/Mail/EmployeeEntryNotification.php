@@ -40,6 +40,6 @@ class EmployeeEntryNotification extends Mailable
     public function build()
     {
         return $this->view('emails.employee-finger-print')
-                    ->subject('Registro de Entrada Exitoso');
+                    ->subject('Registro de Entrada');
     }
 }
