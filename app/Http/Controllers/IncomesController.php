@@ -37,7 +37,7 @@ class IncomesController extends Controller
     {
         $search = ['á', 'é', 'í', 'ó', 'ú'];
         $replace = ['a', 'e', 'i', 'o', 'u'];
-        return str_replace($search, $replace, $name);
+        return strlower(str_replace($search, $replace, $name));
     }
 
     private function generateFileName(string $baseName, string $userIdentification, string $type, ?string $extension = 'pdf'): string
