@@ -42,6 +42,11 @@ class DatabaseSeeder extends Seeder
             'Querétaro',
         ];
         //---------------------//
+        //
+        foreach ($bases as $base) {
+            Base::create(['name' => $base, 'location' => $base]);
+        }
+
         // Turn Seeder
         Turn::create([
             'name' => 'Matutino',
