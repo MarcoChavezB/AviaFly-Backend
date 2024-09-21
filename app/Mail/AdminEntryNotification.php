@@ -40,6 +40,6 @@ class AdminEntryNotification extends Mailable
     public function build()
     {
         return $this->view('emails.admin-finger-print-mail')
-                    ->subject('Registro de Entrada Exitoso');
+                    ->subject('Registro de Entrada');
     }
 }

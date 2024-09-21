@@ -37,7 +37,7 @@ class FileController extends Controller
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $extension = $file->getClientOriginalExtension();
 
-        return $basePath . '/' . $baseName . '/' . $directTo . '/' . $this->sanitizeName($originalName) . '_' . time() . '.' . $extension;
+        return $basePath . '/' . strtolower($baseName) . '/' . $directTo . '/' . $this->sanitizeName($originalName) . '_' . time() . '.' . $extension;
     }
 
     public function saveFile($file, int $baseId, string $directTo, string $basePath): string
@@ -45,7 +45,7 @@ class FileController extends Controller
         $base = Base::findOrFail($baseId);
         $baseName = $this->sanitizeName($base->name);
 
-        $fileName = $this->generateFileName($file, $baseName, $directTo, $basePath);
+        $fileName = $this->generateFileName($file, strtolower($baseName), $directTo, $basePath);
         $directory = public_path(dirname($fileName));
 
         if (!File::exists($directory)) {
