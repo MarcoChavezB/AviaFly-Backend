@@ -45,8 +45,6 @@ class DatabaseSeeder extends Seeder
         foreach ($bases as $base) {
             Base::create(['name' => $base, 'location' => $base]);
         }
-        //
-
 
         // CAREERS SEEDER
         // piloto privado id:1
@@ -142,77 +140,6 @@ class DatabaseSeeder extends Seeder
             'name' => 'Vespertino',
         ]);
 
-        // Employee Seeder
-        $faker = Faker::create();
-        Employee::create([ //id:1
-            'name' => 'Dulce Maria',
-            'last_names' => 'Gaytan' . ' ' . 'Rocha',
-            'email' => 'dulce@maria.com',
-            'company_email' => $faker->unique()->companyEmail,
-            'phone' => $faker->phoneNumber,
-            'cellphone' => $faker->phoneNumber,
-            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
-            'user_identification' => $faker->unique()->userName,
-            'user_type' => 'instructor',
-            'id_base' => 1,
-        ]);
-
-        Employee::create([ //id:2
-            'name' => 'Samuel',
-            'last_names' => 'Belkotosky' . ' ' . 'Ortiz',
-            'email' => 'samuel@ortiz.com',
-            'company_email' => $faker->unique()->companyEmail,
-            'phone' => $faker->phoneNumber,
-            'cellphone' => $faker->phoneNumber,
-            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
-            'user_identification' => $faker->unique()->userName,
-            'user_type' => 'instructor',
-            'id_base' => 1,
-        ]);
-
-        Employee::create([ //id:3
-            'name' => 'Francisco Javier Celedon',
-            'last_names' => 'Martinez' . ' ' . 'Hernandez',
-            'email' => 'franjavier@mh.com',
-            'company_email' => $faker->unique()->companyEmail,
-            'phone' => $faker->phoneNumber,
-            'cellphone' => $faker->phoneNumber,
-            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
-            'user_identification' => $faker->unique()->userName,
-            'user_type' => 'instructor',
-            'id_base' => 1,
-        ]);
-
-        Employee::create([ //id:4
-            'name' => 'Auner',
-            'last_names' => 'Vega' . ' ' . 'Walls',
-            'email' => 'auner@walls.com',
-            'company_email' => $faker->unique()->companyEmail,
-            'phone' => $faker->phoneNumber,
-            'cellphone' => $faker->phoneNumber,
-            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
-            'user_identification' => $faker->unique()->userName,
-            'user_type' => 'instructor',
-            'id_base' => 1,
-        ]);
-
-        $faker = Faker::create();
-        Employee::create([ //id:1
-            'name' => 'Rene',
-            'last_names' => 'Gaytan' . ' ' . 'Rocha',
-            'email' => 'rene@maria.com',
-            'company_email' => $faker->unique()->companyEmail,
-            'phone' => $faker->phoneNumber,
-            'cellphone' => $faker->phoneNumber,
-            'curp' => $faker->regexify('[A-Z]{4}[0-9]{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9]{2}'),
-            'user_identification' => $faker->unique()->userName,
-            'user_type' => 'flight_instructor',
-            'id_base' => 1,
-            'weight' => 100
-        ]);
-
-
-
         $sobrecargoCareerSubjectsIds = [9, 10, 11, 12, 13, 14, 15, 16];
 
 
@@ -225,7 +152,6 @@ class DatabaseSeeder extends Seeder
             ]);
 
         }
-
 
         //Oficial de Operaciones
         TeacherSubjectTurn::create([
