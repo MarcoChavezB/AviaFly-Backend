@@ -26,8 +26,8 @@ return new class extends Migration
             $table->date('payment_date');
             $table->timestamps();
 
-            $table->foreign('employee_id')->references('id')->on('employees')->onDelete('cascade');
-            $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade');
+            $table->foreign('employee_id')->references('id')->on('employees');
+            $table->foreign('student_id')->references('id')->on('students');
         });
     }
 

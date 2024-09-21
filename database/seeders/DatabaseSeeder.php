@@ -2,9 +2,6 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-
-use App\Http\Controllers\PaymentMethodController;
 use App\Models\AirPlane;
 use App\Models\AcademicFile;
 use Faker\Factory as Faker;
@@ -19,7 +16,6 @@ use App\Models\Lesson;
 use App\Models\LessonObjetiveSession;
 use App\Models\Option;
 use App\Models\PaymentMethod;
-use App\Models\Payments;
 use App\Models\SectionFile;
 use App\Models\Session;
 use App\Models\Stage;
@@ -28,7 +24,6 @@ use App\Models\Subject;
 use App\Models\TeacherSubjectTurn;
 use App\Models\Turn;
 use App\Models\User;
-use Dompdf\Options;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
