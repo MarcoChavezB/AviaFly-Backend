@@ -137,13 +137,6 @@ class EmployeeController extends Controller
             return response()->json(['message' => 'Fuera de horario laboral'], 400);
         }
 
-        return response ()->json([
-            'id_finger' => $id_finger,
-            'day' => $day,
-            'hour' => $hour,
-            'message' => 'Huella registrada correctamente'
-        ]);
-
         $employee = Employee::where('id', $id_finger)->first();
 
         if(!$employee){
@@ -166,11 +159,11 @@ class EmployeeController extends Controller
 
         $admins = Employee::where('user_type', 'admin')->orWhere('user_type', 'root')->get();
 
-        /* foreach($admins as $admin){
+        foreach($admins as $admin){
             Mail::to($admin->email)->send(new AdminEntryNotification($employeeName, $currentDateTime, $user_type));
         }
 
-        Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTime, $user_type)); */
+        Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTime, $user_type));
 
         return response()->json(['message' => 'Correo enviado correctamente']);
     }
