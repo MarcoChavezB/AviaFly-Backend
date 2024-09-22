@@ -159,11 +159,11 @@ class EmployeeController extends Controller
 
         $admins = Employee::where('user_type', 'admin')->orWhere('user_type', 'root')->get();
 
-        foreach($admins as $admin){
+        /* foreach($admins as $admin){
             Mail::to($admin->email)->send(new AdminEntryNotification($employeeName, $currentDateTime, $user_type));
         }
 
-        Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTime, $user_type));
+        Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTime, $user_type)); */
 
         return response()->json(['message' => 'Correo enviado correctamente']);
     }
