@@ -335,4 +335,8 @@ Route::prefix('/fingerPrint')->group(function () {
     Route::post('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
 });
 
-Route::get('/test', [StudentController::class, 'index']);
+Route::get('/test', function(){
+    return response()->json([
+        'message' => 'functionando'
+    ]);
+});
