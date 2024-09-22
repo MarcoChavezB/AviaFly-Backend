@@ -137,6 +137,8 @@ class EmployeeController extends Controller
             return response()->json(['message' => 'Fuera de horario laboral'], 400);
         }
 
+        return response ()->json(['message' => 'Huella registrada correctamente']);
+
         $employee = Employee::where('id', $id_finger)->first();
 
         if(!$employee){
