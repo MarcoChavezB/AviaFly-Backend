@@ -126,6 +126,17 @@ class EmployeeController extends Controller
 
     function fingerPrintList($id_finger){
 
+        $day = date('N');
+        $hour = date('H:i:s');
+
+        if($day == 6 && ($hour < '09:00:00' || $hour > '14:00:00')){
+            return response()->json(['message' => 'Fuera de horario laboral'], 400);
+        }
+
+        if($day != 6 && ($hour < '09:00:00' || $hour > '17:00:00')){
+            return response()->json(['message' => 'Fuera de horario laboral'], 400);
+        }
+
         $employee = Employee::where('id', $id_finger)->first();
 
         if(!$employee){
