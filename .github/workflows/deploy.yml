@@ -14,9 +14,18 @@ jobs:
     - name: Checkout the code
       uses: actions/checkout@v3
 
-    - name: Install Composer dependencies locally
+    # Instalar PHP 8.2
+    - name: Set up PHP 8.2
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        tools: composer
+
+    # Instalar dependencias de Composer
+    - name: Install dependencies
       run: composer install --prefer-dist --no-ansi --no-interaction --no-scripts --no-dev --optimize-autoloader
 
+    # Desplegar vía SSH
     - name: Deploy via SSH
       uses: appleboy/ssh-action@v0.1.3
       with:
@@ -27,11 +36,8 @@ jobs:
           cd /var/www/html/AviaFly-Backend
           sudo chown -R marco:marco /var/www/html
           git pull origin main
-          composer install --no-interaction --prefer-dist --optimize-autoloader
+          composer install --no-dev --optimize-autoloader
           php artisan optimize
           php artisan cache:clear
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
           sudo chown -R www-data:www-data /var/www/html
           sudo systemctl restart apache2
