@@ -129,11 +129,11 @@ class EmployeeController extends Controller
         $day = date('N');
         $hour = date('H:i:s');
 
-        if($day == 6 && ($hour < '09:00:00' || $hour > '14:00:00')){
+        if($day == 6 && ($hour < '08:00:00' || $hour > '14:00:00')){
             return response()->json(['message' => 'Fuera de horario laboral'], 400);
         }
 
-        if($day != 6 && ($hour < '09:00:00' || $hour > '17:00:00')){
+        if($day != 6 && ($hour < '08:00:00' || $hour > '17:00:00')){
             return response()->json(['message' => 'Fuera de horario laboral'], 400);
         }
 
