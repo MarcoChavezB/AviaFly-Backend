@@ -1,0 +1,36 @@
+
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: VPS_HOST
+
+    steps:
+    - name: Checkout the code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: composer install
+
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v0.1.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_KEY }}
+        script: |
+          cd /var/www/html/AviaFly-Backend
+          sudo chown -R marco:marco /var/www/html
+          git pull origin main
+          composer install
+          php artisan optimize
+          php artisan cache:clear
+          sudo chown -R www-data:www-data /var/www/html
+          sudo systemctl restart apache2
+
