@@ -54,7 +54,7 @@ class FileController extends Controller
 
         $file->move($directory, basename($fileName));
 
-        return url($fileName);
+        return asset($fileName);
     }
 
     /*
@@ -96,7 +96,7 @@ class FileController extends Controller
 
         $pdf->save($directory . '/' . basename($fileName));
 
-        return url($fileName);
+        return asset($fileName);
     }
 
 
@@ -114,7 +114,7 @@ class FileController extends Controller
 
         $file->move(public_path(dirname($filePath)), $uniqueName);
 
-        return url($filePath);
+        return asset($filePath);
     }
 
 }
