@@ -49,6 +49,7 @@ class IncomesController extends Controller
 
     public function generateTicket(array $data, string $employeeName, string $employeeLastNames, int $employeeBaseId, int $incomeDetailsId, int $studentID): string
     {
+        $fileController = new FileController();
         $studentData = Student::findOrFail($studentID);
         $baseData = Base::findOrFail($employeeBaseId);
         $incomeDetails = IncomeDetails::findOrFail($incomeDetailsId);
@@ -61,11 +62,14 @@ class IncomesController extends Controller
 
         $incomeDetails->update(['ticket_path' => url($fileName)]);
 
-        return asset($fileName);
+        return $fileController->generateManualUrl($fileName);
     }
 
     public function saveVoucher($file, int $baseId, int $studentId): string
     {
+
+        $fileController = new FileController();
+
         $base = Base::findOrFail($baseId);
         $student = Student::findOrFail($studentId);
 
@@ -75,8 +79,7 @@ class IncomesController extends Controller
         $fileName = $this->generateFileName($baseName, $student->user_identification, 'vouchers', $extension);
 
         $file->move(public_path(dirname($fileName)), basename($fileName));
-
-        return asset(str_replace(public_path(), '', $fileName));
+        return  $fileController->generateManualUrl($fileName);
     }
 
 

@@ -10,6 +10,14 @@ use Illuminate\Http\UploadedFile;
 
 class FileController extends Controller
 {
+
+    public function generateManualUrl(string $filePath): string
+    {
+        $domain = 'http://api.aviafly.site:8080/AviaFly-Backend/public';
+
+        return $domain . '/' . ltrim($filePath, '/');
+    }
+
     protected $basePath = 'newsletters/bases';
     protected $tiketPath = 'bases';
 
@@ -54,7 +62,7 @@ class FileController extends Controller
 
         $file->move($directory, basename($fileName));
 
-        return asset($fileName);
+        return $this->generateManualUrl($fileName);
     }
 
     /*
@@ -83,6 +91,7 @@ class FileController extends Controller
 
     public function saveTicket(PDF $pdf, Student $student, int $baseId): string
     {
+
         $base = Base::findOrFail($baseId);
         $baseName = $this->sanitizeName($base->name);
 
@@ -96,7 +105,7 @@ class FileController extends Controller
 
         $pdf->save($directory . '/' . basename($fileName));
 
-        return asset($fileName);
+        return $this->generateManualUrl($fileName);
     }
 
 
@@ -114,7 +123,7 @@ class FileController extends Controller
 
         $file->move(public_path(dirname($filePath)), $uniqueName);
 
-        return asset($filePath);
+        return $this->generateManualUrl($filePath);
     }
 
 }
