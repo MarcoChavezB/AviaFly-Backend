@@ -61,7 +61,7 @@ class IncomesController extends Controller
 
         $incomeDetails->update(['ticket_path' => url($fileName)]);
 
-        return url($fileName);
+        return asset($fileName);
     }
 
     public function saveVoucher($file, int $baseId, int $studentId): string
@@ -76,7 +76,7 @@ class IncomesController extends Controller
 
         $file->move(public_path(dirname($fileName)), basename($fileName));
 
-        return url(str_replace(public_path(), '', $fileName));
+        return asset(str_replace(public_path(), '', $fileName));
     }
 
 
