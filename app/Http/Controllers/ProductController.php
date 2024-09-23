@@ -49,8 +49,6 @@ class ProductController extends Controller
 
         $validator = Validator::make($data, [
             'name' => 'required|string|max:255|unique:products',
-            'price' => 'required|numeric|min:1',
-            'stock' => 'required|integer|min:1',
             'product_status' => 'required|in:activo,inactivo'
         ], [
             'name.required' => 'Campo requerido',
@@ -67,6 +65,10 @@ class ProductController extends Controller
 
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
+        }
+
+        if($data['product_status'] == 'activo' && ($data['stock'] == 0 || $data['price'] == 0)){
+            return response()->json(["errors" => "El stock y el precio deben ser mayores a 0"], 400);
         }
 
         $product = Product::create($data);
@@ -89,8 +91,6 @@ class ProductController extends Controller
 
         $validator = Validator::make($data, [
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
             'product_status' => 'required|in:activo,inactivo'
         ], [
             'name.required' => 'Campo requerido',
@@ -103,6 +103,11 @@ class ProductController extends Controller
             'product_status.required' => 'Campo requerido',
             'product_status.in' => 'El campo debe ser activo o inactivo'
         ]);
+
+
+        if($data['product_status'] == 'activo' && ($data['stock'] == 0 || $data['price'] == 0)){
+            return response()->json(["errors" => "El stock y el precio deben ser mayores a 0"], 400);
+        }
 
         if($validator->fails()){
             return response()->json(["errors" => $validator->errors()], 400);
