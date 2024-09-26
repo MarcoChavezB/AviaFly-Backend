@@ -89,7 +89,7 @@ class ProcessStudentCreation
         }
 
         DB::statement('CALL AddUserFiles(?)', [$this->student->id]);
-        if($career->id === 2){
+        if($this->request['career'] == 2){
             DB::statement('CALL flight_information_data(?)', [$this->student->id]);
         }
 
