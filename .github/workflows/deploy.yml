@@ -35,7 +35,7 @@ jobs:
         passphrase: ${{ secrets.VPS_PASSPHRASE}}
         script: |
           cd /var/www/html/AviaFly-Backend
-          sudo chown -R ubuntu:ubuntu /var/www/html
+          sudo chown -R marco:marco /var/www/html
           git pull origin main
           composer install --no-dev --optimize-autoloader
           sudo php artisan optimize
