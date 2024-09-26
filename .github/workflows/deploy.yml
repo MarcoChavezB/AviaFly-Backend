@@ -32,6 +32,7 @@ jobs:
         host: ${{ secrets.VPS_HOST }}
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_KEY }}
+        passphrase: ${{ secrets.VPS_PASSPHRASE}}
         script: |
           cd /var/www/html/AviaFly-Backend
           sudo chown -R ubuntu:ubuntu /var/www/html
