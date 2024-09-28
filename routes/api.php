@@ -331,6 +331,7 @@ Route::prefix('/files')->middleware(['auth:sanctum', 'role:root,admin,employee']
     Route::post('/store', [AcademicFileController::class, 'store']);
 });
 
+
 Route::prefix('/fingerPrint')->group(function () {
     Route::post('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
 });
