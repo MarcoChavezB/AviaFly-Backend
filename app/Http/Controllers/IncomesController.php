@@ -60,7 +60,7 @@ class IncomesController extends Controller
         $fileName = $this->generateFileName($baseName, $studentData->user_identification, 'tickets');
         $pdf->save(public_path($fileName));
 
-        $incomeDetails->update(['ticket_path' => url($fileName)]);
+        $incomeDetails->update(['ticket_path' => $fileController->generateManualUrl($fileName)]);
 
         return $fileController->generateManualUrl($fileName);
     }
@@ -277,14 +277,4 @@ class IncomesController extends Controller
 
         return response()->json($income);
     }
-
-
-
-
-
-
-
-
-
-
 }

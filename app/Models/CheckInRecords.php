@@ -13,6 +13,7 @@ class CheckInRecords extends Model
         'arrival_date',
         'arrival_time',
         'id_employee',
+        'type',
     ];
 
     public function employee()

@@ -70,7 +70,7 @@
 <body>
     <div class="card">
         <div class="card-header">
-            <img src="https://sistema.aviafly.mx/IMG/logo_avia.png" alt="logo">
+            <img src="http://aviabackend.site/IMG/logo_avia.png" alt="logo">
             <h1 style="margin: 0; font-size: 24px; font-weight: 200;">Cambio de estado de <span style="font-weight: 600;">Vuelo</span></h1>
             <div class="noti">
                 <span>{{ $status }}</span>

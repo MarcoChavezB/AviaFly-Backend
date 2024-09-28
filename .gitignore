@@ -4,7 +4,6 @@
 /public/storage
 /storage/*.key
 /vendor
-/database/migrations
 .env
 .env.backup
 .env.production
@@ -17,4 +16,3 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-database/seeders/RootUser.php

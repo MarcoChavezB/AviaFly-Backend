@@ -27,7 +27,7 @@ class CheckInRecordsController extends Controller
     public function index()
     {
         $checkInRecords = CheckInRecords::with('employee')
-            ->orderBy('created_at', 'desc') // Ordena los registros por `created_at` de forma descendente
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $result = $checkInRecords->map(function($item) {
@@ -37,7 +37,8 @@ class CheckInRecordsController extends Controller
                 "employee_email" => $item->employee->company_email,
                 "employee_phone" => $item->employee->phone,
                 "arrival_date" => $item->arrival_date,
-                "arrival_time" => $item->arrival_time
+                "arrival_time" => $item->arrival_time,
+                "arrival_type" => $item->type
             ];
         });
 

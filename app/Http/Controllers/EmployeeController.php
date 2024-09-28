@@ -4,13 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Mail\AdminEntryNotification;
 use App\Mail\EmployeeEntryNotification;
-use App\Mail\FingerPrintMail;
-use App\Models\Base;
 use App\Models\CheckInRecords;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -31,7 +28,7 @@ class EmployeeController extends Controller
         $employee = Employee::where('id', $id)->with('base:id,name')->first();
 
         if(!$employee){
-            return response()->json(['message' => 'Empleado no encontrado'], 404);
+            return response()->json(['message' => 'Empleado no encontrado'], 414);
         }
 
         return response()->json($employee);
@@ -72,12 +69,11 @@ class EmployeeController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(["errors" => $validator->errors()], 400);
+            return response()->json(["errors" => $validator->errors()], 410);
         }
 
-
         if(!$employee){
-            return response()->json(['message' => 'Empleado no encontrado'], 404);
+            return response()->json(['message' => 'Empleado no encontrado'], 414);
         }
 
         $employee->update($request->all());
@@ -102,11 +98,11 @@ class EmployeeController extends Controller
                 ]);
 
             if ($validator->fails()) {
-                return response()->json(["errors" => $validator->errors()], 400);
+                return response()->json(["errors" => $validator->errors()], 410);
             }
 
             if(!$employee){
-                return response()->json(['message' => 'Empleado no encontrado'], 404);
+                return response()->json(['message' => 'Empleado no encontrado'], 414);
             }
 
             $user = User::where('user_identification', $employee->user_identification)->first();
@@ -120,52 +116,90 @@ class EmployeeController extends Controller
 
             return response()->json(['message' => 'Contraseña actualizada correctamente']);
         }catch(\Exception $e){
-            return response()->json(['message' => 'Internal Server Error'], 500);
+            return response()->json(['message' => 'Internal Server Error'], 510);
         }
     }
 
-    function fingerPrintList($id_finger){
-
+    public function fingerPrintList($id_finger)
+    {
         $day = date('N');
-        $hour = date('H:i:s');
+        $currentDate = date('Y-m-d');
+        $currentTime = date('H:i:s');
 
-        if($day == 6 && ($hour < '08:00:00' || $hour > '14:00:00') || $day == 7){
-            return response()->json(['message' => 'Fuera de horario laboral'], 400);
+        if (($day == 16 && ($currentTime < '08:00:00' || $currentTime > '14:00:00')) || $day == 7) {
+            return response()->json(['message' => 'Fuera de horario laboral'], 410);
         }
 
-        if($day != 6 && ($hour < '08:00:00' || $hour > '17:00:00')){
-            return response()->json(['message' => 'Fuera de horario laboral'], 400);
+        if ($day != 16 && ($currentTime < '08:00:00' || $currentTime > '17:00:00')) {
+            return response()->json(['message' => 'Fuera de horario laboral'], 410);
         }
 
-        $employee = Employee::where('id', $id_finger)->first();
+        $employee = Employee::find($id_finger);
 
-        if(!$employee){
-            return response()->json(['message' => 'Empleado no encontrado'], 404);
+        if (!$employee) {
+            return response()->json(['message' => 'Empleado no encontrado'], 414);
         }
 
-        if(CheckInRecords::where('id_employee', $employee->id)->where('arrival_date', date('Y-m-d'))->exists()){
-            return response()->json(['message' => 'Ya se ha registrado la asistencia del dia de hoy'], 400);
+
+        if (CheckInRecords::where('id_employee', $employee->id)->where('arrival_date', date('Y-m-d'))->count() >= 4) {
+            return response()->json(['message' => 'Ya se ha registrado la asistencia del día de hoy'], 400);
         }
 
-        CheckInRecords::Create([
-            'arrival_date' => date('Y-m-d'),
-            'arrival_time' => date('H:i:s'),
-            'id_employee' => $employee->id
+        $todayRecords = CheckInRecords::where('id_employee', $employee->id)
+                                       ->where('arrival_date', $currentDate)
+                                       ->orderBy('arrival_time', 'desc')
+                                       ->get();
+
+        if ($todayRecords->isNotEmpty()) {
+            $lastRecord = $todayRecords->first();
+            $lastArrivalTime = $lastRecord->arrival_time;
+
+            $lastArrivalDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $currentDate . ' ' . $lastArrivalTime);
+            $currentDateTime = \Carbon\Carbon::now();
+
+            if ($currentDateTime->diffInMinutes($lastArrivalDateTime) < 1) {
+                return response()->json(['message' => 'Ya se ha registrado asistencia recientemente. Espera 20 minutos.'], 400);
+            }
+        }
+
+        // entrada / hora de comida / fin de hora de comida / salid
+
+        if ($todayRecords->isEmpty()) {
+            $type = 'entrada';
+        } elseif ($todayRecords->first()->type == 'entrada') {
+            $type = 'hora de comida';
+        } elseif ($todayRecords->first()->type == 'hora de comida') {
+            $type = 'fin de hora de comida';
+        } elseif ($todayRecords->first()->type == 'fin de hora de comida') {
+            $type = 'salida';
+        } else {
+            return response()->json(['message' => $todayRecords->first()], 410);
+        }
+
+        CheckInRecords::create([
+            'arrival_date' => $currentDate,
+            'arrival_time' => $currentTime,
+            'id_employee' => $employee->id,
+            'type' => $type
         ]);
 
-        $employeeName = $employee->name . ' ' . $employee->last_names;
-        $currentDateTime = date('Y-m-d H:i:s');
-        $user_type = $employee->user_type;
 
-        $admins = Employee::where('user_type', 'admin')->orWhere('user_type', 'root')->get();
+        if($type === 'entrada'){
 
-        foreach($admins as $admin){
-            Mail::to($admin->email)->send(new AdminEntryNotification($employeeName, $currentDateTime, $user_type));
+            $employeeName = $employee->name . ' ' . $employee->last_names;
+            $currentDateTimeFormatted = date('Y-m-d H:i:s');
+            $user_type = $employee->user_type;
+
+            $admins = Employee::whereIn('user_type', ['admin', 'root'])->get();
+
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new AdminEntryNotification($employeeName, $currentDateTimeFormatted, $user_type, $type));
+            }
+
+            Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTimeFormatted, $user_type, $type));
         }
 
-        Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTime, $user_type));
-
-        return response()->json(['message' => 'Correo enviado correctamente']);
+        return response()->json(['message' => 'Registro de asistencia y correos enviados correctamente']);
     }
 
     public function deleteAccessUser($id){
@@ -174,13 +208,13 @@ class EmployeeController extends Controller
             $employee = Employee::where('id', $id)->first();
 
             if(!$employee){
-                return response()->json(['message' => 'Empleado no encontrado'], 404);
+                return response()->json(['message' => 'Empleado no encontrado'], 414);
             }
 
             $user = User::where('user_identification', $employee->user_identification)->first();
 
             if(!$user){
-                return response()->json(['errors' => ['El usuario no tiene acceso']], 404);
+                return response()->json(['errors' => ['El usuario no tiene acceso']], 414);
             }
 
             DB::transaction(function() use ($user){
@@ -191,7 +225,7 @@ class EmployeeController extends Controller
             return response()->json(['message' => 'Accesos eliminados correctamente']);
 
         }catch (\Exception $e) {
-            return response()->json(['message' => 'Internal Server Error'], 500);
+            return response()->json(['message' => 'Internal Server Error'], 510);
         }
     }
 
@@ -201,13 +235,13 @@ class EmployeeController extends Controller
             $employee = Employee::where('id', $id)->first();
 
             if(!$employee){
-                return response()->json(['message' => 'Empleado no encontrado'], 404);
+                return response()->json(['message' => 'Empleado no encontrado'], 414);
             }
 
             $user = User::where('user_identification', $employee->user_identification)->first();
 
             if($user){
-                return response()->json(['errors' => ['El usuario ya tiene acceso']], 400);
+                return response()->json(['errors' => ['El usuario ya tiene acceso']], 410);
             }
 
             $user = User::create([
@@ -220,7 +254,7 @@ class EmployeeController extends Controller
             return response()->json(['message' => 'Acceso creado correctamente']);
 
         }catch (\Exception $e){
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json(['message' => $e->getMessage()], 510);
         }
 
     }

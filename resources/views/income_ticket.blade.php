@@ -77,7 +77,7 @@
 <body>
 <main>
     <div class="header">
-        <img src="https://sistema.aviafly.mx/IMG/logo_avia.png" alt="logo">
+        <img src="http://aviabackend.site/IMG/logo_avia.png" alt="logo">
     </div>
     <div class="text">
         <p>AVIATRAINING AND<br>
