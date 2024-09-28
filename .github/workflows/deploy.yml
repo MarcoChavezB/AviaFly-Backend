@@ -38,6 +38,7 @@ jobs:
           sudo chown -R marco:marco /var/www/html
           git pull origin main
           composer install --no-dev --optimize-autoloader
+          sudo php artisan migrate
           sudo php artisan optimize
           sudo php artisan cache:clear
           sudo chown -R www-data:www-data /var/www/html
