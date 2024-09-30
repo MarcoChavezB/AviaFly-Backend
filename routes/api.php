@@ -207,7 +207,7 @@ Route::prefix('/employees')->middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::prefix('/products')->middleware(['auth:sanctum', 'role:root, admin,employee'])->group(function () {
+Route::prefix('/products')->middleware(['auth:sanctum', 'role:root,admin,employee'])->group(function () {
     Route::get('/index/{name?}', [ProductController::class, 'index']);
     Route::post('/store', [ProductController::class, 'store']);
     Route::put('/update/{id_product}', [ProductController::class, 'update']);
@@ -253,7 +253,7 @@ Route::prefix('/tikets')->middleware(['auth:sanctum', 'role:root,admin,employee'
 Route::prefix('/lessons')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [LessonController::class, 'index']);
     Route::get('/index/{id_flight}', [LessonController::class, 'indexByFlight']);
-    Route::put('/update', [LessonController::class, 'update'])->middleware('role:root,admin,employee,flight_instructor');
+    Route::put('/update', [LessonController::class, 'update']);
 });
 
 Route::prefix('/infoflights')->middleware('auth:sanctum')->group(function () {
