@@ -532,9 +532,6 @@ public function getInfoVueloAlumno(int $id = null)
         }
 
         $empleado = Employee::find($request->id_instructor);
-        if ($empleado->user_type != 'instructor') {
-            return response()->json(["errors" => ["El empleado no es un instructor"]], 400);
-        }
 
         $student = Student::find($request->id_student);
         if ($request->id_pay_method == $this->payment_method_controller->getCreditoVueloId()) {
