@@ -450,8 +450,8 @@ public function getInfoVueloAlumno(int $id = null)
         $value = DB::select("
             SELECT
               MAX(CASE WHEN student_subjects.status = 'failed' OR student_subjects.status = 'pending' THEN 1 ELSE 0 END) AS subjects_failed,
-              MAX(CASE WHEN flight_payments.payment_status = 'pendiente' THEN 1 ELSE 0 END) AS pendings_payments,
-              MAX(CASE WHEN monthly_payments.status = 'pending' OR monthly_payments.status = 'owed' THEN 1 ELSE 0 END) AS pendings_months
+              MAX(CASE WHEN flight_payments.payment_status = 'pendiente' THEN 0 ELSE 0 END) AS pendings_payments,
+              MAX(CASE WHEN monthly_payments.status = 'pending' OR monthly_payments.status = 'owed' THEN 0 ELSE 0 END) AS pendings_months
             FROM
              students
               LEFT JOIN careers ON students.id_career = careers.id
