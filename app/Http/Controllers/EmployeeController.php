@@ -7,6 +7,7 @@ use App\Mail\EmployeeEntryNotification;
 use App\Models\CheckInRecords;
 use App\Models\Employee;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -170,7 +171,7 @@ class EmployeeController extends Controller
             $type = 'hora de comida';
         } elseif ($todayRecords->first()->type == 'hora de comida') {
             $type = 'fin de hora de comida';
-        } elseif ($todayRecords->first()->type == 'fin de hora de comida') {
+        } elseif ($todayRecords->first()->type == 'fin de hora de comida' || Carbon::now()->format('H:i:s') > '20:00:00') {
             $type = 'salida';
         } else {
             return response()->json(['message' => $todayRecords->first()], 410);
@@ -184,7 +185,7 @@ class EmployeeController extends Controller
         ]);
 
 
-        if($type === 'entrada'){
+        if($type === 'entrada' ){
 
             $employeeName = $employee->name . ' ' . $employee->last_names;
             $currentDateTimeFormatted = date('Y-m-d H:i:s');
@@ -256,6 +257,5 @@ class EmployeeController extends Controller
         }catch (\Exception $e){
             return response()->json(['message' => $e->getMessage()], 510);
         }
-
     }
 }
