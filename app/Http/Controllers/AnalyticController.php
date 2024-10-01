@@ -25,7 +25,10 @@ class AnalyticController extends Controller
         $analiticTotalHour = AirPlane::select('limit_hours')->first();
         $totalHours = $airline_hours ? $airline_hours->tacometer : 0;
 
-        $totalReportsPending = FlightHistory::where('has_report', 0)->where('type_flight', 'vuelo')->count();
+        $totalReportsPending = FlightHistory::where('has_report', 0)
+            ->where('type_flight', 'vuelo')
+            ->where('flight_client_status', 'aceptado')
+            ->count();
 
         return response()->json([
             'students' => $totalStudents,
