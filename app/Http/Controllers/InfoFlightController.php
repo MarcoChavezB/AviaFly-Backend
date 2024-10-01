@@ -8,9 +8,7 @@ use App\Models\FlightPayment;
 use App\Models\InfoFlight;
 use App\Models\Option;
 use Carbon\Carbon;
-use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
 class InfoFlightController extends Controller
 {
@@ -18,6 +16,16 @@ class InfoFlightController extends Controller
     public function index()
     {
         return InfoFlight::all();
+    }
+
+    public function getFlightPrice(){
+        $flightAmount = InfoFlight::where('equipo', 'XBPDY')->value('price');
+        return $flightAmount;
+    }
+
+    public function getSimulatorFlightPrice(){
+        $flightAmount = InfoFlight::where('equipo', 'simulador')->value('price');
+        return $flightAmount;
     }
 
     function getEquipFlight()

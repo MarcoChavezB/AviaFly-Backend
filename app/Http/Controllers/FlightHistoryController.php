@@ -23,6 +23,7 @@ use App\Models\Employee;
 use App\Models\Option;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\InfoFlightController;
 use stdClass;
 
 class FlightHistoryController extends Controller
@@ -719,31 +720,33 @@ function getAllInfoReport(int $id_flight)
 }
 
     function flightCreditStudent(string $name = null){
-        $students = Student::select(
-                'students.id',
-                'students.user_identification',
-                'students.name',
-                'students.last_names',
-                'students.flight_credit',
-                'students.simulator_credit',
-                'students.credit',
-                'students.cellphone'
-                )
-        ->where('students.name', 'like', '%' . $name . '%')
-        ->orWhere('students.last_names', 'like', '%' . $name . '%')
-        ->get();
 
-        $flight_hour_cost = InfoFlight::select('price')->where('equipo', 'XBPDY')->first();
-        $simulator_hour_cost = InfoFlight::select('price')->where('equipo', 'simulador')->first();
+        $infoFlightController = new InfoFlightController();
+
+        // Obtener el costo por hora de vuelo y simulador
+        $flight_hour_cost = $infoFlightController->getFlightPrice();
+        $simulator_hour_cost = $infoFlightController->getSimulatorFlightPrice();
 
         if (!$flight_hour_cost || !$simulator_hour_cost) {
             return response()->json(['error' => 'Cost data not found'], 404);
         }
 
-        $students->each(function ($student) {
-            $student->total_credit = $student->flight_credit + $student->simulator_credit + $student->credit;
-        });
-
+        // Construir la consulta con los valores obtenidos
+        $students = Student::select(
+                'students.id',
+                'students.user_identification',
+                'students.name',
+                'students.last_names',
+                DB::raw("students.flight_credit * {$flight_hour_cost} as flight_cost"),
+                DB::raw("students.simulator_credit * {$simulator_hour_cost} as simulator_cost"),
+                DB::raw("(students.flight_credit * {$flight_hour_cost} + students.simulator_credit * {$simulator_hour_cost} + students.credit) as total_cost"),
+                'students.cellphone'
+            )
+            ->where(function($query) use ($name) {
+                $query->where('students.name', 'like', '%' . $name . '%')
+                      ->orWhere('students.last_names', 'like', '%' . $name . '%');
+            })
+            ->get();
 
         return response()->json($students, 200);
     }
