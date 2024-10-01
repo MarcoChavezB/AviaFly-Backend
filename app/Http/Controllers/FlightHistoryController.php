@@ -723,6 +723,13 @@ function getAllInfoReport(int $id_flight)
 
         $infoFlightController = new InfoFlightController();
 
+        $flight_hour_cost = $infoFlightController->getFlightPrice();
+        $simulator_hour_cost = $infoFlightController->getSimulatorFlightPrice();
+
+        if (!$flight_hour_cost || !$simulator_hour_cost) {
+            return response()->json(['error' => 'Cost data not found'], 404);
+        }
+
         $students = Student::select(
                 'students.id',
                 'students.user_identification',
@@ -732,22 +739,20 @@ function getAllInfoReport(int $id_flight)
                 'students.simulator_credit',
                 'students.credit',
                 'students.cellphone'
-                )
-        ->where('students.name', 'like', '%' . $name . '%')
-        ->orWhere('students.last_names', 'like', '%' . $name . '%')
-        ->get();
+            )
+            ->where(function($query) use ($name) {
+                $query->where('students.name', 'like', '%' . $name . '%')
+                      ->orWhere('students.last_names', 'like', '%' . $name . '%');
+            })
+            ->get();
 
-        $flight_hour_cost = InfoFlight::select('price')->where('equipo', 'XBPDY')->first();
-        $simulator_hour_cost = InfoFlight::select('price')->where('equipo', 'simulador')->first();
-
-        if (!$flight_hour_cost || !$simulator_hour_cost) {
-            return response()->json(['error' => 'Cost data not found'], 404);
-        }
-
-        $students->each(function ($student) {
-            $student->total_credit = $student->flight_credit + $student->simulator_credit + $student->credit;
+        $students->each(function ($student) use ($flight_hour_cost, $simulator_hour_cost) {
+            $flight_credit_total = (float) $student->flight_credit * $flight_hour_cost;
+            $simulator_credit_total = (float) $student->simulator_credit * $simulator_hour_cost;
+            $student->flight_credit = $flight_credit_total;
+            $student->simulator_credit = $simulator_credit_total;
+            $student->total_credit = $flight_credit_total + $simulator_credit_total + (float) $student->credit;
         });
-
 
         return response()->json($students, 200);
     }
