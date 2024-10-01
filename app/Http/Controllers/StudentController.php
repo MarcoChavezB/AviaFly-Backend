@@ -957,6 +957,7 @@ public function getInfoVueloAlumno(int $id = null)
             ->groupBy('students.name','students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'flight_history.type_flight', 'flight_history.has_report','students.id' )
             ->orderBy('flight_history.created_at', 'desc')
             ->where('flight_history.type_flight', 'vuelo')
+            ->where('flight_history.flight_client_status', 'aceptado')
             ->get();
 
         return response()->json($student, 200);
