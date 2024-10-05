@@ -65,15 +65,17 @@ class FileController extends Controller
         return $this->generateManualUrl($fileName);
     }
 
-    /*
-     * @Request: url del archivo a eliminar
-    *  */
-    function deleteFile(string $url): bool
+    public function getFilePathFromUrl(string $url): string
     {
         $path = parse_url($url, PHP_URL_PATH);
+        return ltrim($path, '/'); // Aseguramos que no haya '/' al inicio
+    }
+    public function deleteFile(string $filePath): bool
+    {
+        // Obtenemos el path completo del archivo
+        $fullPath = public_path($filePath);
 
-        $fullPath = public_path($path);
-
+        // Comprobamos si el archivo existe y lo eliminamos
         if (File::exists($fullPath)) {
             return File::delete($fullPath);
         }
@@ -81,6 +83,12 @@ class FileController extends Controller
         return false;
     }
 
+    // Método para eliminar archivo usando la URL
+    public function deleteFileByUrl(string $url): bool
+    {
+        $filePath = $this->getFilePathFromUrl($url);
+        return $this->deleteFile($filePath);
+    }
 
     private function generateTicketName(string $originalName, string $baseName, string $basePath, Student $student): string
     {
