@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class IncomesController extends Controller
 {
@@ -357,54 +358,60 @@ class IncomesController extends Controller
         return response()->json($incomeDetail, 200);
     }
 
-public function delete($id_income){
-    $income = Income::find($id_income);
+    public function delete($id_income){
+        $income = Income::find($id_income);
 
-    if(!$income){
-        return response()->json("income not found");
+        if(!$income){
+            return response()->json("income not found");
+        }
+
+        $incomeDetail = $income->incomeDetails;
+        if(!$incomeDetail){
+            return response()->json("income detail not found");
+        }
+
+        $student = Student::find($incomeDetail->student_id);
+        if(!$student){
+            return response()->json("student not found");
+        }
+
+        // Ajustar créditos según el concepto
+        if($income->concept == "Horas de vuelo"){
+            $student->flight_credit -= $income->quantity;
+            $student->save();
+        }
+
+        if($income->concept == "Horas simulador"){
+            $student->simulator_credit -= $income->quantity;
+            $student->save();
+        }
+
+        $fileController = new FileController();
+        $deletedFiles = []; // Array para almacenar los archivos eliminados
+        if($incomeDetail->file_path){
+            $fileController->deleteFile($incomeDetail->file_path);
+            $deletedFiles[] = $incomeDetail->file_path; // Registrar el archivo eliminado
+        }
+        if($incomeDetail->ticket_path){
+            $fileController->deleteFile($incomeDetail->ticket_path);
+            $deletedFiles[] = $incomeDetail->ticket_path; // Registrar el archivo eliminado
+        }
+
+        // Eliminar el ingreso
+        $income->delete();
+
+        // Crear un mensaje de log detallado
+        Log::channel('slack')->info('Ingreso eliminado', [
+            'income_id' => $income->id,
+            'concept' => $income->concept,
+            'quantity' => $income->quantity,
+            'student_id' => $student->id,
+            'student_name' => $student->name ?? 'N/A', // Asegúrate de que este campo existe
+            'deleted_files' => $deletedFiles,
+            'timestamp' => now()->toString(), // Marca de tiempo de la operación
+        ]);
+
+        return response()->json(["income" => $income, "incomeDetail" => $incomeDetail]);
     }
-
-    $incomeDetail = $income->incomeDetails;
-    if(!$incomeDetail){
-        return response()->json("income detail not found");
-    }
-
-    $student = Student::find($incomeDetail->student_id);
-    if(!$student){
-        return response()->json("student not found");
-    }
-
-    if($income->concept == "Horas de vuelo"){
-        $student->flight_credit -= $income->quantity;
-        $student->save();
-    }
-
-    if($income->concept == "Horas simulador"){
-        $student->simulator_credit -= $income->quantity;
-        $student->save();
-    }
-
-    $fileController = new FileController();
-    if($incomeDetail->file_path){
-        $fileController->deleteFile($incomeDetail->file_path);
-    }
-    if($incomeDetail->ticket_path){
-        $fileController->deleteFile($incomeDetail->ticket_path);
-    }
-
-    $income->delete();
-
-    return response()->json(["income" => $income, "incomeDetail" => $incomeDetail]);
 }
-}
-
-
-
-
-
-
-
-
-
-
 
