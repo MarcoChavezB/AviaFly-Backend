@@ -18,4 +18,10 @@ class Income extends Model
         'income_details_id',
         'quantity',
     ];
+
+
+    public function incomeDetails()
+    {
+        return $this->belongsTo(IncomeDetails::class, 'income_details_id');
+    }
 }

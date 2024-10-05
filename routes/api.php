@@ -159,6 +159,8 @@ Route::prefix('/incomes')->middleware('auth:sanctum')->group(function (){
         Route::post('/create/income', [IncomesController::class, 'createIncomes']);
         Route::get('/get/all', [IncomesController::class, 'index']);
         Route::get('/show/{id}', [IncomesController::class, 'show'])->where('id', '[0-9]+');
+        Route::post('/update', [IncomesController::class, 'update']);
+        Route::get('/delete/{id_income}', [IncomesController::class, 'delete']);
     });
 });
 

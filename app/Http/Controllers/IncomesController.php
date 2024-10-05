@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BankAccount;
 use App\Models\Base;
+use App\Models\Discount;
 use App\Models\Employee;
 use App\Models\Income;
 use App\Models\IncomeDetails;
 use App\Models\MonthlyPayment;
+use App\Models\PaymentMethod;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -177,11 +180,21 @@ class IncomesController extends Controller
 
     private function updateStudentCredits($studentId, $credit, $type){
         $student = Student::find($studentId);
-        if($type == 'Credito de vuelo'){
-            $student->flight_credit += $credit;
-        }else{
-            $student->simulator_credit += $credit;
+        switch ($type) {
+            case "Horas de vuelo";
+                $student->flight_credit += $credit;
+                break;
+            case "Horas de vuelo (VIEJO)":
+                $student->flight_credit += $credit;
+                break;
+            case "Horas simulador":
+                $student->simulator_credit += $credit;
+                break;
+            case "Horas simulador (VIEJO)":
+                $student->simulator_credit += $credit;
+                break;
         }
+
         $student->save();
     }
 
@@ -206,15 +219,23 @@ class IncomesController extends Controller
 
         $query = DB::table('income_details')
             ->join('incomes', 'income_details.id', '=', 'incomes.income_details_id')
+            ->join('employees', 'income_details.employee_id', '=', 'employees.id')
             ->join('students', 'income_details.student_id', '=', 'students.id')
             ->select('students.user_identification as student_registration',
                 DB::raw("CONCAT(students.name, ' ', students.last_names) as student_name"),
-                'income_details.payment_date',
-                'income_details.total',
-                'income_details.payment_method',
-                'income_details.id as income_details_id',
                 'incomes.id as income_id',
-                'incomes.concept');
+                'income_details.payment_date',
+                'incomes.concept',
+                'income_details.payment_method',
+                'income_details.file_path as voucher',
+                'incomes.discount',
+                'incomes.original_import as subtotal',
+                'income_details.total',
+                DB::raw("CONCAT(employees.name, ' ', employees.last_names) as employee_name"),
+                'income_details.bank_account',
+                'incomes.iva as iva',
+                'income_details.commission',
+                'income_details.ticket_path as ticket');
 
         if ($startDate && $endDate) {
             $query->whereBetween('income_details.payment_date', [$startDate, $endDate]);
@@ -244,11 +265,17 @@ class IncomesController extends Controller
         ];
 
         $bases = Base::all();
+        $paymentMethods = PaymentMethod::all();
+        $bankAccounts = BankAccount::all();
+        $discounts = Discount::all();
 
         return response()->json([
             'incomes' => $incomes->items(),
             'pagination_data' => $paginationData,
-            'bases' => $bases
+            'bases' => $bases,
+            'paymentMethods' => $paymentMethods,
+            'discounts' => $discounts,
+            'bankAccounts' => $bankAccounts
         ]);
     }
 
@@ -277,4 +304,107 @@ class IncomesController extends Controller
 
         return response()->json($income);
     }
+
+
+
+    /*
+ *      Payload:
+     * {
+            "income_id": 1,
+            "payment_date": "2024-10-02",
+            "payment_method": "Efectivo",
+            "bankAccount": "",
+            "amount": "3612.00", // original_import
+            "selectedDiscount": "",
+            "discountValue": 0,
+            "iva": "688.00",
+            "total": "4300.00",
+            "comision": "0.00"
+        }
+     */
+    public function update(Request $request)
+    {
+        $request->validate([
+            'income_id' => 'required|exists:incomes,id',
+            'payment_date' => 'nullable|date',
+            'payment_method' => 'nullable|string|max:50',
+            'bankAccount' => 'nullable|string|max:50',
+            'amount' => 'nullable|numeric',
+            'selectedDiscount' => 'nullable|string',
+            'discountValue' => 'nullable|numeric',
+            'iva' => 'nullable|numeric',
+            'total' => 'nullable|numeric',
+            'comision' => 'nullable|numeric',
+        ]);
+
+        $income = Income::find($request->income_id);
+        $incomeDetail = $income->incomeDetails;
+
+        if($income){
+            $income->original_import = $request->amount ?? $income->original_import;
+            $income->discount = $request->discountValue ?? $income->discount;
+            $income->iva = $request->iva ?? $income->iva;
+            $income->total = $request->total ?? $income->total;
+
+            $incomeDetail->commission = $request->comision ?? $incomeDetail->commission;
+            $incomeDetail->payment_method = $request->payment_method ?? $incomeDetail->payment_method;
+            $incomeDetail->bank_account = $request->bankAccount ?? $incomeDetail->bank_account;
+            $incomeDetail->total = $request->total ?? $incomeDetail->total;
+            $incomeDetail->payment_date = $request->payment_date ?? $incomeDetail->payment_date;
+        }
+        $income->save();
+        $incomeDetail->save();
+        return response()->json($incomeDetail, 200);
+    }
+
+public function delete($id_income){
+    $income = Income::find($id_income);
+
+    if(!$income){
+        return response()->json("income not found");
+    }
+
+    $incomeDetail = $income->incomeDetails;
+    if(!$incomeDetail){
+        return response()->json("income detail not found");
+    }
+
+    $student = Student::find($incomeDetail->student_id);
+    if(!$student){
+        return response()->json("student not found");
+    }
+
+    if($income->concept == "Horas de vuelo"){
+        $student->flight_credit -= $income->quantity;
+        $student->save();
+    }
+
+    if($income->concept == "Horas simulador"){
+        $student->simulator_credit -= $income->quantity;
+        $student->save();
+    }
+
+    $fileController = new FileController();
+    if($incomeDetail->file_path){
+        $fileController->deleteFile($incomeDetail->file_path);
+    }
+    if($incomeDetail->ticket_path){
+        $fileController->deleteFile($incomeDetail->ticket_path);
+    }
+
+    $income->delete();
+
+    return response()->json(["income" => $income, "incomeDetail" => $incomeDetail]);
 }
+}
+
+
+
+
+
+
+
+
+
+
+

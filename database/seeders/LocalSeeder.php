@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\AirPlane;
 use App\Models\AcademicFile;
+use App\Models\BankAccount;
 use Faker\Factory as Faker;
 use App\Models\Base;
 use App\Models\Career;
@@ -1113,5 +1114,17 @@ class LocalSeeder extends Seeder
             'career_subject_id' => 8,
             'id_turn' => 1,
         ]);
+
+        $bankAccounts = [
+            'Ajuste - 0001',
+            'Bajío - 0201',
+            'BBVA - 7095',
+            'HSBC - HSBC'
+        ];
+        foreach($bankAccounts as $bank){
+            BankAccount::create([
+                'name' => $bank
+            ]);
+        }
     }
 }
