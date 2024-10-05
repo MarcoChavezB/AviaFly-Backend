@@ -65,17 +65,17 @@ class FileController extends Controller
         return $this->generateManualUrl($fileName);
     }
 
-    public function getFilePathFromUrl(string $url): string
+    /*
+     * @Request: url del archivo a eliminar
+     * url http://api.aviafly.site:8080/AviaFly-Backend/public/bases/torreon/AT37/tickets/ticket_1728107494.pdf
+    *  */
+    function deleteFile(string $url): bool
     {
-        $path = parse_url($url, PHP_URL_PATH);
-        return ltrim($path, '/'); // Aseguramos que no haya '/' al inicio
-    }
-    public function deleteFile(string $filePath): bool
-    {
-        // Obtenemos el path completo del archivo
+        $urlDomain = "http://api.aviafly.site:8080/AviaFly-Backend/public";
+        $onlyUrl = str_replace($urlDomain, '', $url);
+        $filePath = ltrim($onlyUrl, '/');
         $fullPath = public_path($filePath);
 
-        // Comprobamos si el archivo existe y lo eliminamos
         if (File::exists($fullPath)) {
             return File::delete($fullPath);
         }
@@ -83,12 +83,6 @@ class FileController extends Controller
         return false;
     }
 
-    // Método para eliminar archivo usando la URL
-    public function deleteFileByUrl(string $url): bool
-    {
-        $filePath = $this->getFilePathFromUrl($url);
-        return $this->deleteFile($filePath);
-    }
 
     private function generateTicketName(string $originalName, string $baseName, string $basePath, Student $student): string
     {

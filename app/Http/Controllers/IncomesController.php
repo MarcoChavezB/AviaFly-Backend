@@ -390,11 +390,11 @@ public function delete($id_income){
     $fileController = new FileController();
     $deletedFiles = []; // Array para almacenar los archivos eliminados
     if ($incomeDetail->file_path) {
-        $fileController->deleteFileByUrl($incomeDetail->file_path);
+        $fileController->deleteFile($incomeDetail->file_path);
         $deletedFiles[] = $incomeDetail->file_path; // Registrar el archivo eliminado
     }
     if ($incomeDetail->ticket_path) {
-        $fileController->deleteFileByUrl($incomeDetail->ticket_path);
+        $fileController->deleteFile($incomeDetail->ticket_path);
         $deletedFiles[] = $incomeDetail->ticket_path; // Registrar el archivo eliminado
     }
 
