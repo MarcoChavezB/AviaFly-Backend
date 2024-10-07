@@ -420,6 +420,7 @@ public function indexReport(int $id_flight)
 
         $flight->save();
 
+        // Obtener la diferencia entre tacometros
         $tacometer_difference = DB::select("
             WITH RankedFlights AS (
                 SELECT
@@ -441,6 +442,7 @@ public function indexReport(int $id_flight)
         $difference = !empty($tacometer_difference) ? $tacometer_difference[0]->tacometer_difference : 0;
         $airplane->tacometer = $actual_tacometer + $difference;
 
+        // quitando funcion de diferencia de tacometro
         $airplane->save();
 
         return response()->json([
