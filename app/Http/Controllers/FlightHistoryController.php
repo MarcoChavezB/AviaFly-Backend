@@ -373,7 +373,7 @@ public function indexReport(int $id_flight)
             'id_flight' => 'required|numeric',
             'horometroInicial' => 'required|numeric',
             'horometroFinal' => 'required|numeric',
-            'tacometro' => 'required|numeric',  // Asegúrate de validar que sea numérico
+            'tacometro' => 'numeric',  // Asegúrate de validar que sea numérico
             'flight_alone' => 'required|boolean',
             'total_horometro' => 'required|numeric',
         ], [
@@ -381,7 +381,6 @@ public function indexReport(int $id_flight)
             'horometroFinal.required' => 'Campo requerido',
             'horometroInicial.numeric' => 'Dato incorrecto',
             'horometroFinal.numeric' => 'Dato incorrecto',
-            'tacometro.required' => 'Campo requerido',
             'tacometro.numeric' => 'Dato incorrecto',  // Agrega validación numérica para tacometro
             'flight_alone.required' => 'Campo requerido',
             'total_horometro.required' => 'Campo requerido',
