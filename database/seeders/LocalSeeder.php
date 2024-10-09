@@ -9,6 +9,7 @@ use Faker\Factory as Faker;
 use App\Models\Base;
 use App\Models\Career;
 use App\Models\Consumable;
+use App\Models\Day;
 use App\Models\Discount;
 use App\Models\Employee;
 use App\Models\FlightObjetive;
@@ -1124,6 +1125,13 @@ class LocalSeeder extends Seeder
         foreach($bankAccounts as $bank){
             BankAccount::create([
                 'name' => $bank
+            ]);
+        }
+
+        $days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+        foreach($days as $day){
+            Day::create([
+                'value' => $day
             ]);
         }
     }

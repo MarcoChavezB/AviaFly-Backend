@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BaseController;
 use App\Http\Controllers\CheckInRecordsController;
 use App\Http\Controllers\ConsumableController;
+use App\Http\Controllers\DayController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\PendingController;
 use App\Http\Controllers\StudentController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FlightCustomerController;
 use App\Http\Controllers\FlightHistoryController;
+use App\Http\Controllers\FlightHoursRestrictionsController;
 use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
@@ -31,6 +33,7 @@ use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SessionController;
+use App\Models\FlightHoursRestrictions;
 
 /*
 |--------------------------------------------------------------------------
@@ -324,6 +327,13 @@ Route::prefix('/arrival')->middleware(['auth:sanctum', 'role:root'])->group(func
 
 Route::prefix('/options')->middleware(['auth:sanctum', 'role:root,admin,employee'])->group(function () {
     Route::get('/change/flight/request', [OptionController::class, 'changeFlightRequest']);
+});
+
+
+Route::prefix('/restrictions')->middleware(['auth:sanctum', 'role:root,admin'])->group(function () {
+    Route::post('/create', [FlightHoursRestrictionsController::class, 'create']);
+    Route::get('/index', [FlightHoursRestrictionsController::class, 'index']);
+    Route::get('/days/index', [DayController::class, 'index']);
 });
 
 

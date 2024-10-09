@@ -59,7 +59,7 @@ class InfoFlightController extends Controller
             'students.user_identification as student_identification',
             'students.name as student_name',
             'students.last_names as student_last_names',
-            DB::raw('SUM(DISTINCT payments.amount) as total_amount'),
+            DB::raw('SUM(payments.amount) as total_amount'),
             DB::raw('COUNT(DISTINCT CASE WHEN flight_history.type_flight = "vuelo" THEN flight_history.id ELSE NULL END) as total_flights'),
             DB::raw('COUNT(DISTINCT CASE WHEN flight_history.type_flight = "simulador" THEN flight_history.id ELSE NULL END) as total_simulators')
         )
