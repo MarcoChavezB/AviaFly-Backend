@@ -340,7 +340,7 @@ public function getInfoVueloAlumno(int $id = null)
     $client = Auth::user();
     $userController = new UserController();
     $id_base = $userController->getBaseAuth($client)->id;
-
+    // id de piloto
     // Construcción dinámica de la consulta SQL
     $query = "
         SELECT
@@ -355,7 +355,7 @@ public function getInfoVueloAlumno(int $id = null)
         LEFT JOIN flight_history ON flight_payments.id_flight = flight_history.id
         LEFT JOIN monthly_payments ON monthly_payments.id_student = students.id
         WHERE students.id_base = :id_base
-            AND students.id_career = 2
+            AND students.id_career = 1
     ";
 
     $bindings = ['id_base' => $id_base];
@@ -532,6 +532,9 @@ public function getInfoVueloAlumno(int $id = null)
             return response()->json(["errors" => ["sameDate" => ["Existe un vuelo en la fecha y hora por favor de seleccionar otra hora"]]], 400);
         } */
 
+        if ($this->isDateRestricted($request->flight_date, $request->flight_hour, $request->hours, $request->equipo)) {
+            return response()->json(["errors" => ["La fecha seleccionada coincide con una fecha inhabil. Por favor, selecciona otra hora."]], 400);
+        }
         $empleado = Employee::find($request->id_instructor);
 
         $student = Student::find($request->id_student);
@@ -630,6 +633,9 @@ public function getInfoVueloAlumno(int $id = null)
             return response()->json(["errors" => ["sameDate" => ["Existe un vuelo en la fecha y hora por favor de seleccionar otra hora"]]], 400);
         } */
 
+        if ($this->isDateRestricted($request->flight_date, $request->flight_hour, $request->hours, $request->equipo)) {
+            return response()->json(["errors" => ["La fecha seleccionada coincide con una fecha inhabil. Por favor, selecciona otra hora."]], 400);
+        }
         $empleado = Employee::find($request->id_instructor);
         if ($empleado->user_type != 'instructor') {
             return response()->json(["errors" => ["El empleado no es un instructor"]], 400);
@@ -937,6 +943,31 @@ public function getInfoVueloAlumno(int $id = null)
             ->get();
 
         return $query->isNotEmpty();
+    }
+
+    public function isDateRestricted($flight_date, $flight_hour, $hours, $equipo)
+    {
+        // Convertir la hora de vuelo a un formato de tiempo
+        $start_time_str = $flight_hour; // Hora de inicio
+        $end_time_str = \Carbon\Carbon::parse($flight_hour)->addHours($hours)->format('H:i'); // Hora de fin
+
+        // Obtener el día de la semana para la fecha del vuelo
+        $dayOfWeek = \Carbon\Carbon::parse($flight_date)->dayOfWeek; // Obtiene el número del día de la semana (0 = Domingo, 1 = Lunes, ...)
+
+        // Realizar la consulta para verificar restricciones
+        return DB::table('flight_hours_restrictions')
+            ->join('restriction_days', 'flight_hours_restrictions.id', '=', 'restriction_days.id_flight_restriction')
+            ->where('restriction_days.id_day', $dayOfWeek) // Aquí se verifica el día
+            ->where('flight_hours_restrictions.id_flight', $equipo) // Asumiendo que $equipo es el id de vuelo
+            ->where(function ($query) use ($start_time_str, $end_time_str) {
+                $query->whereBetween('flight_hours_restrictions.start_hour', [$start_time_str, $end_time_str])
+                      ->orWhereBetween('flight_hours_restrictions.end_hour', [$start_time_str, $end_time_str])
+                      ->orWhere(function ($query) use ($start_time_str, $end_time_str) {
+                          $query->where('flight_hours_restrictions.start_hour', '<=', $start_time_str)
+                                ->where('flight_hours_restrictions.end_hour', '>=', $end_time_str);
+                      });
+            })
+            ->exists(); // Retorna true o false
     }
 
     function indexStudentsReport()

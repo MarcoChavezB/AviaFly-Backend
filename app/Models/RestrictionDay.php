@@ -15,11 +15,11 @@ class RestrictionDay extends Model
     ];
 
     public function Day(){
-        return $this->belongsTo(Day::class, 'id_da');
+        return $this->belongsTo(Day::class, 'id_day');
     }
 
 
     public function FlightRestriction(){
-        return $this->belongsTo(FlightHoursRestrictions::class, 'id_da');
+        return $this->belongsTo(FlightHoursRestrictions::class, 'id_flight_restriction');
     }
 }
