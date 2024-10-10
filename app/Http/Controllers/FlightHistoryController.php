@@ -442,7 +442,7 @@ public function indexReport(int $id_flight)
         $airplane->tacometer = $actual_tacometer + $difference;
 
         // quitando funcion de diferencia de tacometro
-        $airplane->save();
+/*      $airplane->save(); */
 
         return response()->json([
             'msg' => "El reporte se ha guardado correctamente"
