@@ -330,7 +330,7 @@ Route::prefix('/options')->middleware(['auth:sanctum', 'role:root,admin,employee
 });
 
 
-Route::prefix('/restrictions')->middleware(['auth:sanctum', 'role:root,admin'])->group(function () {
+Route::prefix('/restrictions')->middleware(['auth:sanctum'])->group(function () {
     Route::post('/create', [FlightHoursRestrictionsController::class, 'create']);
     Route::get('/index', [FlightHoursRestrictionsController::class, 'index']);
     Route::get('/index/details', [FlightHoursRestrictionsController::class, 'indexDetails']);
