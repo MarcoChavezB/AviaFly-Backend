@@ -57,7 +57,7 @@ class PaymentsController extends Controller
         $PDFController = new PDFController();
 
         if($data['payment_method'] == $PaymentMethodController->getCreditoVueloId()
-            && $data['installment_value'] > $student->credit){
+            && $data['installment_value'] > $student->flight_credit){
             return response()->json([
                 'status' => 'error',
                 'msg' => 'El valor de la cuota no puede ser mayor al crédito de vuelo del estudiante'
@@ -104,6 +104,9 @@ class PaymentsController extends Controller
             $urlPath =  $FileController->saveFilePath($request->file('file_transfer'), $student->id_base, 'vouchers/flight', $student);
             $payment->payment_voucher = $urlPath;
         }
+
+        $student->flight_credit = $student->flight_credit - $data['installment_value'];
+        $student->save();
 
         $payment->save();
 

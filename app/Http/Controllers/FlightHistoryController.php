@@ -24,6 +24,8 @@ use App\Models\Option;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\InfoFlightController;
+use App\Models\PaymentMethod;
+use Fiber;
 use stdClass;
 
 class FlightHistoryController extends Controller
@@ -285,69 +287,107 @@ public function indexReport(int $id_flight)
         return response()->json($data, 200);
     }
 
-    function changeStatusFlight(Request $request)
-    {
-        $data = $request->all();
-        $validator = Validator::make($data, [
-            'id_flight' => 'required|integer',
-            'status' => 'required|string',
-        ]);
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
-        }
+public function changeStatusFlight(Request $request)
+{
+    $data = $request->all();
+    $totalCreditFlight = 0;
+    $infoPayment = new PaymentMethodController();
 
-
-        $flight = flightHistory::find($data['id_flight']);
-
-
-
-        if (!$flight) {
-            return response()->json([
-                'msg' => 'Vuelo no encontrado'
-            ], 404);
-        }
-
-        if ($flight->flight_status == $data['status']) {
-            return response()->json([
-                'msg' => 'El vuelo ya está en el estado solicitado'
-            ], 400);
-        }
-        $flight->flight_status = $data['status'];
-
-        $flightPayment = FlightPayment::where('id_flight', $data['id_flight'])->first();
-
-        if($data['status'] == 'cancelado'){
-            $flightPayment->payment_status = "cancelado";
-
-
-            $student = Student::join('flight_payments', 'students.id', '=', 'flight_payments.id_student')
-                ->where('flight_payments.id_flight', $data['id_flight'])
-                ->first();
-
-            $instructor = Employee::join('flight_payments', 'employees.id', '=', 'flight_payments.id_instructor')
-                ->where('flight_payments.id_flight', $data['id_flight'])
-                ->first();
-
-            $details = new stdClass();
-            $details->motive = $data['motive'];
-            $details->details = $data['details'];
-
-            Mail::to($student->email)->send(
-                new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details)
-            );
-
-            Mail::to($instructor->email)->send(
-                new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details)
-            );
-        }
-
-        $flightPayment->save();
-        $flight->save();
-
-        return response()->json([
-            'msg' => 'El vuelo se ha modificado correctamente'
-        ], 200);
+    $validator = Validator::make($data, [
+        'id_flight' => 'required|integer',
+        'status' => 'required|string',
+    ]);
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 400);
     }
+
+    $flight = flightHistory::find($data['id_flight']);
+    if (!$flight) {
+        return response()->json(['msg' => 'Vuelo no encontrado'], 404);
+    }
+
+    if ($flight->flight_status == $data['status']) {
+        return response()->json(['msg' => 'El vuelo ya está en el estado solicitado'], 400);
+    }
+
+    $flightPayment = FlightPayment::where('id_flight', $data['id_flight'])->first();
+    $payments = Payments::where('id_flight', $data['id_flight'])->get();
+    $student = Student::join('flight_payments', 'students.id', '=', 'flight_payments.id_student')
+        ->where('flight_payments.id_flight', $data['id_flight'])
+        ->first();
+    $studentPerson = Student::find($student->id_student);
+
+    // quitar el credito devuelto
+    if ($flight->flight_status == 'cancelado') {
+        if ($payments) {
+            foreach ($payments as $item) {
+                if ($item->id_payment_method == $infoPayment->getCreditoVueloId()) {
+                    $totalCreditFlight += (float)$item->amount;
+                }
+            }
+        }
+
+        if($studentPerson->flight_credit < $totalCreditFlight){
+            return response()->json(['msg' => "El alumno no tiene suficientes creditos para restaurar el estado"], 400);
+        }
+        $studentPerson->flight_credit = (float)$studentPerson->flight_credit - $totalCreditFlight;
+        $studentPerson->save();
+    }
+
+    $flight->flight_status = $data['status'];
+    if ($data['status'] == 'cancelado') {
+        $fileController = new FileController();
+        $flightPayment->payment_status = "cancelado";
+
+        $instructor = Employee::join('flight_payments', 'employees.id', '=', 'flight_payments.id_instructor')
+            ->where('flight_payments.id_flight', $data['id_flight'])
+            ->first();
+
+        if ($payments) {
+            foreach ($payments as $item) {
+                if ($item->id_payment_method == $infoPayment->getCreditoVueloId()) {
+                    $totalCreditFlight += (float)$item->amount;
+                }
+            }
+        }
+
+        $studentPerson->flight_credit = (float)$studentPerson->flight_credit + $totalCreditFlight;
+        $studentPerson->save();
+        $this->resetFlightData($flight->id);
+
+        $details = new stdClass();
+        $details->motive = $data['motive'] ?? null;
+        $details->details = $data['details'] ?? null;
+
+        if ($student) {
+            Mail::to($student->email)->send(new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details));
+        }
+        if ($instructor) {
+            Mail::to($instructor->email)->send(new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details));
+        }
+    }
+
+    $flightPayment->save(); // Guarda el estado del pago del vuelo
+    $flight->save(); // Guarda el estado del vuelo
+
+    return response()->json([
+        'msg' => 'El vuelo se ha modificado correctamente',
+    ], 200);
+}
+
+function resetFlightData($id_flight)
+{
+    $flight = flightHistory::find($id_flight);
+    if ($flight) { // Verifica si el vuelo existe
+        $flight->flight_alone = 0;
+        $flight->has_report = 0;
+        $flight->initial_horometer = 0;
+        $flight->final_horometer = 0;
+        $flight->total_horometer = 0;
+        $flight->final_tacometer = 0;
+        $flight->save(); // Guarda los cambios en el vuelo
+    }
+}
 
 
     /*
