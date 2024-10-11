@@ -9,7 +9,7 @@ use App\Models\Day;
 class RestrictionDay extends Model
 {
     use HasFactory;
-    protected $filleable = [
+    protected $fillable = [
         "id_day",
         "id_flight_restriction"
     ];

@@ -12,6 +12,27 @@ use Illuminate\Support\Facades\Validator;
 
 class FlightHoursRestrictionsController extends Controller
 {
+
+public function indexDetails(){
+    $restrictionDays = RestrictionDay::with(['Day', 'FlightRestriction.flight'])->get();
+
+    $grouped = $restrictionDays->groupBy('id_flight_restriction')->map(function ($group) {
+        $flightRestriction = $group->first()->FlightRestriction;
+
+        $days = $group->map(function ($item) {
+            return $item->Day;
+        });
+
+        return [
+            'flight_restriction' => $flightRestriction,
+            'flight' => $flightRestriction->flight,  // Aquí se incluye la información del vuelo
+            'days' => $days
+        ];
+    });
+
+    return response()->json($grouped->values());
+}
+
     /**
      * Display a listing of the resource.
      *
@@ -218,8 +239,21 @@ private function generateRecurrentEvents($event, $dayValue)
      * @param  \App\Models\FlightHoursRestrictions  $flightHoursRestrictions
      * @return \Illuminate\Http\Response
      */
-    public function destroy(FlightHoursRestrictions $flightHoursRestrictions)
+    public function destroy($id_restriction)
     {
-        //
+        $restriction = RestrictionDay::where('id_flight_restriction', $id_restriction)->first();
+
+        if (!$restriction) {
+            return response()->json(['error' => "Restriction not found"], 404);
+        }
+
+        $restrictionFlight = FlightHoursRestrictions::find($id_restriction);
+
+        if ($restrictionFlight) {
+            RestrictionDay::where('id_flight_restriction', $id_restriction)->delete();
+            $restrictionFlight->delete();
+        }
+
+        return response()->json(['message' => "Restriction and related flight restriction deleted successfully"], 200);
     }
 }
