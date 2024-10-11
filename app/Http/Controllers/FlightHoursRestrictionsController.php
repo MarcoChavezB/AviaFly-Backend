@@ -159,7 +159,7 @@ private function generateRecurrentEvents($event, $dayValue)
             'end_hour' => 'required|string',
             'id_flight' => 'required|integer|exists:info_flights,id',
             'days' => 'required|array',
-            'days.*' => 'integer|between:1,7',
+            'days.*' => 'integer|exists:days,id',
         ]);
 
         if($validator->fails()){
