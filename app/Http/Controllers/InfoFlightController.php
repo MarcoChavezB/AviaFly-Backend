@@ -71,6 +71,7 @@ class InfoFlightController extends Controller
                   ->orWhere('students.last_names', 'like', '%' . $student_name . '%');
         })
         ->where('flight_history.flight_client_status', 'aceptado')
+        ->where('flight_history.flight_status', '!=', 'cancelado') // Condición para excluir el estado "cancelado"
         ->groupBy('students.id', 'students.user_identification', 'students.name', 'students.last_names')
         ->get();
 
