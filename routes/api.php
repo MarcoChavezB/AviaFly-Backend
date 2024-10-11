@@ -354,3 +354,5 @@ Route::get('/test', function(){
         'message' => 'functionando'
     ]);
 });
+
+Route::get('/test/{id_flight}', [PDFController::class, 'getReservationTicket']);
