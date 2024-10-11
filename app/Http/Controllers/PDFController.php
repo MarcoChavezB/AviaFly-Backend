@@ -242,7 +242,7 @@ class PDFController extends Controller
             ->join('flight_history', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->join('employees', 'employees.id', '=', 'flight_payments.id_employee')
             ->join('students', 'students.id', '=', 'flight_payments.id_student')
-            ->join('payments', 'payments.id_flight', '=', 'flight_history.id')
+            ->join('payments', 'payments.id_flight', '=', 'flight_payments.id') // Correcto id_flight -> flight_payments.id
             ->join('bases', 'bases.id', '=', 'employees.id_base')
             ->join('payment_methods', 'payment_methods.id', '=', 'payments.id_payment_method')
             ->select(
