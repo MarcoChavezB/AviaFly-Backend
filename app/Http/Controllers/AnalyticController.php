@@ -28,6 +28,7 @@ class AnalyticController extends Controller
         $totalReportsPending = FlightHistory::where('has_report', 0)
             ->where('type_flight', 'vuelo')
             ->where('flight_client_status', 'aceptado')
+            ->where('flight_history.flight_status', '!=', 'cancelado') // Condición para excluir el estado "cancelado"
             ->count();
 
         return response()->json([
