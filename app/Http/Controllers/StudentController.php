@@ -990,8 +990,10 @@ public function getInfoVueloAlumno(int $id = null)
             ->orderBy('flight_history.created_at', 'desc')
             ->where('flight_history.type_flight', 'vuelo')
             ->where('flight_history.flight_client_status', 'aceptado')
-            ->where('flight_history.flight_status', 'proceso')
-            ->where('flight_history.flight_status', 'hecho')
+            ->where(function($query) {
+                $query->where('flight_history.flight_status', 'proceso')
+                      ->orWhere('flight_history.flight_status', 'hecho');
+            })
             ->get();
 
         return response()->json($student, 200);
