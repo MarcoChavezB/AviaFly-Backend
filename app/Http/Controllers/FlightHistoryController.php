@@ -100,6 +100,7 @@ public function indexReport(int $id_flight)
         'flight_history.id as id_flight',
         'flight_history.flight_status',
         'flight_payments.payment_status',
+        'students.id as id_student',
         'students.name',
         'students.last_names',
         'flight_history.type_flight',
@@ -413,17 +414,17 @@ function resetFlightData($id_flight)
             'id_flight' => 'required|numeric',
             'horometroInicial' => 'required|numeric',
             'horometroFinal' => 'required|numeric',
-            'tacometro' => 'numeric',  // Asegúrate de validar que sea numérico
             'flight_alone' => 'required|boolean',
             'total_horometro' => 'required|numeric',
+            'tacometro' => 'nullable|numeric', // Añadido
         ], [
             'horometroInicial.required' => 'Campo requerido',
             'horometroFinal.required' => 'Campo requerido',
             'horometroInicial.numeric' => 'Dato incorrecto',
             'horometroFinal.numeric' => 'Dato incorrecto',
-            'tacometro.numeric' => 'Dato incorrecto',  // Agrega validación numérica para tacometro
             'flight_alone.required' => 'Campo requerido',
             'total_horometro.required' => 'Campo requerido',
+            'tacometro.numeric' => 'El tacómetro debe ser un número válido', // Mensaje personalizado
         ]);
 
         if ($validator->fails()) {
@@ -442,18 +443,13 @@ function resetFlightData($id_flight)
             return response()->json(['msg' => 'Avión no encontrado'], 404);
         }
 
-        if ($data['horometroInicial'] < $flight->initial_horometer) {
-            return response()->json([
-                'msg' => 'El horómetro inicial no puede ser menor al horómetro inicial del vuelo'
-            ], 400);
-        }
-
-
         $flight->flight_alone = $data['flight_alone'];
         $flight->initial_horometer = $data['horometroInicial'];
         $flight->final_horometer = $data['horometroFinal'];
         $flight->total_horometer = $data['total_horometro'];
-        $flight->final_tacometer = $data['tacometro'];
+        $flight->final_tacometer = isset($data['tacometro']) && is_numeric($data['tacometro'])
+            ? floatval($data['tacometro'])
+            : 0;
         $flight->comment = $data['comments'];
         $flight->has_report = 1;
 
@@ -478,7 +474,9 @@ function resetFlightData($id_flight)
         ");
 
         $actual_tacometer = $airplane->tacometer;
-        $difference = !empty($tacometer_difference) ? $tacometer_difference[0]->tacometer_difference : 0;
+        $difference = !empty($tacometer_difference) && isset($tacometer_difference[0]->tacometer_difference)
+            ? $tacometer_difference[0]->tacometer_difference
+            : 0;
         $airplane->tacometer = $actual_tacometer + $difference;
 
         // quitando funcion de diferencia de tacometro
