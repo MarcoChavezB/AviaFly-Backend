@@ -33,7 +33,6 @@ use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SessionController;
-use App\Models\FlightHoursRestrictions;
 
 /*
 |--------------------------------------------------------------------------
