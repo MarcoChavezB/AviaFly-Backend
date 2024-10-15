@@ -545,9 +545,10 @@ public function getInfoVueloAlumno(int $id = null)
             }
         }
 
-        if($this->checkLimitHoursPlane($request->flight_airplane, $request->hours) && $request->flight_type == 'vuelo'){
+        /* if($this->checkLimitHoursPlane($request->flight_airplane, $request->hours) && $request->flight_type == 'vuelo'){
             return response()->json(["errors" => ["No hay horas disponibles en el avión"]], 402);
-        }
+        } */
+
         DB::statement('CALL storeAcademicFlight(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $request->id_student,             // id_student: INT
             $user->id,                        // id_employee: INT

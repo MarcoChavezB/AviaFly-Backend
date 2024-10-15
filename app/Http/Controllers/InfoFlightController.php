@@ -111,6 +111,7 @@ function flightHistory($id_student) {
             'students.user_identification as student_identification',
             'employees.name as instructor_name',
             'flight_history.type_flight as flight_type',
+            'flight_history.flight_alone',
             'flight_history.flight_category as flight_category',
             'flight_history.maneuver',
             'flight_history.flight_date as flight_date',
@@ -139,6 +140,7 @@ function flightHistory($id_student) {
             'flight_history.flight_category',
             'flight_history.flight_date',
             'flight_history.flight_hour',
+            'flight_history.flight_alone',
             'flight_history.hours',
             'sessions.name',
             'flight_payments.total',
@@ -175,6 +177,7 @@ function flightHistory($id_student) {
             $result[$data->student_id]['flights'][] = [
                 'instructor_name' => $data->instructor_name,
                 'payment_method' => $data->payment_method,
+                'flight_alone' => $data->flight_alone,
                 'id_flight' => $data->id_flight,
                 'id_student' => $data->student_id,
                 'flight_type' => $data->flight_type,
