@@ -17,4 +17,5 @@ yarn-error.log
 /.idea
 /.vscode
 /public/bases/*
+/public/newsletters/*
 
