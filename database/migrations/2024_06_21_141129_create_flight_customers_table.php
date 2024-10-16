@@ -44,9 +44,6 @@ return new class extends Migration
             $table->unsignedBigInteger('id_employee');
             $table->foreign('id_employee')->references('id')->on('employees')->onDelete('cascade');
 
-            $table->unsignedBigInteger('id_flight');
-            $table->foreign('id_flight')->references('id')->on('info_flights')->onDelete('cascade');
-
             $table->unsignedBigInteger('id_air_planes')->nullable();
             $table->foreign('id_air_planes')->references('id')->on('air_planes')->onDelete('cascade');
 
@@ -55,6 +52,10 @@ return new class extends Migration
 
             $table->unsignedBigInteger('id_pilot');
             $table->foreign('id_pilot')->references('id')->on('employees')->onDelete('cascade');
+
+
+            $table->unsignedBigInteger('id_concept');
+            $table->foreign('id_concept')->references('id')->on('recreative_concepts')->onDelete('cascade');
 
             $table->timestamps();
         });

@@ -32,7 +32,10 @@ use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\RecreativeConceptController;
+use App\Http\Controllers\SchoolExpenseController;
 use App\Http\Controllers\SessionController;
+use App\Models\RecreativeConcept;
 
 /*
 |--------------------------------------------------------------------------
@@ -343,6 +346,16 @@ Route::prefix('/files')->middleware(['auth:sanctum', 'role:root,admin,employee']
     Route::post('/store', [AcademicFileController::class, 'store']);
 });
 
+Route::prefix('/recreatives')->group(function () {
+    Route::get('/index', [RecreativeConceptController::class, 'index']);
+});
+
+Route::prefix('/expenses')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/index', [SchoolExpenseController::class, 'index']);
+    Route::post('/store', [SchoolExpenseController::class, 'store']);
+    Route::delete('/destroy/{id_expense}', [SchoolExpenseController::class, 'destroy']);
+    Route::post('/status/change', [SchoolExpenseController::class, 'changeStatus']);
+});
 
 Route::prefix('/fingerPrint')->group(function () {
     Route::post('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
