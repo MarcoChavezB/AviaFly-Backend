@@ -355,7 +355,7 @@ public function getInfoVueloAlumno(int $id = null)
         LEFT JOIN flight_history ON flight_payments.id_flight = flight_history.id
         LEFT JOIN monthly_payments ON monthly_payments.id_student = students.id
         WHERE students.id_base = :id_base
-            AND students.id_career = 1
+            AND students.id_career = 2
     ";
 
     $bindings = ['id_base' => $id_base];
