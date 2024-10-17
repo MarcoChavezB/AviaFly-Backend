@@ -430,4 +430,67 @@ function flightRequestIndex() {
         ], 200);
     }
 
+    /*
+ *  Payload: {
+ *      flight:{
+ *          vfr: 0,
+ *          ifr: 0,
+ *          ifr_nocturno: 0,
+ *          local: 0,
+ *          ruta: 0,
+ *          alone: 0
+ *          total: 0
+ *      },
+
+ *      simulador:{
+ *          vfr: 0,
+ *          ifr: 0,
+ *          ifr_nocturno: 0,
+ *          local: 0,
+ *          ruta: 0,
+ *          alone: 0
+ *          total: 0
+ *      },
+     */
+    public function studentHour($id_student){
+        $flightHours = DB::table('flight_payments')
+            ->join('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
+            ->select([
+                DB::raw("SUM(CASE WHEN flight_history.flight_category = 'VFR' THEN flight_history.hours ELSE 0 END) AS vfr_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.flight_category = 'IFR' THEN flight_history.hours ELSE 0 END) AS ifr_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.flight_category = 'IFR_nocturno' THEN flight_history.hours ELSE 0 END) AS ifr_nocturn_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.maneuver = 'local' THEN flight_history.hours ELSE 0 END) AS local_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.maneuver = 'ruta' THEN flight_history.hours ELSE 0 END) AS ruta_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.flight_alone THEN flight_history.hours ELSE 0 END) AS alone_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.type_flight = 'vuelo' THEN flight_history.hours ELSE 0 END) AS vuelo_hours"),
+                DB::raw("SUM(flight_history.hours) AS total_hours")
+            ])
+            ->where('flight_payments.id_student', $id_student)
+            ->where('flight_history.type_flight', 'vuelo')
+            ->first();
+
+
+        $simulatorHours = DB::table('flight_payments')
+            ->join('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
+            ->select([
+                DB::raw("SUM(CASE WHEN flight_history.flight_category = 'VFR' THEN flight_history.hours ELSE 0 END) AS vfr_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.flight_category = 'IFR' THEN flight_history.hours ELSE 0 END) AS ifr_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.flight_category = 'IFR_nocturno' THEN flight_history.hours ELSE 0 END) AS ifr_nocturn_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.maneuver = 'local' THEN flight_history.hours ELSE 0 END) AS local_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.maneuver = 'ruta' THEN flight_history.hours ELSE 0 END) AS ruta_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.flight_alone THEN flight_history.hours ELSE 0 END) AS alone_hours"),
+                DB::raw("SUM(CASE WHEN flight_history.type_flight = 'simulador' THEN flight_history.hours ELSE 0 END) AS simulator_hours"),
+                DB::raw("SUM(flight_history.hours) AS total_hours")
+            ])
+            ->where('flight_payments.id_student', $id_student)
+            ->where('flight_history.type_flight', 'simulador')
+            ->first();
+
+
+        return response()->json([
+            "flight" => $flightHours,
+            "simulator" => $simulatorHours
+        ]);
+    }
+
 }

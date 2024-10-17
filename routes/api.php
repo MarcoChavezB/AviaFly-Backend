@@ -275,6 +275,7 @@ Route::prefix('/infoflights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get/flight/syllabus/data/{id_flight}', [InfoFlightController::class, 'getFlightSyllabusData']);
     Route::get('/airplane/flight/index', [InfoFlightController::class, 'AirplaneFlightIndex']);
     Route::get('/request/flight', [InfoFlightController::class, 'flightRequestIndex']);
+    Route::get('/get/hours/{id_student}', [InfoFlightController::class, 'studentHour']);
 });
 
 
