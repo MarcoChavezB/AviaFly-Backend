@@ -21,7 +21,9 @@ class SchoolExpenseController extends Controller
             'approver:id,name,last_names',
 
             'paymentMethod'
-        ])->get();
+        ])
+        ->orderBy('created_at', 'desc')
+        ->get();
         return response()->json($expenses);
     }
 
