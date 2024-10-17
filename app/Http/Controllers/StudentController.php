@@ -344,7 +344,7 @@ public function getInfoVueloAlumno(int $id = null)
     // Construcción dinámica de la consulta SQL
     $query = "
         SELECT
-            students.id, students.name, students.last_names, careers.name AS career_name, students.start_date, students.user_identification,
+            students.id, students.flight_credit, students.simulator_credit,  students.name, students.last_names, careers.name AS career_name, students.start_date, students.user_identification,
             MAX(CASE WHEN student_subjects.status = 'failed' OR student_subjects.status = 'pending' THEN 1 ELSE 0 END) AS subjects_failed,
             MAX(CASE WHEN flight_payments.payment_status = 'pending' THEN 0 ELSE 0 END) AS pendings_payments,
             MAX(CASE WHEN monthly_payments.status = 'pending' OR monthly_payments.status = 'owed' THEN 0 ELSE 0 END) AS pendings_months
@@ -355,7 +355,7 @@ public function getInfoVueloAlumno(int $id = null)
         LEFT JOIN flight_history ON flight_payments.id_flight = flight_history.id
         LEFT JOIN monthly_payments ON monthly_payments.id_student = students.id
         WHERE students.id_base = :id_base
-            AND students.id_career = 2
+            AND students.id_career = 1
     ";
 
     $bindings = ['id_base' => $id_base];
@@ -366,7 +366,7 @@ public function getInfoVueloAlumno(int $id = null)
         $bindings['id'] = $id;
     }
 
-    $query .= " GROUP BY students.id, students.name, students.last_names, careers.name, students.start_date, students.user_identification";
+    $query .= " GROUP BY students.id, students.flight_credit, students.simulator_credit ,students.name, students.last_names, careers.name, students.start_date, students.user_identification";
 
     // Ejecutar la consulta
     $dataQuery = DB::select($query, $bindings);
@@ -414,10 +414,12 @@ public function getInfoVueloAlumno(int $id = null)
             'vuelo_hours' => '0.00',
         ];
 
+
         $studentsData[] = [
             'id' => $student->id,
             'user_identification' => $student->user_identification,
-            'flight_credit' => '0.00',
+            'flight_credit' => $student->flight_credit,
+            'simulator_credit' => $student->simulator_credit,
             'name' => $student->name,
             'last_names' => $student->last_names,
             'start_date' => $student->start_date,
@@ -481,14 +483,14 @@ public function getInfoVueloAlumno(int $id = null)
             'id_instructor' => 'required|numeric|exists:employees,id',
             'flight_date' => 'required|string',
             'flight_hour' => 'required|string',
-            'equipo' => 'required|string|exists:info_flights,id',
+            'equipo' => 'required|exists:info_flights,id',
             'hours' => 'required|numeric',
             'flight_type' => 'required|string|in:simulador,vuelo',
             'flight_category' => 'required|string|in:VFR,IFR,IFR_nocturno',
             'maneuver' => 'required|string|in:local,ruta',
             'total' => 'required|numeric',
             'hour_instructor_cost' => 'required|numeric',
-            'id_pay_method' => 'required|exists:payment_methods,id',
+/*             'id_pay_method' => 'required|exists:payment_methods,id', */
             'due_week' => 'nullable|numeric',
             'installment_value' => 'nullable|numeric',
             'id_student' => 'required|numeric',
@@ -511,7 +513,7 @@ public function getInfoVueloAlumno(int $id = null)
             'hours.numeric' => 'Las horas de vuelo no son válidas',
             'total.required' => 'campo requerido',
             'total.numeric' => 'campo requerido',
-            'id_pay_method.required' => 'campo requerido',
+/*             'id_pay_method.required' => 'campo requerido', */
             'due_week.numeric' => 'La semana de vencimiento no es válida',
             'installment_value.numeric' => 'El valor de la mensualidad no es válido',
             'equipo.required' => 'El equipo es requerido',
@@ -523,6 +525,9 @@ public function getInfoVueloAlumno(int $id = null)
             'hour_instructor_cost.numeric' => 'El costo de la hora de instructor no es válido',
             'flight_airplane.required' => 'campo requerido',
         ]);
+
+        // default payment method
+        $id_pay_method = $this->payment_method_controller->getCreditoVueloId();
 
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
@@ -538,12 +543,23 @@ public function getInfoVueloAlumno(int $id = null)
         $empleado = Employee::find($request->id_instructor);
 
         $student = Student::find($request->id_student);
-        if ($request->id_pay_method == $this->payment_method_controller->getCreditoVueloId()) {
-            $hoursCredit = $this->getPriceFly($request->flight_type) * $request->hours;
-            if ($student->flight_credit < $hoursCredit) {
-                return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
+/*         if ($request->id_pay_method == $this->payment_method_controller->getCreditoVueloId()) { */
+        $InfoFlight = $this->getPriceFly($request->equipo);
+        $hoursCredit = $InfoFlight->price;
+
+        $creditMapping = [
+            "flight" => $student->flight_credit,
+            "simulator" => $student->simulator_credit
+        ];
+
+        if (array_key_exists($InfoFlight->type, $creditMapping)) {
+            if ($creditMapping[$InfoFlight->type] < $hoursCredit) {
+                return response()->json(["errors" => ["El estudiante no tiene suficientes créditos para el tipo de vuelo: " . $InfoFlight->type]], 400);
             }
+        } else {
+            return response()->json(["errors" => ["Tipo de vuelo no válido"]], 400);
         }
+/*         } */
 
         /* if($this->checkLimitHoursPlane($request->flight_airplane, $request->hours) && $request->flight_type == 'vuelo'){
             return response()->json(["errors" => ["No hay horas disponibles en el avión"]], 402);
@@ -559,7 +575,7 @@ public function getInfoVueloAlumno(int $id = null)
             $request->flight_payment_status,  // flight_payment_status: VARCHAR(50)
             $request->hours,                  // hours: INT
             floatval($request->total),        // total: DECIMAL(8, 2) -- Convertir a decimal
-            $request->id_pay_method,          // pay_method: VARCHAR(50)
+            $id_pay_method,          // pay_method: VARCHAR(50)
             $request->due_week,               // due_week: INT
             floatval($request->installment_value), // installment_value: DECIMAL(8, 2)
             $request->flight_category,        // flight_category: ENUM('VFR', 'IFR', 'IFR_nocturno')
@@ -605,14 +621,14 @@ public function getInfoVueloAlumno(int $id = null)
             'id_instructor' => 'required|numeric|exists:employees,id',
             'flight_date' => 'required|string',
             'flight_hour' => 'required|string',
-            'equipo' => 'required|string|exists:info_flights,id',
+            'equipo' => 'required|exists:info_flights,id',
             'hours' => 'required|numeric',
             'flight_type' => 'required|string|in:simulador,vuelo',
             'flight_category' => 'required|string|in:VFR,IFR,IFR_nocturno',
             'maneuver' => 'required|string|in:local,ruta',
             'total' => 'required|numeric',
             'hour_instructor_cost' => 'required|numeric',
-            'pay_method' => 'required|string|in:efectivo',
+/*             'pay_method' => 'required|string|in:efectivo', */
         ], [
             'id_instructor.required' => 'campo requerido',
             'id_instructor.exists' => 'Selecciona un instructor',
@@ -625,6 +641,9 @@ public function getInfoVueloAlumno(int $id = null)
             'hours.required' => 'campo requerido',
 
         ]);
+
+        // Default pay method
+        $pay_method = $this->payment_method_controller->getCreditoVueloId();
 
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
@@ -643,11 +662,20 @@ public function getInfoVueloAlumno(int $id = null)
         }
 
         $student = Student::find($request->id_student);
-        if ($request->pay_method == 'credit') {
-            $hoursCredit = $this->getPriceFly($request->flight_type) * $request->hours;
-            if ($student->flight_credit < $hoursCredit) {
-                return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
+        $InfoFlight = $this->getPriceFly($request->equipo);
+        $hoursCredit = $InfoFlight->price;
+
+        $creditMapping = [
+            "flight" => $student->flight_credit,
+            "simulator" => $student->simulator_credit
+        ];
+
+        if (array_key_exists($InfoFlight->type, $creditMapping)) {
+            if ($creditMapping[$InfoFlight->type] < $hoursCredit) {
+                return response()->json(["errors" => ["El estudiante no tiene suficientes créditos para el tipo de vuelo: " . $InfoFlight->type]], 400);
             }
+        } else {
+            return response()->json(["errors" => ["Tipo de vuelo no válido"]], 400);
         }
         DB::statement('CALL storeAcademicFlight(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $request->id_student,             // id_student: INT
@@ -659,7 +687,7 @@ public function getInfoVueloAlumno(int $id = null)
             $request->flight_payment_status,  // flight_payment_status: VARCHAR(50)
             $request->hours,                  // hours: INT
             $request->total,                  // total: INT
-            $request->pay_method,             // pay_method: VARCHAR(50)
+            $pay_method,             // pay_method: VARCHAR(50)
             $request->due_week,               // due_week: INT
             $request->installment_value,      // installment_value: DECIMAL(8, 2)
             $request->flight_category,        // flight_category: ENUM('VFR', 'IFR', 'IFR_nocturno')
@@ -693,9 +721,9 @@ public function getInfoVueloAlumno(int $id = null)
         return response()->json($employees, 200);
     }
 
-    function getPriceFly(string $name)
+    function getPriceFly(string $id_equipo)
     {
-        return InfoFlight::where('flight_type', $name)->value('price');
+        return InfoFlight::find($id_equipo);
     }
 
     public function update(Request $request)

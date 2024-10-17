@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\SchoolExpense;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class SchoolExpenseController extends Controller

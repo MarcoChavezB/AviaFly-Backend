@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('min_credit_hours_required', 10, 2)->nullable();
             $table->decimal('min_hours_required', 10, 2)->nullable();
             $table->decimal('max_weight', 10, 2)->nullable();
+            $table->string('type')->nullable();
             $table->timestamps();
         });
     }

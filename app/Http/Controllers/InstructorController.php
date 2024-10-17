@@ -339,6 +339,7 @@ class InstructorController extends Controller
                 ->where('student_subjects.id_teacher', $employee->id)
                 ->where('student_subjects.id_subject', $id)
                 ->orderBy('students.id', 'desc')
+
                 ->distinct()
                 ->paginate(150);
 
