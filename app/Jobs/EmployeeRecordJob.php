@@ -26,7 +26,6 @@ class EmployeeRecordJob implements ShouldQueue
             $currentTime = Carbon::now();
             echo 'Fecha actual: ' . $currentDate . PHP_EOL;
             echo 'Hora actual: ' . $currentTime->toTimeString() . PHP_EOL;
-
             // Obtener registros de "hora de comida" para el día actual (últimos registros por empleado)
             $records = CheckInRecords::where('check_in_records.arrival_date', $currentDate)
                 ->where('check_in_records.type', 'hora de comida')
