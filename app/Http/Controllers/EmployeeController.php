@@ -126,9 +126,6 @@ class EmployeeController extends Controller
 
 public function fingerPrintList($id_finger)
 {
-    // Simular la fecha y hora actual (para pruebas)
-    Carbon::setTestNow(Carbon::createFromFormat('Y-m-d H:i:s', '2024-10-18 08:00:00'));
-
     Log::channel('slack')->error("Se realizó la petición para el empleado " . "$id_finger");
     $currentDay = Carbon::now()->dayOfWeekIso; // Día de la semana (1 = lunes, 7 = domingo)
     $currentDate = Carbon::now()->format('Y-m-d');
@@ -203,11 +200,11 @@ public function fingerPrintList($id_finger)
         $user_type = $employee->user_type;
 
         $admins = Employee::whereIn('user_type', ['admin', 'root'])->get();
-        /* foreach ($admins as $admin) {
+        foreach ($admins as $admin) {
             Mail::to($admin->email)->send(new AdminEntryNotification($employeeName, $currentDateTimeFormatted, $user_type, $type));
         }
 
-        Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTimeFormatted, $user_type, $type)); */
+        Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTimeFormatted, $user_type, $type));
     }
 
     return response()->json(['message' => 'Registro de asistencia exitoso']);

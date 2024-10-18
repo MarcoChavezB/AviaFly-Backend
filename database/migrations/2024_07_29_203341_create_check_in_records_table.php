@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_employee');
             $table->foreign('id_employee')->references('id')->on('employees')->onDelete('cascade');
 
-/*          $table->string('type')->after('arrival_time'); */
+            $table->string('type')->after('arrival_time');
 
             $table->timestamps();
         });
