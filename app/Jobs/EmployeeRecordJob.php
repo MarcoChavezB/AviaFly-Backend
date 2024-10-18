@@ -22,18 +22,18 @@ class EmployeeRecordJob implements ShouldQueue
     public function handle()
     {
         try {
-            // Obtener la fecha actual
+            // Obtener la fecha y hora actuales
             $currentDate = Carbon::now()->format('Y-m-d');
             $currentTime = Carbon::now();
             Log::info('Fecha actual: ' . $currentDate);
             Log::info('Hora actual: ' . $currentTime->toTimeString());
 
-            // Obtener registros de "hora de comida" para el día actual
+            // Obtener registros de "hora de comida" para el día actual (últimos registros por empleado)
             $records = CheckInRecords::select('check_in_records.*')
                 ->join(DB::raw('(SELECT id_employee, MAX(arrival_time) AS last_time
                                  FROM check_in_records
-                                 WHERE arrival_date = "' . $currentDate . '"
-                                 GROUP BY id_employee) AS last_records'), function($join) {
+                                 WHERE arrival_date = ?
+                                 GROUP BY id_employee) AS last_records'), [$currentDate], function($join) {
                     $join->on('check_in_records.id_employee', '=', 'last_records.id_employee')
                          ->on('check_in_records.arrival_time', '=', 'last_records.last_time');
                 })
@@ -48,27 +48,25 @@ class EmployeeRecordJob implements ShouldQueue
 
             foreach ($records as $lastRecord) {
                 // Crear objeto Carbon con la fecha y hora
-                $lastArrivalTime = Carbon::createFromFormat('Y-m-d H:i:s', $lastRecord->arrival_date . ' ' . $lastRecord->arrival_time);
+                $lastArrivalTime = Carbon::parse($lastRecord->arrival_date . ' ' . $lastRecord->arrival_time);
                 Log::info('Última hora de comida: ' . $lastArrivalTime);
 
-                // Si la hora actual es menor que la última hora de comida, no hacemos nada
-                if ($currentTime < $lastArrivalTime) {
-                    Log::info('La hora actual es menor que la última hora de comida, no se envía correo.');
-                    continue; // Saltar al siguiente registro
-                }
+                // Agregar 40 minutos a la última hora de comida
+                $lastMealTimePlus40 = $lastArrivalTime->addMinutes(40);
 
-                $minutesPassed = $currentTime->diffInMinutes($lastArrivalTime);
-                Log::info('Minutos transcurridos desde la última hora de comida: ' . $minutesPassed);
+                // Verificar si la hora actual es mayor que la hora de comida + 40 minutos
+                if ($currentTime > $lastMealTimePlus40) {
+                    Log::info('Han pasado más de 40 minutos desde la última hora de comida.');
 
-                // Verificar si han pasado más de 40 minutos
-                if ($minutesPassed >= 40) {
                     // Obtener el empleado asociado al registro
                     $employee = $lastRecord->employee;
 
                     if ($employee) {
                         // Enviar advertencia al correo del empleado
-                        $this->sendWarning($employee, $lastRecord, $minutesPassed);
+                        $this->sendWarning($employee, $lastRecord, $currentTime->diffInMinutes($lastArrivalTime));
                     }
+                } else {
+                    Log::info('Aún no han pasado 40 minutos desde la última hora de comida.');
                 }
             }
         } catch (\Exception $e) {
