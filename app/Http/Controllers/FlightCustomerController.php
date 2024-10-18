@@ -68,9 +68,9 @@ class FlightCustomerController extends Controller
         foreach ($flightCustomers as $flightCustomer) {
             $flightCustomerArray = [
                 'id_reservation' => $flightCustomer->id,
-                'id_flight_type' => $flightCustomer->info_flight->id,
+                'id_flight_type' => $flightCustomer->concept->id,
                 'id_airplane' => $flightCustomer->airplane?->id ?? 0,
-                'flight_type' => $flightCustomer->info_flight->equipo,
+                'flight_type' => $flightCustomer->concept->concept,
                 'reservation_status' => $flightCustomer->flight_status,
                 'employee' => $flightCustomer->employee->name,
                 'id_pilot' => $flightCustomer->pilot->id,
@@ -129,25 +129,28 @@ class FlightCustomerController extends Controller
      * Store a newly created resource in storage.
      * Payload:
         {
-            "id_flight_type": "1",
-            "id_pilot": "1",
-            "flight_hours": 1,
-            "flight_passengers": "3",
-            "flight_reservation_date": "2024-07-26",
-            "flight_reservation_hour": "13:28",
-            "payment_method": "1",
-            "total_price": 800,
-            "first_passenger_weight": 30,
-            "first_passenger_name": "marco",
-            "first_passenger_age": "20",
-            "second_passenger_weight": 100,
-            "second_passenger_name": "carlos",
-            "second_passenger_age": 30,
-            "tird_passenger_weight": 200,
-            "tird_passenger_name": "pedro",
-            "tird_passenger_age": 40,
-            "pilot_weight": 100,
-            "total_weight": 430
+            {
+                "id_flight_type": 1, // concepto recreativo
+                "id_pilot": "7",
+                "id_airplane": 0,
+                "flight_hours": 1,
+                "flight_passengers": 1,
+                "flight_reservation_date": "2024-10-18",
+                "flight_reservation_hour": "17:22",
+                "payment_method": "7",
+                "total_price": 150,
+                "first_passenger_weight": 70,
+                "first_passenger_name": "joijij",
+                "first_passenger_age": 0,
+                "second_passenger_weight": 0,
+                "second_passenger_name": "",
+                "second_passenger_age": 0,
+                "tird_passenger_weight": 0,
+                "tird_passenger_name": "",
+                "tird_passenger_age": 0,
+                "pilot_weight": "100.00",
+                "total_weight": 170
+            }
         }
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -156,7 +159,7 @@ class FlightCustomerController extends Controller
     {
         $data = $request->all();
         $validator = Validator::make($data, [
-            'id_flight_type' => 'required|exists:info_flights,id',
+            'id_flight_type' => 'required|exists:recreative_concepts,id',
             'id_pilot' => 'required|exists:employees,id',
             'flight_hours' => 'required|numeric',
             'flight_passengers' => 'required|numeric|min:1|max:3',
@@ -225,7 +228,7 @@ class FlightCustomerController extends Controller
         $flightCustomer->total = $data['total_price'];
 
         $flightCustomer->id_employee = $employeeId;
-        $flightCustomer->id_flight = $data['id_flight_type'];
+        $flightCustomer->id_concept = $data['id_flight_type'];
         $flightCustomer->id_payment_method = $data['payment_method'];
         $flightCustomer->id_pilot = $data['id_pilot'];
 

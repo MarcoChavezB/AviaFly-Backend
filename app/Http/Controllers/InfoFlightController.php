@@ -365,12 +365,11 @@ function flightRequestIndex() {
         }
 
         $queryResult = $query->get();
-
         // Buscar en flight_customers
         $queryCustomer = DB::table('flight_customers')
             ->where('reservation_date', $flight_date)
             ->where('flight_status', 'pendiente')
-            ->where('id_flight', $id_equipo)
+            ->where('id_concept', $id_equipo)
             ->where(function ($q) use ($start_time_str, $end_time_str) {
                 $q->whereBetween('reservation_hour', [$start_time_str, $end_time_str])
                     ->orWhereRaw('? BETWEEN reservation_hour AND ADDTIME(flight_customers.reservation_hour, SEC_TO_TIME(flight_customers.flight_hours * 3600))', [$start_time_str])
