@@ -58,11 +58,16 @@ class EmployeeRecordJob implements ShouldQueue
                 $lastArrivalTime = Carbon::parse($lastRecord->arrival_date . ' ' . $lastRecord->meal_time);
                 echo 'Última hora de comida: ' . $lastArrivalTime . PHP_EOL;
 
-                // Agregar 120 minutos a la última hora de comida
-                $lastMealTimePlus120 = $lastArrivalTime->copy()->addMinutes(120); // Usar copy() para no modificar la original
+                $timeToAdd = 40; // Por defecto 40 minutos
 
+                // Verificar si es el empleado con ID 3
+                if($lastRecord->employee_id == 3){
+                    $timeToAdd = 120; // Para el empleado 3, 120 minutos
+                }
+
+                $lastMealTimePlus = $lastArrivalTime->copy()->addMinutes($timeToAdd);
                 // Verificar si la hora actual es mayor que la hora de comida + 40 minutos
-                if ($currentTime > $lastMealTimePlus120) {
+                if ($currentTime > $lastMealTimePlus) {
                     echo 'Han pasado más de 120 minutos desde la última hora de comida.' . PHP_EOL;
 
                     // Crear una instancia de Employee con datos de stdClass
@@ -75,7 +80,7 @@ class EmployeeRecordJob implements ShouldQueue
                     // Enviar advertencia al correo del empleado
                     $this->sendWarning($employee, $currentTime->diffInMinutes($lastArrivalTime));
                 } else {
-                    echo 'Aún no han pasado 40 minutos desde la última hora de comida.' . PHP_EOL;
+                    echo 'Aún no han pasado 120 minutos desde la última hora de comida.' . PHP_EOL;
                 }
             }
         } catch (\Exception $e) {
