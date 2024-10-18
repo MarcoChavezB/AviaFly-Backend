@@ -68,7 +68,11 @@ class EmployeeRecordJob implements ShouldQueue
                 $lastMealTimePlus = $lastArrivalTime->copy()->addMinutes($timeToAdd);
                 // Verificar si la hora actual es mayor que la hora de comida + 40 minutos
                 if ($currentTime > $lastMealTimePlus) {
-                    echo 'Han pasado más de 120 minutos desde la última hora de comida.' . PHP_EOL;
+                    if($lastRecord->employee_id == 3){
+                        echo 'Han pasado más de 120 minutos desde la última hora de comida.' . PHP_EOL;
+                    }else{
+                        echo 'Han pasado más de 40 minutos desde la última hora de comida.' . PHP_EOL;
+                    }
 
                     // Crear una instancia de Employee con datos de stdClass
                     $employee = new Employee([
@@ -80,7 +84,11 @@ class EmployeeRecordJob implements ShouldQueue
                     // Enviar advertencia al correo del empleado
                     $this->sendWarning($employee, $currentTime->diffInMinutes($lastArrivalTime));
                 } else {
-                    echo 'Aún no han pasado 120 minutos desde la última hora de comida.' . PHP_EOL;
+                    if($lastRecord->employee_id == 3){
+                        echo 'aun no pasado más de 120 minutos desde la última hora de comida.' . PHP_EOL;
+                    }else{
+                        echo 'aun no pasado más de 40 minutos desde la última hora de comida.' . PHP_EOL;
+                    }
                 }
             }
         } catch (\Exception $e) {
