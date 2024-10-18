@@ -122,89 +122,96 @@ class EmployeeController extends Controller
         }
     }
 
-    public function fingerPrintList($id_finger)
-    {
-
-        Log::channel('slack')->error("se realizo la peticion para el empleado" . "$id_finger");
-        $day = date('N');
-        $currentDate = date('Y-m-d');
-        $currentTime = date('H:i:s');
-
-        if (($day == 16 && ($currentTime < '08:00:00' || $currentTime > '14:00:00')) || $day == 7) {
-            return response()->json(['message' => 'Fuera de horario laboral'], 410);
-        }
-
-        if ($day != 16 && ($currentTime < '08:00:00' || $currentTime > '17:00:00')) {
-            return response()->json(['message' => 'Fuera de horario laboral'], 410);
-        }
-
-        $employee = Employee::find($id_finger);
-
-        if (!$employee) {
-            return response()->json(['message' => 'Empleado no encontrado'], 414);
-        }
 
 
-        if (CheckInRecords::where('id_employee', $employee->id)->where('arrival_date', date('Y-m-d'))->count() >= 4) {
-            return response()->json(['message' => 'Ya se ha registrado la asistencia del día de hoy'], 400);
-        }
+public function fingerPrintList($id_finger)
+{
+    // Simular la fecha y hora actual (para pruebas)
+    Carbon::setTestNow(Carbon::createFromFormat('Y-m-d H:i:s', '2024-10-18 08:00:00'));
 
-        $todayRecords = CheckInRecords::where('id_employee', $employee->id)
-                                       ->where('arrival_date', $currentDate)
-                                       ->orderBy('arrival_time', 'desc')
-                                       ->get();
+    Log::channel('slack')->error("Se realizó la petición para el empleado " . "$id_finger");
+    $currentDay = Carbon::now()->dayOfWeekIso; // Día de la semana (1 = lunes, 7 = domingo)
+    $currentDate = Carbon::now()->format('Y-m-d');
+    $currentTime = Carbon::now(); // Obtener objeto Carbon para la hora actual
 
-        if ($todayRecords->isNotEmpty()) {
-            $lastRecord = $todayRecords->first();
-            $lastArrivalTime = $lastRecord->arrival_time;
-
-            $lastArrivalDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $currentDate . ' ' . $lastArrivalTime);
-            $currentDateTime = \Carbon\Carbon::now();
-
-            if ($currentDateTime->diffInMinutes($lastArrivalDateTime) < 1) {
-                return response()->json(['message' => 'Ya se ha registrado asistencia recientemente. Espera 20 minutos.'], 400);
-            }
-        }
-
-        // entrada / hora de comida / fin de hora de comida / salid
-
-        if ($todayRecords->isEmpty()) {
-            $type = 'entrada';
-        } elseif ($todayRecords->first()->type == 'entrada') {
-            $type = 'hora de comida';
-        } elseif ($todayRecords->first()->type == 'hora de comida') {
-            $type = 'fin de hora de comida';
-        } elseif ($todayRecords->first()->type == 'fin de hora de comida' || Carbon::now()->format('H:i:s') > '20:00:00') {
-            $type = 'salida';
-        } else {
-            return response()->json(['message' => $todayRecords->first()], 410);
-        }
-
-        CheckInRecords::create([
-            'arrival_date' => $currentDate,
-            'arrival_time' => $currentTime,
-            'id_employee' => $employee->id,
-            'type' => $type
-        ]);
-
-
-        if($type === 'entrada' ){
-
-            $employeeName = $employee->name . ' ' . $employee->last_names;
-            $currentDateTimeFormatted = date('Y-m-d H:i:s');
-            $user_type = $employee->user_type;
-
-            $admins = Employee::whereIn('user_type', ['admin', 'root'])->get();
-
-            foreach ($admins as $admin) {
-                Mail::to($admin->email)->send(new AdminEntryNotification($employeeName, $currentDateTimeFormatted, $user_type, $type));
-            }
-
-            Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTimeFormatted, $user_type, $type));
-        }
-
-        return response()->json(['message' => 'Registro de asistencia y correos enviados correctamente']);
+    $employee = Employee::find($id_finger);
+    if (!$employee) {
+        return response()->json(['message' => 'Empleado no encontrado'], 414);
     }
+
+    // Obtener los registros del día actual
+    $todayRecords = CheckInRecords::where('id_employee', $employee->id)
+                                  ->where('arrival_date', $currentDate)
+                                  ->orderBy('arrival_time', 'desc')
+                                  ->get();
+
+    // Si hay registros, validar el tiempo desde el último registro
+    if ($todayRecords->isNotEmpty()) {
+        $lastRecord = $todayRecords->first(); // Último registro
+
+        // Combina la fecha actual con el tiempo del último registro
+        $lastRecordTime = Carbon::createFromFormat('Y-m-d H:i:s', $currentDate . ' ' . $lastRecord->arrival_time);
+
+        // Validar si el último registro fue en los últimos 10 minutos
+        if ($currentTime->diffInMinutes($lastRecordTime) < 10) {
+            return response()->json(['message' => 'Ya se ha registrado recientemente. Debes esperar al menos 10 minutos.'], 400);
+        }
+    }
+
+    // Determinar el tipo de registro
+    if ($todayRecords->isEmpty()) {
+        // Primer registro del día, debe ser entrada
+        $type = 'entrada';
+    } else {
+        // Obtenemos el último registro
+        $lastType = $todayRecords->first()->type;
+
+        if ($lastType === 'entrada') {
+            // Si el último registro fue una entrada, se puede registrar una hora de comida
+            $type = 'hora de comida';
+        } elseif ($lastType === 'hora de comida') {
+            // Si el último registro fue una hora de comida, se puede registrar un fin de hora de comida
+            $type = 'fin de hora de comida';
+        } elseif ($lastType === 'fin de hora de comida') {
+            // Permitir la salida a partir de la hora indicada
+            if (
+                ($currentDay >= 1 && $currentDay <= 5 && $currentTime->format('H:i:s') >= '18:00:00') || // Lunes a viernes a partir de las 16:00
+                ($currentDay == 6 && $currentTime->format('H:i:s') >= '13:00:00') // Sábados a partir de las 13:00
+            ) {
+                $type = 'salida';
+            } else {
+                // Si no se cumple la condición para salida, se puede registrar otra hora de comida
+                $type = 'hora de comida'; // Permitir registrar más horas de comida
+            }
+        } elseif ($lastType === 'salida') {
+            return response()->json(['message' => 'No se puede registrar después de una salida.'], 410);
+        }
+    }
+
+    // Registrar el nuevo tipo de asistencia
+    CheckInRecords::create([
+        'arrival_date' => $currentDate,
+        'arrival_time' => $currentTime->format('H:i:s'), // Asegúrate de guardar solo la hora
+        'id_employee' => $employee->id,
+        'type' => $type
+    ]);
+
+    // Enviar correos para la "entrada"
+    if ($type === 'entrada') {
+        $employeeName = $employee->name . ' ' . $employee->last_names;
+        $currentDateTimeFormatted = $currentTime->format('Y-m-d H:i:s');
+        $user_type = $employee->user_type;
+
+        $admins = Employee::whereIn('user_type', ['admin', 'root'])->get();
+        /* foreach ($admins as $admin) {
+            Mail::to($admin->email)->send(new AdminEntryNotification($employeeName, $currentDateTimeFormatted, $user_type, $type));
+        }
+
+        Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTimeFormatted, $user_type, $type)); */
+    }
+
+    return response()->json(['message' => 'Registro de asistencia exitoso']);
+}
 
     public function deleteAccessUser($id){
 
