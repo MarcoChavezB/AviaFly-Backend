@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\AdminEntryNotification;
+use App\Mail\EmailCheckNotification;
 use App\Mail\EmployeeEntryNotification;
 use App\Models\CheckInRecords;
 use App\Models\Employee;
@@ -194,10 +195,13 @@ public function fingerPrintList($id_finger)
     ]);
 
     // Enviar correos para la "entrada"
+
+
+    $employeeName = $employee->name . ' ' . $employee->last_names;
+    $currentDateTimeFormatted = $currentTime->format('Y-m-d H:i:s');
+    $user_type = $employee->user_type;
+
     if ($type === 'entrada') {
-        $employeeName = $employee->name . ' ' . $employee->last_names;
-        $currentDateTimeFormatted = $currentTime->format('Y-m-d H:i:s');
-        $user_type = $employee->user_type;
 
         $admins = Employee::whereIn('user_type', ['admin', 'root'])->get();
         foreach ($admins as $admin) {
@@ -207,6 +211,9 @@ public function fingerPrintList($id_finger)
         Mail::to($employee->email)->send(new EmployeeEntryNotification($employeeName, $currentDateTimeFormatted, $user_type, $type));
     }
 
+    if($type != 'entrada'){
+        Mail::to($employee->email)->send(new EmailCheckNotification($employeeName, $currentDateTimeFormatted, $type));
+    }
     return response()->json(['message' => 'Registro de asistencia exitoso']);
 }
 
