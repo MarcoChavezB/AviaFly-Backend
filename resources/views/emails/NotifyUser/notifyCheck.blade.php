@@ -38,7 +38,7 @@
 
         <p>Te informamos que tu {{ $checkType }} ha sido registrado exitosamente el {{ $entryDateTime }}.</p>
 
-        <p>Si tienes alguna duda, por favor contacta con el departamento de recursos humanos.</p>
+        <p>Si tienes alguna duda, por favor contacta con el departamento sistemas.</p>
 
         <div class="footer">
             <p>Este es un mensaje generado automáticamente, por favor no respondas a este correo.</p>
