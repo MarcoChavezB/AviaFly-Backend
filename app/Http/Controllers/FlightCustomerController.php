@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AirPlane;
+use App\Models\CustomerPayment;
 use App\Models\FlightCustomer;
 use App\Models\InfoFlight;
 use App\Models\User;
@@ -232,11 +233,21 @@ class FlightCustomerController extends Controller
         $flightCustomer->id_payment_method = $data['payment_method'];
         $flightCustomer->id_pilot = $data['id_pilot'];
 
+
         if($data['id_airplane'] != 0){
             $flightCustomer->id_air_planes = $data['id_airplane'];
         }
 
         $flightCustomer->save();
+
+
+        $customerPayment = new CustomerPayment();
+        if($data['payment_method'] != $this->paymentMethodIdController->getAbonosId()){
+            $customerPayment->amount = $data['total_price'];
+            $customerPayment->id_payment_method = $data['payment_method'];
+            $customerPayment->id_customer_flight = $flightCustomer->id;
+            $customerPayment->save();
+        }
 
         return response()->json(['message' => 'Reservacion creada con exito'], 201);
     }

@@ -466,6 +466,7 @@ function flightRequestIndex() {
             ])
             ->where('flight_payments.id_student', $id_student)
             ->where('flight_history.type_flight', 'vuelo')
+            ->whereNotIn('flight_history.flight_status', ['cancelado', 'pendiente'])
             ->first();
 
 
@@ -483,6 +484,7 @@ function flightRequestIndex() {
             ])
             ->where('flight_payments.id_student', $id_student)
             ->where('flight_history.type_flight', 'simulador')
+            ->whereNotIn('flight_history.flight_status', ['cancelado', 'pendiente'])
             ->first();
 
 

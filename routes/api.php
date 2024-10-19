@@ -35,7 +35,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RecreativeConceptController;
 use App\Http\Controllers\SchoolExpenseController;
 use App\Http\Controllers\SessionController;
-use App\Models\RecreativeConcept;
 
 /*
 |--------------------------------------------------------------------------
@@ -349,6 +348,9 @@ Route::prefix('/files')->middleware(['auth:sanctum', 'role:root,admin,employee']
 
 Route::prefix('/recreatives')->group(function () {
     Route::get('/index', [RecreativeConceptController::class, 'index']);
+    Route::get('/index/amount/info', [RecreativeConceptController::class, 'index']);
+    Route::get('/report/{id_flight_customer}', [RecreativeConceptController::class, 'reportFlight']);
+    Route::post('/amount', [RecreativeConceptController::class, 'storeInstallment']);
 });
 
 Route::prefix('/expenses')->middleware(['auth:sanctum'])->group(function () {
