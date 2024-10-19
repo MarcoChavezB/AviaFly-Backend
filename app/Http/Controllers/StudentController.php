@@ -545,7 +545,7 @@ public function getInfoVueloAlumno(int $id = null)
         $student = Student::find($request->id_student);
 /*         if ($request->id_pay_method == $this->payment_method_controller->getCreditoVueloId()) { */
         $InfoFlight = $this->getPriceFly($request->equipo);
-        $hoursCredit = $InfoFlight->price;
+        $hoursCredit = $InfoFlight->hours;
 
         $creditMapping = [
             "flight" => $student->flight_credit,
