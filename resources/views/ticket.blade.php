@@ -119,7 +119,7 @@
         <p><span>Total:</span> <span>${{ $data[0]['totalAmount'] }}</span></p>
     </div>
     <div class="bonificacion">
-        <p>>Total ${{incomeDetails->total}}</p>
+        <p>>Total ${{$data[0]['totalAmount']}}</p>
     </div>
     <div class="footer">
         <p>
