@@ -218,9 +218,13 @@ class StudentController extends Controller
             if (!$student) {
                 return response()->json(["error" => "Estudiante no encontrado"], 404);
             }
+
+            // Obtener carrera
             $career = DB::table('careers')
                 ->where('id', $student->id_career)
                 ->first(['name']);
+
+            // Obtener asignaturas
             $subjects = DB::table('student_subjects')
                 ->where('student_subjects.id_student', $id)
                 ->join('subjects', 'student_subjects.id_subject', '=', 'subjects.id')
@@ -232,14 +236,23 @@ class StudentController extends Controller
                     DB::raw('CONCAT(employees.name, " ", employees.last_names) as teacher_full_name'),
                     'employees.id as teacher_id',
                     'employees.user_identification as teacher_identification',
-                    'student_subjects.updated_at as last_update',
+                    'student_subjects.updated_at as last_update'
                 )
                 ->get();
 
+            // Formatear los créditos a un dígito decimal
+            $student->credit = number_format($student->credit, 1);
+            $student->flight_credit = number_format($student->flight_credit, 1);
+            $student->simulator_credit = number_format($student->simulator_credit, 1);
+
+            // Asignar el nombre de la carrera al estudiante
             $student->career_name = $career->name;
+
+            // Ocultar ciertos campos
             $student->makeHidden(['id_created_by', 'id_history_flight', 'created_at', 'updated_at']);
 
             return response()->json(['student' => $student, 'student_subjects' => $subjects], 200);
+
         } catch (\Exception $e) {
             return response()->json(["error" => $e->getMessage()], 500);
         }
