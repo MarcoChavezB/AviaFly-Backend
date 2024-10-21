@@ -119,7 +119,7 @@
         <p><span>Total:</span> <span>${{ $incomeDetails->total }}</span></p>
     </div>
     <div class="bonificacion">
-        <p>Bonificación $0.00</p>
+        <p>>Total ${{incomeDetails->total}}</p>
     </div>
     <div class="footer">
         <p>

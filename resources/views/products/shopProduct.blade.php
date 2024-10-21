@@ -120,7 +120,7 @@
         <p><span>Total:</span> <span>${{ number_format($incomeDetails->total, 2, '.', '') }}</span></p>
     </div>
     <div class="bonificacion">
-        <p>Bonificación $0.00</p>
+        <p>>Total ${{incomeDetails->total}}</p>
     </div>
     <div class="footer">
         <p>
