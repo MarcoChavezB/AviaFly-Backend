@@ -118,9 +118,7 @@
         <p><span>Comision:</span> <span>${{ $incomeDetails->commission }}</span></p>
         <p><span>Total:</span> <span>${{ $incomeDetails->total }}</span></p>
     </div>
-    <div class="bonificacion">
-        <p>>Total ${{incomeDetails->total}}</p>
-    </div>
+
     <div class="footer">
         <p>
             Agradecemos tu confianza, es un placer atenderte. No hay devoluciones de pagos por ningún motivo.
