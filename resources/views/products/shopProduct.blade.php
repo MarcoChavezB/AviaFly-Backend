@@ -58,12 +58,10 @@
         td {
             text-align: center;
         }
-        .bonificacion {
+        .total { /* Cambié de bonificacion a total */
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        .bonificacion p {
             font-size: 0.8rem;
             font-weight: bold;
         }
@@ -117,7 +115,7 @@
     <div class="payment-info">
         <p><span>Forma de pago:</span> <span>{{ $incomeDetails->payment_method }}</span></p>
         <p><span>Comisión:</span> <span>${{ number_format($incomeDetails->commission, 2, '.', '') }}</span></p>
-        <p class="bonificacion"><span>Total:</span> <span>${{ number_format($incomeDetails->total, 2, '.', '') }}</span></p>
+        <p class="total"><span>Total:</span> <span>${{ number_format($incomeDetails->total, 2, '.', '') }}</span></p> <!-- Clase modificada -->
     </div>
     <div class="footer">
         <p>
