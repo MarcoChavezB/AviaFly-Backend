@@ -116,10 +116,7 @@
     <div class="payment-info">
         <p><span>Forma de pago:</span> <span>{{$data[0]['payment_method']}}</span></p>
         <p><span>Comision:</span> <span>${{ $data[0]['commission'] }}</span></p>
-        <p><span>Total:</span> <span>${{ $data[0]['totalAmount'] }}</span></p>
-    </div>
-    <div class="bonificacion">
-        <p>>Total ${{$data[0]['totalAmount']}}</p>
+        <p class="bonificacion"><span>Total:</span> <span>${{ $data[0]['totalAmount'] }}</span></p>
     </div>
     <div class="footer">
         <p>

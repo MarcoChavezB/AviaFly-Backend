@@ -117,10 +117,7 @@
     <div class="payment-info">
         <p><span>Forma de pago:</span> <span>{{ $incomeDetails->payment_method }}</span></p>
         <p><span>Comisión:</span> <span>${{ number_format($incomeDetails->commission, 2, '.', '') }}</span></p>
-        <p><span>Total:</span> <span>${{ number_format($incomeDetails->total, 2, '.', '') }}</span></p>
-    </div>
-    <div class="bonificacion">
-        <p>>Total ${{ number_format($incomeDetails->total, 2, '.', '') }}</p>
+        <p class="bonificacion"><span>Total:</span> <span>${{ number_format($incomeDetails->total, 2, '.', '') }}</span></p>
     </div>
     <div class="footer">
         <p>
