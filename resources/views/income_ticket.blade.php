@@ -58,12 +58,10 @@
         td {
             text-align: center;
         }
-        .bonificacion {
+        .total {
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        .bonificacion p {
             font-size: 0.8rem;
             font-weight: bold;
         }
@@ -85,6 +83,7 @@
             ATA100618L60<br>
             {{ date('Y-m-d H:i:s') }}<br>
             {{$baseData->location}}
+        </p>
     </div>
     <div class="user">
         <p>Autoriza: <span>{{ $employeeName }}  {{ $employeeLastNames  }}</span><br>
@@ -116,7 +115,7 @@
     <div class="payment-info">
         <p><span>Forma de pago:</span> <span>{{ $incomeDetails->payment_method }}</span></p>
         <p><span>Comision:</span> <span>${{ $incomeDetails->commission }}</span></p>
-        <p class="bonificacion"><span>Total:</span> <span>${{ $incomeDetails->total }}</span></p>
+        <p class="total"><span>Total:</span> <span>${{ $incomeDetails->total }}</span></p> <!-- Clase modificada -->
     </div>
     <div class="footer">
         <p>
