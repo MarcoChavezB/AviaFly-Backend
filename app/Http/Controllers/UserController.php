@@ -65,7 +65,9 @@ class UserController extends Controller
 
         $userType = $user->user_type;
         if($user->user_type == 'student'){
-            $user = Student::where('user_identification', $user->user_identification)->first();
+            $user = Student::where('user_identification', $user->user_identification)
+            ->with('career')
+            ->first();
             $userType = 'student';
         }
 

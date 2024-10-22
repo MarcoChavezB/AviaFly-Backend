@@ -1204,12 +1204,13 @@ public function getInfoVueloAlumno(int $id = null)
 
         $flightPayments = DB::table('flight_payments')
             ->join('payments', 'flight_payments.id', '=', 'payments.id_flight')
+            ->join('payment_methods', 'payments.id_payment_method', '=', 'payment_methods.id')
             ->select(
                 DB::raw("'Pago de Vuelo' as concept"),
                 DB::raw("'1' as quantity"),
                 'payments.amount as total',
                 'payments.id',
-                'payments.id_payment_method as payment_method',
+                'payment_methods.type as payment_method',
                 'payments.created_at as payment_date',
                 'payments.payment_ticket as ticket_path'
             )

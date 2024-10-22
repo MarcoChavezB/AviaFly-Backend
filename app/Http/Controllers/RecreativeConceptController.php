@@ -77,10 +77,28 @@ class RecreativeConceptController extends Controller
      * }
      */
     public function storeInstallment(Request $request){
+        $paymentController = new PaymentMethodController();
         $recreativeFlight = FlightCustomer::find($request->id_flight_history);
 
+        if($request->installment_value == 0){
+            return response()->json(["msg" => "El monto no puede ser 0"], 400);
+        }
+
         if(!$recreativeFlight){
-            return response()->json(["msg" => "Object not found"]);
+            return response()->json(["msg" => "Object not found"], 404);
+        }
+
+        if($recreativeFlight->flight_status == 'cancelado'){
+            return response()->json(["msg" => "no se puede abonar un vuelo cancelado"], 400);
+        }
+
+        if($recreativeFlight->id_payment_method != $paymentController->getAbonosId()){
+            return response()->json(["msg" => "el metodo de pago no admite abonos"], 400);
+        }
+
+
+        if($request->installment_value > $recreativeFlight->total){
+            return response()->json(["msg" => "no se puede abonar mas del total"], 400);
         }
 
         $paymentRecreative = new CustomerPayment();
