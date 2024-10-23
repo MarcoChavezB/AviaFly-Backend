@@ -203,7 +203,7 @@ public function fingerPrintList($id_finger)
 
     if ($type === 'entrada') {
 
-        $admins = Employee::whereIn('user_type', ['admin', 'root'])->get();
+        $admins = Employee::whereIn('user_type', ['root'])->get();
         foreach ($admins as $admin) {
             Mail::to($admin->email)->send(new AdminEntryNotification($employeeName, $currentDateTimeFormatted, $user_type, $type));
         }
