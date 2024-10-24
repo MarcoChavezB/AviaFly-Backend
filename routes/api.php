@@ -35,6 +35,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RecreativeConceptController;
 use App\Http\Controllers\SchoolExpenseController;
 use App\Http\Controllers\SessionController;
+use App\Models\IncomeDetails;
 
 /*
 |--------------------------------------------------------------------------
@@ -125,6 +126,9 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/report/{id_student?}', [StudentController::class, 'getInfoVueloAlumno']);
     Route::get('/flight/employees/bystudent/{id}', [StudentController::class, 'getEmployeesByStudent']);
     Route::post('/flight/store', [StudentController::class, 'storeFlight']);
+
+    Route::get('/incomes/index', [IncomesController::class, 'indexIncomes']);
+    Route::get('incomes/{id_student}', [IncomesController::class, 'getIncomesByStudentId']);
 });
 
 Route::prefix('/bases')->middleware(['auth:sanctum', 'role:root,admin,employee,instructor,flight_instructor,student'])->group(function () {

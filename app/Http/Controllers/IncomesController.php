@@ -358,71 +358,183 @@ class IncomesController extends Controller
         return response()->json($incomeDetail, 200);
     }
 
-public function delete($id_income){
-    $request = request(); // Obtener el request actual
-    $income = Income::find($id_income);
+    public function delete($id_income){
+        $request = request(); // Obtener el request actual
+        $income = Income::find($id_income);
 
-    if (!$income) {
-        return response()->json("income not found");
+        if (!$income) {
+            return response()->json("income not found");
+        }
+
+        $incomeDetail = $income->incomeDetails;
+        if (!$incomeDetail) {
+            return response()->json("income detail not found");
+        }
+
+        $student = Student::find($incomeDetail->student_id);
+        if (!$student) {
+            return response()->json("student not found");
+        }
+
+        // Ajustar créditos según el concepto
+        if ($income->concept == "Horas de vuelo") {
+            $student->flight_credit -= $income->quantity;
+            $student->save();
+        }
+
+        if ($income->concept == "Horas simulador") {
+            $student->simulator_credit -= $income->quantity;
+            $student->save();
+        }
+
+        $fileController = new FileController();
+        $deletedFiles = []; // Array para almacenar los archivos eliminados
+        if ($incomeDetail->file_path) {
+            $fileController->deleteFile($incomeDetail->file_path);
+            $deletedFiles[] = $incomeDetail->file_path; // Registrar el archivo eliminado
+        }
+        if ($incomeDetail->ticket_path) {
+            $fileController->deleteFile($incomeDetail->ticket_path);
+            $deletedFiles[] = $incomeDetail->ticket_path; // Registrar el archivo eliminado
+        }
+
+        // Eliminar el ingreso
+        $income->delete();
+
+        // Información del empleado que realizó la eliminación
+        $employee = $request->user(); // Obtener el usuario autenticado
+        $employeeInfo = [
+            'id' => $employee->id ?? 'N/A',
+            'name' => $employee->name ?? 'N/A', // Asegúrate de que el modelo tiene este campo
+            'user_identification' => $employee->user_identification ?? 'N/A', // Identificación del empleado
+'user_type' => $employee->user_type ?? 'N/A', // Tipo de usuario
+        ];
+
+        // Crear un mensaje de log detallado
+        Log::channel('slack')->info('Ingreso eliminado', [
+           'income_id' => $income->id,
+            'concept' => $income->concept,
+            'quantity' => $income->quantity,
+            'student_id' => $student->id,
+            'student_name' => $student->name ?? 'N/A', // Asegúrate de que este campo existe
+            'deleted_files' => $deletedFiles,
+            'timestamp' => now()->toString(), // Marca de tiempo de la operación
+            'employee' => $employeeInfo, // Información del empleado
+        ]);
+
+        return response()->json(["income" => $income, "incomeDetail" => $incomeDetail]);
+    }
+public function indexIncomes() {
+    $students = DB::table('students')
+        ->select(
+            'students.id as student_id',
+            'income_details.id as income_details_id',
+            'students.user_identification',
+            'students.name as student_name',
+            'students.last_names as student_lastnames',
+            'incomes.concept as concept',
+            'incomes.total as concept_total',
+            'incomes.discount as discount',
+            'incomes.quantity as quantity',
+            DB::raw('COUNT(incomes.id) as income_count'),
+            DB::raw('SUM(incomes.total) as total_incomes')
+        )
+        ->rightJoin('income_details', 'income_details.student_id', '=', 'students.id')
+        ->rightJoin('incomes', 'income_details.id', '=', 'incomes.income_details_id')
+        ->groupBy(
+            'students.id',
+            'students.user_identification',
+            'students.name',
+            'students.last_names',
+            'income_details.id',
+            'incomes.concept',
+            'incomes.total',
+            'incomes.discount',
+            'incomes.quantity'
+        )
+        ->get();
+
+    $studentData = [];
+
+    foreach ($students as $student) {
+        if (!isset($studentData[$student->student_id])) {
+            $studentData[$student->student_id] = [
+                'id_student' => $student->student_id,
+                'user_identification' => $student->user_identification,
+                'student_name' => $student->student_name,
+                'student_lastnames' => $student->student_lastnames,
+                'income_count' => 0,
+                'total_incomes' => 0,
+                'incomes' => []
+            ];
+        }
+
+        $income = IncomeDetails::with('employee')->find($student->income_details_id);
+
+        if ($income && $income->employee) {
+            $studentData[$student->student_id]['incomes'][] = [
+                'id' => $income->id,
+                'employee_name' => $income->employee->name,
+                'student_id' => $income->student_id,
+                'commission' => $income->commission,
+                'payment_method' => $income->payment_method,
+                'bank_account' => $income->bank_account,
+                'file_path' => $income->file_path,
+                'ticket_path' => $income->ticket_path,
+                'total' => $income->total,
+                'payment_date' => $income->payment_date,
+                'created_at' => $income->created_at,
+                'updated_at' => $income->updated_at,
+                'concept' => $student->concept,
+                'concept_total' => $student->concept_total,
+                'discount' => $student->discount,
+                'quantity' => $student->quantity
+            ];
+        }
+
+        $studentData[$student->student_id]['income_count'] += $student->income_count;
+        $studentData[$student->student_id]['total_incomes'] += $student->total_incomes;
     }
 
-    $incomeDetail = $income->incomeDetails;
-    if (!$incomeDetail) {
-        return response()->json("income detail not found");
+    $studentData = array_values($studentData);
+
+    return response()->json(['students' => $studentData], 200);
+}
+
+
+public function getIncomesByStudentId($studentId) {
+    // Asegúrate de que el ID del estudiante sea un número
+    if (!is_numeric($studentId)) {
+        return response()->json(['error' => 'Invalid student ID'], 400);
     }
 
-    $student = Student::find($incomeDetail->student_id);
-    if (!$student) {
-        return response()->json("student not found");
+    // Consulta los ingresos del estudiante por ID
+    $incomes = DB::table('incomes')
+        ->select(
+            'incomes.id',
+            'employees.name as employee_name',
+            'income_details.student_id',
+            'income_details.commission',
+            'income_details.payment_method',
+            'income_details.bank_account',
+            'income_details.file_path',
+            'income_details.ticket_path',
+            'income_details.total',
+            'income_details.payment_date',
+            'incomes.concept',
+            'incomes.discount',
+            'incomes.quantity'
+        )
+        ->join('income_details', 'incomes.income_details_id', '=', 'income_details.id')
+        ->join('employees', 'income_details.employee_id', '=', 'employees.id')
+        ->where('income_details.student_id', $studentId)
+        ->get();
+
+    // Si no se encuentran ingresos, devolver un mensaje
+    if ($incomes->isEmpty()) {
+        return response()->json(['message' => 'No incomes found for this student'], 404);
     }
 
-    // Ajustar créditos según el concepto
-    if ($income->concept == "Horas de vuelo") {
-        $student->flight_credit -= $income->quantity;
-        $student->save();
-    }
-
-    if ($income->concept == "Horas simulador") {
-        $student->simulator_credit -= $income->quantity;
-        $student->save();
-    }
-
-    $fileController = new FileController();
-    $deletedFiles = []; // Array para almacenar los archivos eliminados
-    if ($incomeDetail->file_path) {
-        $fileController->deleteFile($incomeDetail->file_path);
-        $deletedFiles[] = $incomeDetail->file_path; // Registrar el archivo eliminado
-    }
-    if ($incomeDetail->ticket_path) {
-        $fileController->deleteFile($incomeDetail->ticket_path);
-        $deletedFiles[] = $incomeDetail->ticket_path; // Registrar el archivo eliminado
-    }
-
-    // Eliminar el ingreso
-    $income->delete();
-
-    // Información del empleado que realizó la eliminación
-    $employee = $request->user(); // Obtener el usuario autenticado
-    $employeeInfo = [
-        'id' => $employee->id ?? 'N/A',
-        'name' => $employee->name ?? 'N/A', // Asegúrate de que el modelo tiene este campo
-        'user_identification' => $employee->user_identification ?? 'N/A', // Identificación del empleado
-        'user_type' => $employee->user_type ?? 'N/A', // Tipo de usuario
-    ];
-
-    // Crear un mensaje de log detallado
-    Log::channel('slack')->info('Ingreso eliminado', [
-        'income_id' => $income->id,
-        'concept' => $income->concept,
-        'quantity' => $income->quantity,
-        'student_id' => $student->id,
-        'student_name' => $student->name ?? 'N/A', // Asegúrate de que este campo existe
-        'deleted_files' => $deletedFiles,
-        'timestamp' => now()->toString(), // Marca de tiempo de la operación
-        'employee' => $employeeInfo, // Información del empleado
-    ]);
-
-    return response()->json(["income" => $income, "incomeDetail" => $incomeDetail]);
+    return response()->json($incomes, 200);
 }
 }
-
