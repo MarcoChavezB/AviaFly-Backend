@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\UserFile;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 
 class AcademicFileController extends Controller
 {
@@ -48,32 +49,64 @@ public function index($id_student){
         }
     ]
 } */
-public function store(Request $request)
-{
-    $data = $request->all();
-    $id_student = $data['id_student'];
-    $files = $data['files'];
-    $filecontroller = new FileController();
+    /* public function store(Request $request)
+    {
+        $data = $request->all();
+        $id_student = $data['id_student'];
+        $files = $data['files'];
+        $filecontroller = new FileController();
 
-    $student = Student::find($id_student);
+        $student = Student::find($id_student);
 
-    foreach ($files as $file) {
-        $userfile = UserFile::where('id', $file['id_file'])
-                            ->where('id_user', $id_student)
-                            ->first();
+        foreach ($files as $file) {
+            $userfile = UserFile::where('id', $file['id_file'])
+                                ->where('id_user', $id_student)
+                                ->first();
 
-        if($userfile && $userfile->file_path){
-            $filecontroller->deleteFile($userfile->file_path);
+            if($userfile && $userfile->file_path){
+                $filecontroller->deleteFile($userfile->file_path);
+            }
+
+            if ($userfile && isset($file['file'])) {
+                $url = $filecontroller->saveFilePath($file['file'], $student->id_base, "academic_files", $student);
+                $userfile->file_path = $url;
+                $userfile->save();
+            }
         }
 
-        if ($userfile && isset($file['file'])) {
-            $url = $filecontroller->saveFilePath($file['file'], $student->id_base, "academic_files", $student);
+        return response()->json(['message' => 'Files saved successfully', "debug" => $data, "url" => $userfile]);
+    } */
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'id_student' => 'required|integer',
+            'files' => 'required|array',
+            'files.*.id_file' => 'required|integer',
+            'files.*.file' => 'nullable|file' // Asegúrate de validar el archivo si es necesario
+        ]);
+
+        $id_student = $data['id_student'];
+        $files = $data['files'];
+        $fileController = new FileController();
+
+        $student = Student::findOrFail($id_student); // Esto lanzará una excepción si no se encuentra el estudiante
+
+        foreach ($files as $file) {
+            $userfile = UserFile::where('id_file', $file['id_file'])
+                                ->where('id_user', $id_student)
+                                ->first();
+
+            if ($userfile && $userfile->file_path) {
+                $fileController->deleteFile($userfile->file_path);
+            }
+
+            $url = $fileController->saveFilePath($file['file'], $student->id_base, "academic_files", $student);
             $userfile->file_path = $url;
             $userfile->save();
         }
-    }
 
-    return response()->json(['message' => 'Files saved successfully', "debug" => $data, "url" => $userfile]);
-}
+        return response()->json(['message' => 'Files saved successfully', "debug" => $userfile]);
+    }
 }
 
