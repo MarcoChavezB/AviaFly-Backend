@@ -65,6 +65,15 @@
             display: block;
             margin: 0 auto 20px;
         }
+
+        .penalty-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -83,8 +92,14 @@
             </div>
         </div>
         <div class="separator"></div>
+
+        @if(!empty($penaltyAmount)) <!-- Verificar si hay una multa -->
+            <div class="penalty-warning">
+                <strong>Importante:</strong> Se ha aplicado una multa de {{ $penaltyAmount }}. Este importe se deducirá automáticamente de su crédito de vuelo.
+            </div>
+        @endif
         <div class="section">
-            <h2 style="font-size: 18px; margin: 0 0 10px;">Informacion del vuelo</h2>
+            <h2 style="font-size: 18px; margin: 0 0 10px;">Información del vuelo</h2>
             <div class="info-item">
                 <span>Fecha: {{ $flight->flight_date }}</span>
             </div>

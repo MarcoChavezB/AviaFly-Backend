@@ -18,14 +18,16 @@ class FlightStatusNotify extends Mailable
     public flightHistory $flight;
     public Employee $instructor;
     public string $status;
+    public string $penaltyAmount;
     public stdClass $details;
 
-    public function __construct(Student $student, flightHistory $flight, Employee $instructor, string $status, stdClass $details){
+    public function __construct(Student $student, flightHistory $flight, Employee $instructor, string $status, stdClass $details, string $penaltyAmount){
         $this->student = $student;
         $this->flight = $flight;
         $this->instructor = $instructor;
         $this->status = $status;
         $this->details = $details;
+        $this->penaltyAmount = $penaltyAmount;
     }
 
 
@@ -50,7 +52,8 @@ class FlightStatusNotify extends Mailable
                 'flight' => $this->flight,
                 'instructor' => $this->instructor,
                 'status' => $this->status,
-                'details' => $this->details
+                'details' => $this->details,
+                'penaltyAmount' => $this->penaltyAmount
             ]);
     }
 }

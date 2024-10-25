@@ -292,7 +292,9 @@ public function changeStatusFlight(Request $request)
 {
     $data = $request->all();
     $totalCreditFlight = 0;
+    $penalty = $data['penaltyAmount'];
     $infoPayment = new PaymentMethodController();
+    $infoFlightController = new InfoFlightController();
 
     $validator = Validator::make($data, [
         'id_flight' => 'required|integer',
@@ -328,6 +330,13 @@ public function changeStatusFlight(Request $request)
             }
         }
 
+        // convertir el total de monto a horas de credito
+        if ($flight->type_flight == "vuelo") {
+            $totalCreditFlight = $totalCreditFlight / $infoFlightController->getFlightPrice();
+        } elseif ($flight->type_flight == "simulador") {
+            $totalCreditFlight = $totalCreditFlight / $infoFlightController->getSimulatorFlightPrice();
+        }
+
         if($studentPerson->flight_credit < $totalCreditFlight){
             return response()->json(['msg' => "El alumno no tiene suficientes creditos para restaurar el estado"], 400);
         }
@@ -345,6 +354,7 @@ public function changeStatusFlight(Request $request)
             ->first();
 
         if ($payments) {
+            // sumar el credito de vuelo gastado (simulador / vuelo)
             foreach ($payments as $item) {
                 if ($item->id_payment_method == $infoPayment->getCreditoVueloId()) {
                     $totalCreditFlight += (float)$item->amount;
@@ -352,7 +362,27 @@ public function changeStatusFlight(Request $request)
             }
         }
 
-        $studentPerson->flight_credit = (float)$studentPerson->flight_credit + $totalCreditFlight;
+        // multar al estudiante
+        if($penalty != 0){
+            if($flight->type_flight == "vuelo"){
+                $totalPenaltyConvert = $penalty / $infoFlightController->getFlightPrice();
+                $studentPerson->flight_credit = (float)$studentPerson->flight_credit - $totalPenaltyConvert;
+            }
+            if($flight->type_flight == "simulador"){
+                $totalPenaltyConvert = $penalty / $infoFlightController->getSimulatorFlightPrice();
+                $studentPerson->flight_credit = (float)$studentPerson->simulator_credit - $totalPenaltyConvert;
+            }
+        }else{
+            // convertir el total en horas de vuelo
+            if ($flight->type_flight == "vuelo") {
+                $totalFlightHoursConvert = $totalCreditFlight / $infoFlightController->getFlightPrice();
+                $studentPerson->flight_credit = (float)$studentPerson->flight_credit + $totalFlightHoursConvert;
+            } elseif ($flight->type_flight == "simulador") {
+                $totalSimulatorConvert = $totalCreditFlight / $infoFlightController->getSimulatorFlightPrice();
+                $studentPerson->simulator_credit = (float)$studentPerson->simulator_credit + $totalSimulatorConvert;
+            }
+        }
+
         $studentPerson->save();
         $this->resetFlightData($flight->id);
 
@@ -361,11 +391,11 @@ public function changeStatusFlight(Request $request)
         $details->details = $data['details'] ?? null;
 
         if ($student) {
-            Mail::to($student->email)->send(new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details));
+            Mail::to($student->email)->send(new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details, $penalty));
         }
-        if ($instructor) {
+        /* if ($instructor) {
             Mail::to($instructor->email)->send(new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details));
-        }
+        } */
     }
 
     $flightPayment->save(); // Guarda el estado del pago del vuelo
