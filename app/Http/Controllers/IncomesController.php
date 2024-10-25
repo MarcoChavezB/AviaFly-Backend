@@ -90,6 +90,16 @@ class IncomesController extends Controller
     public function createIncomes(Request $request)
     {
         $this->validateRequest($request);
+        $student = Student::find($request->student_id);
+        foreach($request->payments as $payment){
+            if($payment['concept'] == "Horas simulador"){
+                $student->simulator_credit = $student->simulator_credit + 1;
+            }
+            if($payment['concept'] == "Horas de vuelo"){
+                $student->flight_credit = $student->flight_credit + 1;
+            }
+        }
+        $student->save();
 
         $employee = $this->getAuthenticatedEmployee();
 
@@ -97,6 +107,8 @@ class IncomesController extends Controller
 
         $paymentDetails = $this->extractPaymentDetails($request, $voucherPath);
         $incomeDetailsId = $this->saveIncomeDetails($paymentDetails, $employee->id);
+
+
 
         $this->saveIncomeEntries($request->input('payments'), $incomeDetailsId, $request->input('student_id'));
 
