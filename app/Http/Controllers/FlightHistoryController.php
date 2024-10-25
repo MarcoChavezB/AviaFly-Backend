@@ -393,9 +393,9 @@ public function changeStatusFlight(Request $request)
         if ($student) {
             Mail::to($student->email)->send(new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details, $penalty));
         }
-        /* if ($instructor) {
-            Mail::to($instructor->email)->send(new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details));
-        } */
+        if ($instructor) {
+            Mail::to($instructor->email)->send(new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details, $penalty));
+        }
     }
 
     $flightPayment->save(); // Guarda el estado del pago del vuelo
