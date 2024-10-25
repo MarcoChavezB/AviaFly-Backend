@@ -73,7 +73,7 @@ public function store(Request $request)
         }
     }
 
-    return response()->json(['message' => 'Files saved successfully']);
+    return response()->json(['message' => 'Files saved successfully', "debug" => $data, "url" => $userfile]);
 }
 }
 

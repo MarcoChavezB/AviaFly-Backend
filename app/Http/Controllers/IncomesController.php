@@ -92,10 +92,10 @@ class IncomesController extends Controller
         $this->validateRequest($request);
         $student = Student::find($request->student_id);
         foreach($request->payments as $payment){
-            if($payment['concept'] == "Horas simulador"){
+            if($payment['concept'] == "Horas simulador" && $payment['quantity'] >= 10){
                 $student->simulator_credit = $student->simulator_credit + 1;
             }
-            if($payment['concept'] == "Horas de vuelo"){
+            if($payment['concept'] == "Horas de vuelo"  && $payment['quantity'] >= 10){
                 $student->flight_credit = $student->flight_credit + 1;
             }
         }
