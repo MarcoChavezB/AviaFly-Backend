@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\UserFile;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 
 class AcademicFileController extends Controller
 {
@@ -18,8 +19,7 @@ public function index($id_student){
         )
         ->leftJoin('academic_files', 'academic_files.id', '=', 'user_files.id_file')
         ->leftJoin('section_files', 'section_files.id', '=', 'academic_files.id_section_file')
-        ->leftJoin('students', 'students.user_identification', '=', 'users.user_identification')
-        ->where('students.id', $id_student)
+        ->where('user_files.id_user', $id_student)
         ->get();
 
     $groupedFiles = $files->groupBy('section_name')->map(function ($items, $section) {
