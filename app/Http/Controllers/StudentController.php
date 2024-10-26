@@ -641,40 +641,18 @@ public function getInfoVueloAlumno(int $id = null)
             'maneuver' => 'required|string|in:local,ruta',
             'total' => 'required|numeric',
             'hour_instructor_cost' => 'required|numeric',
-/*             'id_pay_method' => 'required|exists:payment_methods,id', */
-            'due_week' => 'nullable|numeric',
-            'installment_value' => 'nullable|numeric',
-            'id_student' => 'required|numeric',
-            'flight_payment_status' => 'required|string|in:pendiente,pagado,cancelado',
-
+/*             'pay_method' => 'required|string|in:efectivo', */
         ], [
-            'flight_airplane' => 'required|string',
-            'id_student.required' => 'campo requerido',
-            'id_instructor.exists' => 'Selecciona un instructor',
             'id_instructor.required' => 'campo requerido',
+            'id_instructor.exists' => 'Selecciona un instructor',
             'flight_type.required' => 'campo requerido',
             'flight_type.in' => 'El tipo de vuelo no es válido',
             'flight_date.required' => 'campo requerido',
             'flight_date.date' => 'La fecha de vuelo no es válida',
             'flight_hour.required' => 'campo requerido',
             'flight_hour.string' => 'La hora de vuelo no es válida',
-            'flight_payment_status.required' => 'campo requerido',
-            'flight_payment_status.in' => 'El estatus de pago no es válido',
             'hours.required' => 'campo requerido',
-            'hours.numeric' => 'Las horas de vuelo no son válidas',
-            'total.required' => 'campo requerido',
-            'total.numeric' => 'campo requerido',
-/*             'id_pay_method.required' => 'campo requerido', */
-            'due_week.numeric' => 'La semana de vencimiento no es válida',
-            'installment_value.numeric' => 'El valor de la mensualidad no es válido',
-            'equipo.required' => 'El equipo es requerido',
-            'equipo.in' => 'El equipo no es válido',
-            'flight_category.required' => 'campo requerido',
-            'flight_category.in' => 'La categoría de vuelo no es válida',
-            'maneuver.required' => 'campo requerido',
-            'maneuver.in' => 'campo no válido',
-            'hour_instructor_cost.numeric' => 'El costo de la hora de instructor no es válido',
-            'flight_airplane.required' => 'campo requerido',
+
         ]);
 
         // Default pay method

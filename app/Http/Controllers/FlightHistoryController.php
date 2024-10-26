@@ -883,14 +883,13 @@ function getAllInfoReport(int $id_flight)
             'id_instructor' => 'required|numeric|exists:employees,id',
             'flight_date' => 'required|string',
             'flight_hour' => 'required|string',
-            'equipo' => 'required|string|exists:info_flights,id',
+            'equipo' => 'required|exists:info_flights,id',
             'hours' => 'required|numeric',
             'flight_type' => 'required|string|in:simulador,vuelo',
             'flight_category' => 'required|string|in:VFR,IFR,IFR_nocturno',
             'maneuver' => 'required|string|in:local,ruta',
             'total' => 'required|numeric',
             'hour_instructor_cost' => 'required|numeric',
-            'id_pay_method' => 'required|exists:payment_methods,id',
             'due_week' => 'nullable|numeric',
             'installment_value' => 'nullable|numeric',
             'id_student' => 'required|numeric',
@@ -913,7 +912,6 @@ function getAllInfoReport(int $id_flight)
             'hours.numeric' => 'Las horas de vuelo no son válidas',
             'total.required' => 'campo requerido',
             'total.numeric' => 'campo requerido',
-            'id_pay_method.required' => 'campo requerido',
             'due_week.numeric' => 'La semana de vencimiento no es válida',
             'installment_value.numeric' => 'El valor de la mensualidad no es válido',
             'equipo.required' => 'El equipo es requerido',
@@ -926,6 +924,10 @@ function getAllInfoReport(int $id_flight)
             'flight_airplane.required' => 'campo requerido',
         ]);
 
+        $payment_method_controller = new PaymentMethodController();
+
+        $id_pay_method = $payment_method_controller->getCreditoVueloId();
+
         if ($validator->fails()) {
             return response()->json(["errors" => $validator->errors()], 400);
         }
@@ -935,13 +937,13 @@ function getAllInfoReport(int $id_flight)
         }
 
         $empleado = Employee::find($request->id_instructor);
-        if ($empleado->user_type != 'instructor') {
+        if ($empleado->user_type != 'flight_instructor') {
             return response()->json(["errors" => ["El empleado no es un instructor"]], 400);
         }
 
         $student = Student::find($request->id_student);
         $payment_method_controller = new PaymentMethodController();
-        if ($request->id_pay_method == $payment_method_controller->getCreditoVueloId()) {
+        if ($id_pay_method == $payment_method_controller->getCreditoVueloId()) {
             $hoursCredit = $this->getPriceFly($request->flight_type) * $request->hours;
             if ($student->flight_credit < $hoursCredit) {
                 return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
@@ -990,7 +992,7 @@ function getAllInfoReport(int $id_flight)
 
         $payment = new Payments();
         $payment->amount = $request->total;
-        $payment->id_payment_method = $request->id_pay_method;
+        $payment->id_payment_method = $id_pay_method;
         $payment->id_flight = $flightPayment->id;
         $payment->save();
 
@@ -1062,4 +1064,8 @@ function getAllInfoReport(int $id_flight)
     }
 
 
+    function getPriceFly(string $id_equipo)
+    {
+        return InfoFlight::find($id_equipo);
+    }
 }
