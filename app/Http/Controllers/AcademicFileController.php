@@ -10,37 +10,37 @@ use Illuminate\Http\UploadedFile;
 
 class AcademicFileController extends Controller
 {
-public function index($user_identification){
-    $files = UserFile::select(
-            'academic_files.id',
-            'academic_files.file_name',
-            'user_files.file_path',
-            'section_files.section_name',
-            'section_files.id as id_section'
-        )
-        ->leftJoin('academic_files', 'academic_files.id', '=', 'user_files.id_file')
-        ->leftJoin('section_files', 'section_files.id', '=', 'academic_files.id_section_file')
-        ->leftJoin('users', 'users.id','=' ,'user_files.id_user')
-        ->leftJoin('students', 'students.user_identification', '=', 'users.user_identification')
-        ->where('students.user_identification', $user_identification)
-        ->get();
+    public function index($user_identification){
+        $files = UserFile::select(
+                'academic_files.id',
+                'academic_files.file_name',
+                'user_files.file_path',
+                'section_files.section_name',
+                'section_files.id as id_section'
+            )
+            ->leftJoin('academic_files', 'academic_files.id', '=', 'user_files.id_file')
+            ->leftJoin('section_files', 'section_files.id', '=', 'academic_files.id_section_file')
+            ->leftJoin('users', 'users.id','=' ,'user_files.id_user')
+            ->leftJoin('students', 'students.user_identification', '=', 'users.user_identification')
+            ->where('students.user_identification', $user_identification)
+            ->get();
 
-    $groupedFiles = $files->groupBy('section_name')->map(function ($items, $section) {
-        return [
-            'id_section' => $items[0]->id_section,
-            'section' => $section,
-            'files' => $items->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'file_name' => $item->file_name,
-                    'file_path' => $item->file_path
-                ];
-            })->values()
-        ];
-    })->values();
+        $groupedFiles = $files->groupBy('section_name')->map(function ($items, $section) {
+            return [
+                'id_section' => $items[0]->id_section,
+                'section' => $section,
+                'files' => $items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'file_name' => $item->file_name,
+                        'file_path' => $item->file_path
+                    ];
+                })->values()
+            ];
+        })->values();
 
-    return response()->json($groupedFiles);
-}
+        return response()->json($groupedFiles);
+    }
 
 
 /* {
