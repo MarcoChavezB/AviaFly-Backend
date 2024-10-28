@@ -346,7 +346,7 @@ Route::prefix('/restrictions')->middleware(['auth:sanctum'])->group(function () 
 
 
 Route::prefix('/files')->middleware(['auth:sanctum', 'role:root,admin,employee'])->group(function () {
-    Route::get('/student/index/{id_student}', [AcademicFileController::class, 'index']);
+    Route::get('/student/index/{user_identification}', [AcademicFileController::class, 'index']);
     Route::post('/store', [AcademicFileController::class, 'store']);
 });
 

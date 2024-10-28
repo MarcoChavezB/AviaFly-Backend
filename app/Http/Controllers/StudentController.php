@@ -193,7 +193,7 @@ class StudentController extends Controller
             }
 
 
-            $students = $query->paginate(55);
+            $students = $query->paginate(500);
 
             $paginationData = [
                 'current_page' => $students->currentPage(),

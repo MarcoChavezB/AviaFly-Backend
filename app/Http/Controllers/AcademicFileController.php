@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\User;
 use App\Models\UserFile;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
 class AcademicFileController extends Controller
 {
-public function index($id_student){
+public function index($user_identification){
     $files = UserFile::select(
             'academic_files.id',
             'academic_files.file_name',
@@ -19,7 +20,9 @@ public function index($id_student){
         )
         ->leftJoin('academic_files', 'academic_files.id', '=', 'user_files.id_file')
         ->leftJoin('section_files', 'section_files.id', '=', 'academic_files.id_section_file')
-        ->where('user_files.id_user', $id_student)
+        ->leftJoin('users', 'users.id','=' ,'user_files.id_user')
+        ->leftJoin('students', 'students.user_identification', '=', 'users.user_identification')
+        ->where('students.user_identification', $user_identification)
         ->get();
 
     $groupedFiles = $files->groupBy('section_name')->map(function ($items, $section) {
@@ -80,21 +83,23 @@ public function index($id_student){
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_student' => 'required|integer',
+            'id_student' => 'required',
             'files' => 'required|array',
             'files.*.id_file' => 'required|integer',
             'files.*.file' => 'nullable|file' // Asegúrate de validar el archivo si es necesario
         ]);
 
-        $id_student = $data['id_student'];
+        $user_identification = $data['id_student'];
         $files = $data['files'];
         $fileController = new FileController();
 
-        $student = Student::findOrFail($id_student); // Esto lanzará una excepción si no se encuentra el estudiante
+        $student = Student::where('user_identification', $user_identification)->first(); // Esto lanzará una excepción si no se encuentra el estudiante
+
+        $user = User::where('user_identification', $user_identification)->first();
 
         foreach ($files as $file) {
             $userfile = UserFile::where('id_file', $file['id_file'])
-                                ->where('id_user', $id_student)
+                                ->where('id_user', $user->id)
                                 ->first();
 
             if ($userfile && $userfile->file_path) {
