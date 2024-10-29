@@ -14,9 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Controllers\TicketController;
 use App\Mail\FlightStatusNotify;
-use App\Mail\RequestFlight;
 use App\Mail\RequestFlightAccepted;
 use App\Mail\RequestFlightDeclined;
 use App\Models\Employee;
@@ -24,8 +22,6 @@ use App\Models\Option;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\InfoFlightController;
-use App\Models\PaymentMethod;
-use Fiber;
 use stdClass;
 
 class FlightHistoryController extends Controller
@@ -71,7 +67,7 @@ class FlightHistoryController extends Controller
 
                         if ($conflictStudent) {
                             $messageDeclined = "La solicitud de vuelo ha sido rechazada, ya que existe un conflicto con otra reservación agendada previamente. Por favor seleccione otra fecha para su vuelo.";
-                            Mail::to($conflictStudent->email)->send(new RequestFlightDeclined($conflictStudent, $conflictFlight, $messageDeclined));
+                           Mail::to($conflictStudent->email)->send(new RequestFlightDeclined($conflictStudent, $conflictFlight, $messageDeclined));
 
                             $conflictFlight->flight_client_status = 'rechazado';
                             $conflictFlight->save();
@@ -87,10 +83,25 @@ class FlightHistoryController extends Controller
             }
             Mail::to($student->email)->send(new RequestFlightAccepted($student, $flight, $message));
         } else if ($request->flightClientStatus === 'rechazado') {
+            // Devolver los creditos del estudiante
+
+            $flightTypeReservation = $flight->type_flight;
+
+            switch($flightTypeReservation){
+                case 'vuelo':
+                    $student->flight_credit = (float)$student->flight_credit + $request->hours;
+                break;
+                case 'simulador':
+                    $student->simulator_credit = (float)$student->simulator_credit + $request->hours;
+                break;
+            }
+
+
+            $student->save();
             Mail::to($student->email)->send(new RequestFlightDeclined($student, $flight, $message));
         }
 
-        return response()->json(['msg' => 'Solicitud actualizada'], 200);
+        return response()->json(['msg' => 'Solicitud actualizada', "student" => $student], 200);
     }
 
 
@@ -954,6 +965,21 @@ function getAllInfoReport(int $id_flight)
             return response()->json(["errors" => ["No hay horas disponibles en el avión"]], 402);
         }
 
+        // Eliminar la horas del estudiante
+        $flightTypeReservation = $request->flight_type;
+
+        switch($flightTypeReservation){
+            case 'vuelo':
+                $student->flight_credit = (float)$student->flight_credit - $request->hours;
+            break;
+            case 'simulador':
+                $student->simulator_credit = (float)$student->simulator_credit - $request->hours;
+            break;
+        }
+
+        $student->save();
+
+
 
         $flight = new flightHistory();
         $flight->hours = $request->hours;
@@ -1006,9 +1032,9 @@ function getAllInfoReport(int $id_flight)
             ->get();
 
 
-        foreach ($employee as $emp) {
+        /* foreach ($employee as $emp) {
             Mail::to($emp)->send(new RequestFlight($student, $flight));
-        }
+        } */
 
         return response()->json(["msg" => "Peticion de vuelo registrada", 'employees' => $employee], 200);
     }

@@ -35,7 +35,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RecreativeConceptController;
 use App\Http\Controllers\SchoolExpenseController;
 use App\Http\Controllers\SessionController;
-use App\Models\IncomeDetails;
 
 /*
 |--------------------------------------------------------------------------
