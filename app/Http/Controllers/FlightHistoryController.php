@@ -22,6 +22,7 @@ use App\Models\Option;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\InfoFlightController;
+use App\Mail\RequestFlight;
 use stdClass;
 
 class FlightHistoryController extends Controller
@@ -1032,9 +1033,9 @@ function getAllInfoReport(int $id_flight)
             ->get();
 
 
-        /* foreach ($employee as $emp) {
+        foreach ($employee as $emp) {
             Mail::to($emp)->send(new RequestFlight($student, $flight));
-        } */
+        }
 
         return response()->json(["msg" => "Peticion de vuelo registrada", 'employees' => $employee], 200);
     }
@@ -1088,6 +1089,7 @@ function getAllInfoReport(int $id_flight)
 
         return $query->isNotEmpty();
     }
+
 
 
     function getPriceFly(string $id_equipo)
