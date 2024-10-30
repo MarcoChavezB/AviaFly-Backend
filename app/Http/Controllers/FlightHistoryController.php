@@ -890,7 +890,6 @@ function getAllInfoReport(int $id_flight)
             return response()->json(['error' => 'Option not found']);
         }
 
-
         $validator = Validator::make($request->all(), [
             'id_instructor' => 'required|numeric|exists:employees,id',
             'flight_date' => 'required|string',
@@ -935,6 +934,13 @@ function getAllInfoReport(int $id_flight)
             'hour_instructor_cost.numeric' => 'El costo de la hora de instructor no es válido',
             'flight_airplane.required' => 'campo requerido',
         ]);
+
+        // Validación para reservar al menos 24 horas antes
+        $reservationDate = Carbon::parse($request->flight_date);
+
+        if (!$reservationDate->greaterThan(Carbon::now()->addDay())) {
+            return response()->json(['errors' => 'Se necesita agendar con 24 horas de anticipación'], 400);
+        }
 
         $payment_method_controller = new PaymentMethodController();
 
