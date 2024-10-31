@@ -1433,4 +1433,116 @@ public function getInfoVueloAlumno(int $id = null)
         }
     }
 
+
+    public function storeTest(Request $request){
+
+        // Validar que el payload es un arreglo
+        $validator = Validator::make($request->all(), [
+            'flights' => 'required|array', // Asegúrate de que es un array
+            'flights.*.id_instructor' => 'required|numeric|exists:employees,id',
+            'flights.*.flight_date' => 'required|string',
+            'flights.*.flight_hour' => 'required|string',
+            'flights.*.equipo' => 'required|exists:info_flights,id',
+            'flights.*.hours' => 'required|numeric',
+            'flights.*.flight_type' => 'required|string|in:simulador,vuelo',
+            'flights.*.flight_category' => 'required|string|in:VFR,IFR,IFR_nocturno',
+            'flights.*.maneuver' => 'required|string|in:local,ruta',
+            'flights.*.total' => 'required|numeric',
+            'flights.*.hour_instructor_cost' => 'required|numeric',
+            // 'flights.*.id_pay_method' => 'required|exists:payment_methods,id',
+            'flights.*.due_week' => 'nullable|numeric',
+            'flights.*.installment_value' => 'nullable|numeric',
+            'flights.*.id_student' => 'required|numeric',
+            'flights.*.flight_payment_status' => 'required|string|in:pendiente,pagado,cancelado',
+        ], [
+            'flights.*.id_student.required' => 'El campo id_student es requerido',
+            'flights.*.id_instructor.exists' => 'Selecciona un instructor',
+            'flights.*.id_instructor.required' => 'Campo requerido',
+            'flights.*.flight_type.required' => 'Campo requerido',
+            'flights.*.flight_type.in' => 'El tipo de vuelo no es válido',
+            'flights.*.flight_date.required' => 'Campo requerido',
+            'flights.*.flight_hour.required' => 'Campo requerido',
+            'flights.*.flight_payment_status.required' => 'Campo requerido',
+            'flights.*.flight_payment_status.in' => 'El estatus de pago no es válido',
+            'flights.*.hours.required' => 'Campo requerido',
+            'flights.*.total.required' => 'Campo requerido',
+            'flights.*.due_week.numeric' => 'La semana de vencimiento no es válida',
+            'flights.*.installment_value.numeric' => 'El valor de la mensualidad no es válido',
+            'flights.*.equipo.required' => 'El equipo es requerido',
+            'flights.*.flight_category.required' => 'Campo requerido',
+            'flights.*.maneuver.required' => 'Campo requerido',
+            'flights.*.hour_instructor_cost.numeric' => 'El costo de la hora de instructor no es válido',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(["errors" => $validator->errors()], 400);
+        }
+
+        $responses = []; // Para almacenar respuestas de cada vuelo procesado
+
+        foreach ($request->flights as $flight) {
+            $user = Employee::where('user_identification', Auth::user()->user_identification)->first();
+
+            if ($this->isDateRestricted($flight['flight_date'], $flight['flight_hour'], $flight['hours'], $flight['equipo'])) {
+                return response()->json(["errors" => ["La fecha seleccionada coincide con una fecha inhabil. Por favor, selecciona otra hora."]], 400);
+            }
+
+            $empleado = Employee::find($flight['id_instructor']);
+            $student = Student::find($flight['id_student']);
+
+            $InfoFlight = $this->getPriceFly($flight['equipo']);
+            $hoursCredit = $InfoFlight->hours;
+
+            $creditMapping = [
+                "flight" => $student->flight_credit,
+                "simulator" => $student->simulator_credit
+            ];
+
+            if (array_key_exists($InfoFlight->type, $creditMapping)) {
+                if ($creditMapping[$InfoFlight->type] < $hoursCredit) {
+                    return response()->json(["errors" => ["El estudiante no tiene suficientes créditos para el tipo de vuelo: " . $InfoFlight->type]], 400);
+                }
+            } else {
+                return response()->json(["errors" => ["Tipo de vuelo no válido"]], 400);
+            }
+
+            // Ejecutar el procedimiento almacenado para cada vuelo
+            DB::statement('CALL storeAcademicFlight(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+                $flight['id_student'],
+                $user->id,
+                $flight['id_instructor'],
+                $flight['flight_type'],
+                $flight['flight_date'],
+                $flight['flight_hour'],
+                $flight['flight_payment_status'],
+                $flight['hours'],
+                floatval($flight['total']),
+                $this->payment_method_controller->getCreditoVueloId(), // Método de pago por defecto
+                $flight['due_week'],
+                floatval($flight['installment_value']),
+                $flight['flight_category'],
+                $flight['maneuver'],
+                floatval($flight['hour_instructor_cost']),
+                $flight['equipo'],
+                $flight['flight_session'],
+                $flight['flight_airplane']
+            ]);
+
+            $last_id_insert = flightHistory::latest('id')->first();
+            $message = $flight['flight_payment_status'] == 'pendiente' ? 'Vuelo agendado, pendiente de pago' : 'Se agendó el vuelo';
+
+            $lastPaymentInsert = Payments::latest('id')->first();
+
+            $PdfController = new PDFController();
+            $urlTicket = $PdfController->generateTicket($last_id_insert->id, $flight['payment_comission']);
+
+            $lastPaymentInsert->payment_ticket = $urlTicket;
+            $lastPaymentInsert->save();
+
+            // Agregar la respuesta para este vuelo
+            $responses[] = ["msg" => $message, "id" => $last_id_insert->id];
+        }
+
+        return response()->json($responses, 201);
+    }
 }

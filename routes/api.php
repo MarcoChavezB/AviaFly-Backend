@@ -373,4 +373,4 @@ Route::get('/test', function(){
     ]);
 });
 
-Route::get('/test/{id_flight}', [PDFController::class, 'getReservationTicket']);
+Route::post('/flight/store', [StudentController::class, 'storeTest'])->middleware(['auth:sanctum']);
