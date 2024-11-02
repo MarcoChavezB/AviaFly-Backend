@@ -935,11 +935,12 @@ function getAllInfoReport(int $id_flight)
             'flight_airplane.required' => 'campo requerido',
         ]);
 
-        // Validación para reservar al menos 24 horas antes
-        $reservationDate = Carbon::parse($request->flight_date);
+        $reservationDateTime = Carbon::parse($request->flight_date . ' ' . $request->flight_hour);
 
-        if (!$reservationDate->greaterThan(Carbon::now()->addDay())) {
-            return response()->json(['errors' => 'Se necesita agendar con 24 horas de anticipación'], 400);
+        $minReservationDateTime = Carbon::now()->addDay();
+
+        if ($reservationDateTime->lessThanOrEqualTo($minReservationDateTime)) {
+            return response()->json(['errors' => 'Se necesita agendar con al menos 24 horas de anticipación'], 400);
         }
 
         $payment_method_controller = new PaymentMethodController();
@@ -992,14 +993,14 @@ function getAllInfoReport(int $id_flight)
         $flight->hours = $request->hours;
         $flight->reservation_type = 'academico';
         $flight->flight_status = 'proceso';
-        $flight->flight_client_status = 'pendiente';
+        $flight->flight_client_status = 'aceptado';
         $flight->maneuver = $request->maneuver;
         $flight->flight_category = $request->flight_category;
         $flight->flight_date = $request->flight_date;
         $flight->flight_hour = $request->flight_hour;
         $flight->type_flight = $request->flight_type;
         $flight->id_equipo = $request->equipo;
-        $flight->id_airplane = $request->flight_aiplane;
+        $flight->id_airplane = $request->flight_airplane;
 
         if($request->flight_session != 0){
             $flight->id_session = $request->flight_session;
