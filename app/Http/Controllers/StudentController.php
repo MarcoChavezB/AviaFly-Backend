@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
@@ -1572,6 +1573,18 @@ public function getInfoVueloAlumno(int $id = null)
         $excludeUsers = ['AT28', 'AT38', 'AT39', 'AT52', 'AT29'];
         $students = Student::whereNotIn('user_identification', $excludeUsers)->get();
 
-        Mail::to('marco1102004@gmail.com')->send(new WelcomeSistem('AT37'));
+        foreach($students as $student){
+            if (filter_var($student->email, FILTER_VALIDATE_EMAIL)) {
+                try {
+                    Mail::to($student->email)->send(new WelcomeSistem('AT37'));
+                } catch (\Exception $e) {
+                    // Manejo de errores (puedes loguear el error o hacer alguna acción)
+                    Log::error('Error al enviar correo a ' . $student->email . ': ' . $e->getMessage());
+                }
+            } else {
+                // Log para correos inválidos si es necesario
+                Log::warning('Correo inválido para el estudiante: ' . $student->user_identification);
+            }
+        }
     }
 }
