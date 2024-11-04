@@ -1576,7 +1576,7 @@ public function getInfoVueloAlumno(int $id = null)
         foreach($students as $student){
             if (filter_var($student->email, FILTER_VALIDATE_EMAIL)) {
                 try {
-                    Mail::to($student->email)->send(new WelcomeSistem('AT37'));
+                    Mail::to($student->email)->send(new WelcomeSistem($student->user_identification));
                 } catch (\Exception $e) {
                     // Manejo de errores (puedes loguear el error o hacer alguna acción)
                     Log::error('Error al enviar correo a ' . $student->email . ': ' . $e->getMessage());
