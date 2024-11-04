@@ -127,7 +127,6 @@ class EmployeeController extends Controller
 
 public function fingerPrintList($id_finger)
 {
-    return
     Log::channel('slack')->error("Se realizó la petición para el empleado " . "$id_finger");
     $currentDay = Carbon::now()->dayOfWeekIso; // Día de la semana (1 = lunes, 7 = domingo)
     $currentDate = Carbon::now()->format('Y-m-d');

@@ -35,7 +35,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RecreativeConceptController;
 use App\Http\Controllers\SchoolExpenseController;
 use App\Http\Controllers\SessionController;
-
+use App\Http\Controllers\SupportController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -367,10 +367,16 @@ Route::prefix('/fingerPrint')->group(function () {
     Route::post('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
 });
 
+
+Route::prefix('/support')->group(function () {
+    Route::post('/error', [SupportController::class, 'notifyErrorFromStudent']);
+});
+
 Route::get('/test', function(){
     return response()->json([
         'message' => 'functionando'
     ]);
 });
 
-Route::post('/flight/store', [StudentController::class, 'storeTest'])->middleware(['auth:sanctum']);
+Route::get('/users/notify', [StudentController::class, 'notifyStudent']);
+

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\ProcessStudentCreation;
+use App\Mail\WelcomeSistem;
 use App\Models\Base;
 use App\Models\Employee;
 use App\Models\flightHistory;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 
@@ -166,50 +168,70 @@ class StudentController extends Controller
         }
     }
 
-    public function getStudents(Request $request)
-    {
-        try {
-            $user = Auth::user();
-            $base = Base::where('id', $user->id_base)->first(['id', 'name']);
+public function getStudents(Request $request)
+{
+    try {
+        $user = Auth::user();
+        $base = Base::where('id', $user->id_base)->first(['id', 'name']);
 
-            $query = DB::table('students')
-                ->join('bases', 'students.id_base', '=', 'bases.id')
-                ->join('careers', 'students.id_career', '=', 'careers.id')
-                ->select('students.id', 'students.name', 'students.last_names', 'students.user_identification', 'careers.name as career_name', 'bases.name as base_name')
-                ->orderBy('students.id', 'desc');
+        $query = DB::table('students')
+            ->join('bases', 'students.id_base', '=', 'bases.id')
+            ->join('careers', 'students.id_career', '=', 'careers.id')
+            ->join('student_subjects', 'students.id', '=', 'student_subjects.id_student')
+            ->select(
+                'students.id',
+                'students.name',
+                'students.last_names',
+                'students.user_identification',
+                'careers.name as career_name',
+                'bases.name as base_name',
+                DB::raw('CASE
+                            WHEN COUNT(CASE WHEN student_subjects.status IN ("failed", "pending") THEN 1 END) > 0
+                            THEN 1
+                            ELSE 0
+                         END as has_failed_or_pending')
+            )
+            ->groupBy(
+                'students.id',
+                'students.name',
+                'students.last_names',
+                'students.user_identification',
+                'careers.name',
+                'bases.name'
+            )
+            ->orderBy('students.id', 'desc');
 
-            if ($base->name != 'Torreón') {
-                $query->where('students.id_base', $user->id_base);
-            }
-
-            $searchString = $request->input('searchStr');
-            if ($searchString) {
-                $query->where(function ($query) use ($searchString) {
-                    $query->where('students.name', 'like', '%' . $searchString . '%')
-                        ->orWhere('students.last_names', 'like', '%' . $searchString . '%')
-                        ->orWhere('students.user_identification', 'like', '%' . $searchString . '%')
-                        ->orWhere(DB::raw("CONCAT(students.name, ' ', students.last_names)"), 'like', '%' . $searchString . '%');
-                });
-            }
-
-
-            $students = $query->paginate(500);
-
-            $paginationData = [
-                'current_page' => $students->currentPage(),
-                'total_pages' => $students->lastPage(),
-                'has_next_page' => $students->hasMorePages(),
-                'on_this_page' => $students->count(),
-                ];
-
-            return response()->json([
-                'students' => $students->items(),
-                'pagination' => $paginationData
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json(["message" => 'Internal Server Error'], 500);
+        if ($base->name != 'Torreón') {
+            $query->where('students.id_base', $user->id_base);
         }
+
+        $searchString = $request->input('searchStr');
+        if ($searchString) {
+            $query->where(function ($query) use ($searchString) {
+                $query->where('students.name', 'like', '%' . $searchString . '%')
+                    ->orWhere('students.last_names', 'like', '%' . $searchString . '%')
+                    ->orWhere('students.user_identification', 'like', '%' . $searchString . '%')
+                    ->orWhere(DB::raw("CONCAT(students.name, ' ', students.last_names)"), 'like', '%' . $searchString . '%');
+            });
+        }
+
+        $students = $query->paginate(500);
+
+        $paginationData = [
+            'current_page' => $students->currentPage(),
+            'total_pages' => $students->lastPage(),
+            'has_next_page' => $students->hasMorePages(),
+            'on_this_page' => $students->count(),
+        ];
+
+        return response()->json([
+            'students' => $students->items(),
+            'pagination' => $paginationData
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json(["message" => 'Internal Server Error'], 500);
     }
+}
 
     public function show($id)
     {
@@ -1434,7 +1456,7 @@ public function getInfoVueloAlumno(int $id = null)
     }
 
 
-    public function storeTest(Request $request){
+    /* public function storeTest(Request $request){
 
         // Validar que el payload es un arreglo
         $validator = Validator::make($request->all(), [
@@ -1544,5 +1566,12 @@ public function getInfoVueloAlumno(int $id = null)
         }
 
         return response()->json($responses, 201);
+    } */
+
+    public function notifyStudent(){
+        $excludeUsers = ['AT28', 'AT38', 'AT39', 'AT52', 'AT29'];
+        $students = Student::whereNotIn('user_identification', $excludeUsers)->get();
+
+        Mail::to('marco1102004@gmail.com')->send(new WelcomeSistem('AT37'));
     }
 }

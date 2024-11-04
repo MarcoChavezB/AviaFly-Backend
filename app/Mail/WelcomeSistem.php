@@ -19,13 +19,13 @@ class WelcomeSistem extends Mailable
 
     public function envelope(){
         return new Envelope(
-            subject: 'Bienvenido al sistema',
+            subject: 'Confirmación de Activación de Cuenta',
         );
     }
 
     public function build(){
         return $this->view('emails.NotifyUser.welcomeuser')
-            ->subject('Bienvenido al sistema');
+            ->subject('Confirmación de Activación de Cuenta');
     }
 
 }

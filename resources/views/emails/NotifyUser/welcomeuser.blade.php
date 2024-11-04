@@ -52,7 +52,7 @@
         </div>
 
         <div class="content">
-            <p>Estimado(a) usuario,</p>
+            <p>Estimado(a) alumno,</p>
 
             <p>Nos complace informarle que su acceso al sistema ha sido habilitado exitosamente. Para iniciar sesión, deberá utilizar los siguientes datos:</p>
 
