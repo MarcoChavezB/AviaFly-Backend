@@ -378,3 +378,4 @@ Route::get('/test', function(){
     ]);
 });
 
+Route::get('/notify/students', [StudentController::class, 'notifyStudent']);
