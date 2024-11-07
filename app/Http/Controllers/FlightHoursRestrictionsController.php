@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FlightHoursRestrictions;
 use App\Models\Option;
 use App\Models\RestrictionDay;
+use Carbon\Carbon;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,138 +14,77 @@ use Illuminate\Support\Facades\Validator;
 class FlightHoursRestrictionsController extends Controller
 {
 
-public function indexDetails(){
-    $restrictionDays = RestrictionDay::with(['Day', 'FlightRestriction.flight'])->get();
-
-    $grouped = $restrictionDays->groupBy('id_flight_restriction')->map(function ($group) {
-        $flightRestriction = $group->first()->FlightRestriction;
-
-        $days = $group->map(function ($item) {
-            return $item->Day;
-        });
-
-        return [
-            'flight_restriction' => $flightRestriction,
-            'flight' => $flightRestriction->flight,  // Aquí se incluye la información del vuelo
-            'days' => $days
-        ];
-    });
-
-    return response()->json($grouped->values());
+public function indexDetails()
+{
+    $restrictions = FlightHoursRestrictions::with('flight')->get();
+    return response()->json($restrictions);
 }
+
+public function indexRestrictionCalendar(){
+    $restrictions = FlightHoursRestrictions::with(['flight'])->get();
+
+    $calendarRestrictions = [];
+
+    foreach ($restrictions as $restriction) {
+        $start_date = Carbon::parse($restriction->start_date);
+        $end_date = $restriction->end_date ? Carbon::parse($restriction->end_date) : null;
+
+        // Comprobar si hay una fecha de fin y si es válida
+        if ($end_date) {
+            // Iterar sobre el rango de fechas (incluyendo start_date y end_date)
+            $currentDate = $start_date->copy();
+
+            while ($currentDate <= $end_date) {
+                $calendarRestrictions[] = [
+                    'id' => $restriction->id,  // ID de la restricción
+                    'flight_status' => 'restriction',  // Estado del vuelo
+                    'title' => $restriction->motive,  // Motivo de la restricción
+                    'start' => $currentDate->toDateString() . 'T00:00',  // Fecha de inicio con hora de inicio (por ejemplo, a las 00:00)
+                    'end' => $currentDate->toDateString() . 'T23:59',  // Fecha de fin con hora de fin (por ejemplo, a las 23:59)
+                    'source' => 'restriction',  // Fuente
+                    'can_reservate' => null,  // No se puede reservar (null si no está definido)
+                ];
+
+                // Avanzar al siguiente día
+                $currentDate->addDay();
+            }
+        } else {
+            // Si no hay fecha de fin, solo se agrega la fecha de inicio
+            $calendarRestrictions[] = [
+                'id' => $restriction->id,
+                'flight_status' => 'restriction',
+                'title' => $restriction->motive,
+                'start' => $start_date->toDateString() . 'T00:00',
+                'end' => $start_date->toDateString() . 'T23:59',
+                'source' => 'restriction',
+                'can_reservate' => null,
+            ];
+        }
+    }
+
+    return response()->json($calendarRestrictions);  // Retornar el resultado en formato JSON
+}
+
+
+
 
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-public function index()
-{
-    // Recuperar RestrictionDay con sus relaciones
-    $restrictions = RestrictionDay::with(['FlightRestriction', 'Day'])->get();
-
-    $canReservate = Option::select('option_type', 'is_active')
-        ->where('option_type', 'can_reservate_flight')
-        ->first();
-    // Formato final para FullCalendar
-    $calendarEvents = [];
-
-    // Recorrer las restricciones agrupadas por id_flight_restriction
-    foreach ($restrictions as $restriction) {
-        $flightRestriction = $restriction->flightRestriction;
-        $dayValue = $restriction->day->value; // Ej: "Lun", "Mar", etc.
-
-        // Generar el evento base
-        $event = [
-            'id' => $restriction->id_flight_restriction,
-            'flight_status' => 'restriction',
-            'title' => $flightRestriction->motive,
-            'start' => $flightRestriction->start_date . 'T' . $flightRestriction->start_hour,
-            'end' => $flightRestriction->start_date . 'T' . $flightRestriction->end_hour,
-            'source' => 'restriction',
-            'can_reservate' => $canReservate->is_active
-        ];
-
-        // Asegúrate de que la fecha de fin sea posterior a la de inicio
-        if ($this->isValidEvent($event['start'], $event['end'])) {
-            // Si el día es un día de la semana (Ej: Lun, Mar, etc.), repetir en esas fechas
-            if ($this->isWeekday($dayValue)) {
-                // Generar las fechas recurrentes para este día
-                $recurrentEvents = $this->generateRecurrentEvents($event, $dayValue);
-                $calendarEvents = array_merge($calendarEvents, $recurrentEvents);
-            } else {
-                // Si es una restricción en una fecha específica, agregarla tal cual
-                $calendarEvents[] = $event;
-            }
+    /*
+     * payload:
+        {
+            "motive": "motivo",
+            "start_date": "2024-11-08",
+            "end_date": "2024-11-09",
+            "start_hour": "09:00",
+            "end_hour": "18:08",
+            "id_flight": "2"
         }
-    }
-
-    // Devolver la respuesta en formato JSON
-    return response()->json($calendarEvents);
-}
-
-/**
- * Verifica si la fecha de inicio es anterior a la de finalización
- */
-private function isValidEvent($start, $end)
-{
-    return \Carbon\Carbon::parse($start)->lt(\Carbon\Carbon::parse($end));
-}
-
-/**
- * Verifica si un valor del día es un día de la semana (Lun, Mar, Mié, etc.)
- */
-private function isWeekday($dayValue)
-{
-    $weekdays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-    return in_array($dayValue, $weekdays);
-}
-
-/**
- * Genera eventos recurrentes para un día de la semana (Lun, Mar, Mié, etc.)
- */
-private function generateRecurrentEvents($event, $dayValue)
-{
-    $recurrentEvents = [];
-
-    // Mapeo del día en número (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
-    $dayMap = [
-        'Dom' => 0, 'Lun' => 1, 'Mar' => 2, 'Mié' => 3,
-        'Jue' => 4, 'Vie' => 5, 'Sáb' => 6
-    ];
-
-    // Obtener el número del día de la semana
-    $dayOfWeek = $dayMap[$dayValue];
-
-    // Obtener la fecha actual y generar eventos para las próximas semanas
-    $currentDate = now();
-    $endDate = now()->addMonths(1); // Generar eventos para el próximo mes (ajustable)
-
-    // Ajustar currentDate al próximo día correspondiente si es necesario
-    if ($currentDate->dayOfWeek !== $dayOfWeek) {
-        // Establecer la fecha al próximo día de la semana correspondiente
-        $currentDate = $currentDate->next($dayOfWeek);
-    } else {
-        // Si ya es el día correspondiente, comenzamos desde aquí
-        $currentDate = $currentDate->copy();
-    }
-
-    // Iterar sobre las semanas y generar eventos para el día específico
-    while ($currentDate->lte($endDate)) {
-        // Clonar el evento y cambiarle la fecha de inicio y fin
-        $recurrentEvent = $event;
-        $recurrentEvent['start'] = $currentDate->format('Y-m-d') . 'T' . substr($event['start'], 11);
-        $recurrentEvent['end'] = $currentDate->format('Y-m-d') . 'T' . substr($event['end'], 11);
-
-        // Agregarlo al arreglo de eventos recurrentes
-        $recurrentEvents[] = $recurrentEvent;
-
-        // Avanzar a la próxima semana
-        $currentDate->addWeek();
-    }
-
-    return $recurrentEvents;
-}
+     * }
+     */
 
     public function create(Request $request)
     {
@@ -153,34 +93,27 @@ private function generateRecurrentEvents($event, $dayValue)
 
         $validator = Validator::make($data, [
             'motive' => 'required|string',
-            'description' => 'required|string',
-            'date' => 'required|date',
+            'start_date' => 'required|string',
+            'end_date' => 'string',
             'start_hour' => 'required|string',
             'end_hour' => 'required|string',
             'id_flight' => 'required|integer|exists:info_flights,id',
-            'days' => 'required|array',
-            'days.*' => 'integer|exists:days,id',
         ]);
 
         if($validator->fails()){
             return response()->json(["error" => $validator->errors()]);
         }
 
-        $restriction = FlightHoursRestrictions::create([
-            'motive' => $data['motive'],
-            'description' => $data['description'],
-            'start_date' => $data['date'],  // Cambiado de 'date' a 'start_date'
-            'start_hour' => $data['start_hour'],
-            'end_hour' => $data['end_hour'],
-            'id_flight' => $data['id_flight'],
-        ]);
+        $restriction = new FlightHoursRestrictions();
+        $restriction->motive = $data['motive'];
+        $restriction->start_hour = $data['start_hour'];
+        $restriction->end_hour = $data['end_hour'];
+        $restriction->start_date = $data['start_date'];
+        $restriction->end_date = $data['end_date'];
+        $restriction->id_flight = $data['id_flight'];
 
-        foreach ($data['days'] as $day) {
-            DB::table('restriction_days')->insert([
-                'id_day' => $day,
-                'id_flight_restriction' => $restriction->id,
-            ]);
-        }
+        // Guarda el registro en la base de datos
+        $restriction->save();
 
         return response()->json([
             'message' => 'Restricción de vuelo creada con éxito.',
@@ -241,16 +174,9 @@ private function generateRecurrentEvents($event, $dayValue)
      */
     public function destroy($id_restriction)
     {
-        $restriction = RestrictionDay::where('id_flight_restriction', $id_restriction)->first();
-
-        if (!$restriction) {
-            return response()->json(['error' => "Restriction not found"], 404);
-        }
-
         $restrictionFlight = FlightHoursRestrictions::find($id_restriction);
 
         if ($restrictionFlight) {
-            RestrictionDay::where('id_flight_restriction', $id_restriction)->delete();
             $restrictionFlight->delete();
         }
 

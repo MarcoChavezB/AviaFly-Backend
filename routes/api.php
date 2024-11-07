@@ -337,7 +337,7 @@ Route::prefix('/options')->middleware(['auth:sanctum', 'role:root,admin,employee
 
 Route::prefix('/restrictions')->middleware(['auth:sanctum'])->group(function () {
     Route::post('/create', [FlightHoursRestrictionsController::class, 'create']);
-    Route::get('/index', [FlightHoursRestrictionsController::class, 'index']);
+Route::get('/index', [FlightHoursRestrictionsController::class, 'indexRestrictionCalendar']);
     Route::get('/index/details', [FlightHoursRestrictionsController::class, 'indexDetails']);
     Route::get('/days/index', [DayController::class, 'index']);
     Route::get('/destroy/{id_restriction}', [FlightHoursRestrictionsController::class, 'destroy']);
