@@ -94,7 +94,6 @@ public function indexRestrictionCalendar(){
         $validator = Validator::make($data, [
             'motive' => 'required|string',
             'start_date' => 'required|string',
-            'end_date' => 'string',
             'start_hour' => 'required|string',
             'end_hour' => 'required|string',
             'id_flight' => 'required|integer|exists:info_flights,id',
@@ -109,7 +108,7 @@ public function indexRestrictionCalendar(){
         $restriction->start_hour = $data['start_hour'];
         $restriction->end_hour = $data['end_hour'];
         $restriction->start_date = $data['start_date'];
-        $restriction->end_date = $data['end_date'];
+        $restriction->end_date = $data['end_date'] ?? null;
         $restriction->id_flight = $data['id_flight'];
 
         // Guarda el registro en la base de datos
