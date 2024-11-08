@@ -1019,7 +1019,7 @@ function getAllInfoReport(int $id_flight)
         $flightPayment->id_instructor = $request->id_instructor;
         $flightPayment->id_employee = $request->id_employee;
         $flightPayment->total = $request->total;
-        $flightPayment->payment_status = 'pendiente';
+        $flightPayment->payment_status = 'pagado';
         $flightPayment->hour_instructor_cost = $request->hour_instructor_cost;
         $flightPayment->due_week = $request->due_week;
         $flightPayment->save();
