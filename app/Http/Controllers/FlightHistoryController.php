@@ -757,15 +757,16 @@ public function getFlightReservations()
     }
 
 
-    function getFLightTypes(string $fligth_type)
+    function getFlightTypes(string $fligth_type)
     {
-
+        // Validación del tipo de vuelo
         if ($fligth_type != 'simulador' && $fligth_type != 'vuelo') {
             return response()->json([
                 'msg' => 'Tipo de vuelo no válido'
             ], 400);
         }
 
+        // Obtener vuelos de tipo FlightHistory con el tipo de vuelo específico
         $flights = FlightHistory::select('flight_history.flight_status', 'flight_history.id', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours')
             ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->where('flight_history.type_flight', $fligth_type)
@@ -775,7 +776,6 @@ public function getFlightReservations()
 
         $flights = $flights->map(function ($flight) {
             $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
-
             $end = $start->copy()->addHours($flight->hours);
 
             return [
@@ -784,8 +784,47 @@ public function getFlightReservations()
                 'title' => $flight->type_flight,
                 'start' => $start->toIso8601String(),
                 'end' => $end->toIso8601String(),
+                'source' => 'flight_history'
             ];
         });
+
+        // Obtener restricciones de FlightHoursRestrictions
+        $restrictions = FlightHoursRestrictions::with(['flight'])->get();
+        $calendarRestrictions = [];
+
+        foreach ($restrictions as $restriction) {
+            $start_date = Carbon::parse($restriction->start_date);
+            $end_date = $restriction->end_date ? Carbon::parse($restriction->end_date) : null;
+
+            if ($end_date) {
+                // Rango de fechas entre start_date y end_date
+                $currentDate = $start_date->copy();
+                while ($currentDate <= $end_date) {
+                    $calendarRestrictions[] = [
+                        'id' => $restriction->id,
+                        'flight_status' => 'restriction',
+                        'title' => $restriction->motive,
+                        'start' => $currentDate->toDateString() . 'T00:00',
+                        'end' => $currentDate->toDateString() . 'T23:59',
+                        'source' => 'restriction'
+                    ];
+                    $currentDate->addDay();
+                }
+            } else {
+                // Solo fecha de inicio si no hay end_date
+                $calendarRestrictions[] = [
+                    'id' => $restriction->id,
+                    'flight_status' => 'restriction',
+                    'title' => $restriction->motive,
+                    'start' => $start_date->toDateString() . 'T00:00',
+                    'end' => $start_date->toDateString() . 'T23:59',
+                    'source' => 'restriction'
+                ];
+            }
+        }
+
+        // Combinar los vuelos y las restricciones en una única colección
+        $flights = $flights->merge($calendarRestrictions);
 
         return response()->json($flights);
     }
