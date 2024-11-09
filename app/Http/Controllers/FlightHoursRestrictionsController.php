@@ -3,12 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\FlightHoursRestrictions;
-use App\Models\Option;
-use App\Models\RestrictionDay;
 use Carbon\Carbon;
-use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class FlightHoursRestrictionsController extends Controller

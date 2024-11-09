@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\InfoFlightController;
 use App\Mail\RequestFlight;
+use App\Models\FlightHoursRestrictions;
 use stdClass;
 
 class FlightHistoryController extends Controller
@@ -536,13 +537,17 @@ function resetFlightData($id_flight)
      */
 public function getFlightReservations()
 {
+    // Obtener la opción de reserva
     $canReservate = Option::select('option_type', 'is_active')
         ->where('option_type', 'can_reservate_flight')
         ->first();
 
+    // Obtener los registros de FlightHistory
     $flightHistories = FlightHistory::select('flight_status', 'id', 'type_flight', 'flight_date', 'flight_hour', 'hours')
-        ->groupBy('flight_status', 'type_flight', 'flight_date', 'flight_hour', 'hours', 'id')
         ->where('flight_client_status', 'aceptado')
+        ->groupBy('flight_status', 'type_flight', 'flight_date', 'flight_hour', 'hours', 'id')
+        ->orderBy('flight_date', 'desc')
+        ->limit(100)
         ->get();
 
     $flightHistories = $flightHistories->isEmpty() ? new Collection() : $flightHistories->map(function ($flight) use ($canReservate) {
@@ -560,6 +565,7 @@ public function getFlightReservations()
         ];
     });
 
+    // Obtener los registros de FlightCustomer
     $flightCustomers = FlightCustomer::select('payment_status as flight_status', 'id', 'flight_type as type_flight', 'reservation_date as flight_date', 'reservation_hour as flight_hour', 'flight_hours as hours')
         ->groupBy('payment_status', 'flight_type', 'reservation_date', 'reservation_hour', 'flight_hours', 'id')
         ->get();
@@ -579,8 +585,46 @@ public function getFlightReservations()
         ];
     });
 
-    $flights = $flightHistories->merge($flightCustomers);
+    // Obtener las restricciones de FlightHoursRestrictions
+    $restrictions = FlightHoursRestrictions::with(['flight'])->get();
 
+    $calendarRestrictions = [];
+
+    foreach ($restrictions as $restriction) {
+        $start_date = Carbon::parse($restriction->start_date);
+        $end_date = $restriction->end_date ? Carbon::parse($restriction->end_date) : null;
+
+        if ($end_date) {
+            $currentDate = $start_date->copy();
+            while ($currentDate <= $end_date) {
+                $calendarRestrictions[] = [
+                    'id' => $restriction->id,
+                    'flight_status' => 'restriction',
+                    'title' => $restriction->motive,
+                    'start' => $currentDate->toDateString() . 'T00:00',
+                    'end' => $currentDate->toDateString() . 'T23:59',
+                    'source' => 'restriction',
+                    'can_reservate' => null,
+                ];
+                $currentDate->addDay();
+            }
+        } else {
+            $calendarRestrictions[] = [
+                'id' => $restriction->id,
+                'flight_status' => 'restriction',
+                'title' => $restriction->motive,
+                'start' => $start_date->toDateString() . 'T00:00',
+                'end' => $start_date->toDateString() . 'T23:59',
+                'source' => 'restriction',
+                'can_reservate' => null,
+            ];
+        }
+    }
+
+    // Combinar todas las colecciones en una sola
+    $flights = $flightHistories->merge($flightCustomers)->merge($calendarRestrictions);
+
+    // Retornar la respuesta
     if ($flights->isEmpty()) {
         return response()->json([['can_reservate' => $canReservate->is_active]]);
     }
