@@ -178,7 +178,7 @@ public function getStudents(Request $request)
         $query = DB::table('students')
             ->join('bases', 'students.id_base', '=', 'bases.id')
             ->join('careers', 'students.id_career', '=', 'careers.id')
-            ->join('student_subjects', 'students.id', '=', 'student_subjects.id_student')
+            ->Leftjoin('student_subjects', 'students.id', '=', 'student_subjects.id_student')
             ->select(
                 'students.id',
                 'students.name',
