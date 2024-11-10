@@ -23,6 +23,7 @@ use App\Http\Controllers\FlightCustomerController;
 use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\FlightHoursRestrictionsController;
 use App\Http\Controllers\FlightPaymentController;
+use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\NewSletterController;
@@ -372,10 +373,11 @@ Route::prefix('/support')->group(function () {
     Route::post('/error', [SupportController::class, 'notifyErrorFromStudent']);
 });
 
+Route::prefix('/google')->group(function () {
+    Route::post('/get/user/geolocation', [GoogleController::class, 'getLocation']);
+});
 Route::get('/test', function(){
     return response()->json([
         'message' => 'functionando'
     ]);
 });
-
-Route::get('/notify/students', [StudentController::class, 'notifyStudent']);

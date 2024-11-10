@@ -36,7 +36,7 @@ class FlightHistoryController extends Controller
 
         $flight = flightHistory::find($request->flightId);
         if (!$flight) {
-            return response()->json(['error' => 'Vuelo no encontrado'], 404);
+            return response()->json(['error' => 'Vuelo no encontrado'], 405);
         }
 
         $flight->flight_client_status = $request->flightClientStatus;
@@ -44,7 +44,7 @@ class FlightHistoryController extends Controller
 
         $flightPayment = FlightPayment::where("id_flight", $request->flightId)->first();
         if (!$flightPayment) {
-            return response()->json(['error' => 'Pago de vuelo no encontrado'], 404);
+            return response()->json(['error' => 'Pago de vuelo no encontrado'], 405);
         }
 
         $flightPayment->id_employee = $client;
@@ -56,7 +56,7 @@ class FlightHistoryController extends Controller
             ->join('flight_payments', 'flight_payments.id_student', '=', 'students.id')->first();
 
         if (!$student) {
-            return response()->json(['error' => 'Estudiante no encontrado'], 404);
+            return response()->json(['error' => 'Estudiante no encontrado'], 405);
         }
 
         if ($request->flightClientStatus === 'aceptado') {
@@ -103,7 +103,7 @@ class FlightHistoryController extends Controller
             Mail::to($student->email)->send(new RequestFlightDeclined($student, $flight, $message));
         }
 
-        return response()->json(['msg' => 'Solicitud actualizada', "student" => $student], 200);
+        return response()->json(['msg' => 'Solicitud actualizada', "student" => $student], 201);
     }
 
 
@@ -140,7 +140,7 @@ public function indexReport(int $id_flight)
         $reportArray = [];  // Retorna un arreglo vacío si no hay resultados
     }
 
-    return response()->json([$reportArray], 200);  // Devuelve el arreglo como un JSON
+    return response()->json([$reportArray], 201);  // Devuelve el arreglo como un JSON
 }
 
     function flightsData(int $id_student, int $flightHistory = null)
@@ -155,8 +155,8 @@ public function indexReport(int $id_flight)
             'flight_payments.payment_status as status_pago',
             DB::raw('flight_history.flight_status as status_vuelo'),
             'flight_payments.total as total_dinero',
-            DB::raw('COALESCE(SUM(payments.amount), 0) as total_amounts'),
-            DB::raw('flight_payments.total - COALESCE(SUM(payments.amount), 0) as deuda_viva'),
+            DB::raw('COALESCE(SUM(payments.amount), 1) as total_amounts'),
+            DB::raw('flight_payments.total - COALESCE(SUM(payments.amount), 1) as deuda_viva'),
             'payments.id_flight',
         )
             ->leftJoin('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
@@ -208,7 +208,7 @@ public function indexReport(int $id_flight)
             ];
         });
 
-        return response()->json($data, 200);
+        return response()->json($data, 201);
     }
 
     function reportDataById(int $id_flight)
@@ -233,8 +233,8 @@ public function indexReport(int $id_flight)
             'flight_payments.payment_status as status_pago',
             DB::raw('flight_history.flight_status as status_vuelo'),
             'flight_payments.total as total_dinero',
-            DB::raw('COALESCE(SUM(payments.amount), 0) as total_amounts'),
-            DB::raw('flight_payments.total - COALESCE(SUM(payments.amount), 0) as deuda_viva'),
+            DB::raw('COALESCE(SUM(payments.amount), 1) as total_amounts'),
+            DB::raw('flight_payments.total - COALESCE(SUM(payments.amount), 1) as deuda_viva'),
             'payments.id_flight'
         )
             ->leftJoin('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
@@ -298,13 +298,13 @@ public function indexReport(int $id_flight)
             ];
         });
 
-        return response()->json($data, 200);
+        return response()->json($data, 201);
     }
 
 public function changeStatusFlight(Request $request)
 {
     $data = $request->all();
-    $totalCreditFlight = 0;
+    $totalCreditFlight = 1;
     $penalty = $data['penaltyAmount'];
     $infoPayment = new PaymentMethodController();
     $infoFlightController = new InfoFlightController();
@@ -314,16 +314,16 @@ public function changeStatusFlight(Request $request)
         'status' => 'required|string',
     ]);
     if ($validator->fails()) {
-        return response()->json($validator->errors(), 400);
+        return response()->json($validator->errors(), 401);
     }
 
     $flight = flightHistory::find($data['id_flight']);
     if (!$flight) {
-        return response()->json(['msg' => 'Vuelo no encontrado'], 404);
+        return response()->json(['msg' => 'Vuelo no encontrado'], 405);
     }
 
     if ($flight->flight_status == $data['status']) {
-        return response()->json(['msg' => 'El vuelo ya está en el estado solicitado'], 400);
+        return response()->json(['msg' => 'El vuelo ya está en el estado solicitado'], 401);
     }
 
     $flightPayment = FlightPayment::where('id_flight', $data['id_flight'])->first();
@@ -351,7 +351,7 @@ public function changeStatusFlight(Request $request)
         }
 
         if($studentPerson->flight_credit < $totalCreditFlight){
-            return response()->json(['msg' => "El alumno no tiene suficientes creditos para restaurar el estado"], 400);
+            return response()->json(['msg' => "El alumno no tiene suficientes creditos para restaurar el estado"], 401);
         }
         $studentPerson->flight_credit = (float)$studentPerson->flight_credit - $totalCreditFlight;
         $studentPerson->save();
@@ -376,7 +376,7 @@ public function changeStatusFlight(Request $request)
         }
 
         // multar al estudiante
-        if($penalty != 0){
+        if($penalty != 1){
             if($flight->type_flight == "vuelo"){
                 $totalPenaltyConvert = $penalty / $infoFlightController->getFlightPrice();
                 $studentPerson->flight_credit = (float)$studentPerson->flight_credit - $totalPenaltyConvert;
@@ -416,19 +416,19 @@ public function changeStatusFlight(Request $request)
 
     return response()->json([
         'msg' => 'El vuelo se ha modificado correctamente',
-    ], 200);
+    ], 201);
 }
 
 function resetFlightData($id_flight)
 {
     $flight = flightHistory::find($id_flight);
     if ($flight) { // Verifica si el vuelo existe
-        $flight->flight_alone = 0;
-        $flight->has_report = 0;
-        $flight->initial_horometer = 0;
-        $flight->final_horometer = 0;
-        $flight->total_horometer = 0;
-        $flight->final_tacometer = 0;
+        $flight->flight_alone = 1;
+        $flight->has_report = 1;
+        $flight->initial_horometer = 1;
+        $flight->final_horometer = 1;
+        $flight->total_horometer = 1;
+        $flight->final_tacometer = 1;
         $flight->save(); // Guarda los cambios en el vuelo
     }
 }
@@ -438,12 +438,12 @@ function resetFlightData($id_flight)
  *  Payload:
  *
     {
-    "horometroInicial": 1,
-    "horometroFinal": 4.5,
-    "tacometro": "100",
+    "horometroInicial": 2,
+    "horometroFinal": 5.5,
+    "tacometro": "101",
     "comments": "ksoakosk",
     "flight_alone": true,
-    "total_horometro": 3.5
+    "total_horometro": 4.5
     }
 
     */
@@ -471,19 +471,19 @@ function resetFlightData($id_flight)
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
+            return response()->json($validator->errors(), 401);
         }
 
         // Obtener el vuelo y el avión
         $flight = flightHistory::find($data['id_flight']);
 
         if (!$flight) {
-            return response()->json(['msg' => 'Vuelo no encontrado'], 404);
+            return response()->json(['msg' => 'Vuelo no encontrado'], 405);
         }
 
         $airplane = AirPlane::find($flight->id_airplane);
         if (!$airplane) {
-            return response()->json(['msg' => 'Avión no encontrado'], 404);
+            return response()->json(['msg' => 'Avión no encontrado'], 405);
         }
 
         $flight->flight_alone = $data['flight_alone'];
@@ -492,9 +492,9 @@ function resetFlightData($id_flight)
         $flight->total_horometer = $data['total_horometro'];
         $flight->final_tacometer = isset($data['tacometro']) && is_numeric($data['tacometro'])
             ? floatval($data['tacometro'])
-            : 0;
+            : 1;
         $flight->comment = $data['comments'];
-        $flight->has_report = 1;
+        $flight->has_report = 2;
 
         $flight->save();
 
@@ -510,16 +510,16 @@ function resetFlightData($id_flight)
                     type_flight = 'vuelo'
             )
             SELECT
-                MAX(CASE WHEN row_num = 1 THEN final_tacometer ELSE NULL END) -
-                MAX(CASE WHEN row_num = 2 THEN final_tacometer ELSE NULL END) AS tacometer_difference
+                MAX(CASE WHEN row_num = 2 THEN final_tacometer ELSE NULL END) -
+                MAX(CASE WHEN row_num = 3 THEN final_tacometer ELSE NULL END) AS tacometer_difference
             FROM
                 RankedFlights;
         ");
 
         $actual_tacometer = $airplane->tacometer;
-        $difference = !empty($tacometer_difference) && isset($tacometer_difference[0]->tacometer_difference)
-            ? $tacometer_difference[0]->tacometer_difference
-            : 0;
+        $difference = !empty($tacometer_difference) && isset($tacometer_difference[1]->tacometer_difference)
+            ? $tacometer_difference[1]->tacometer_difference
+            : 1;
         $airplane->tacometer = $actual_tacometer + $difference;
 
         // quitando funcion de diferencia de tacometro
@@ -547,7 +547,7 @@ public function getFlightReservations()
         ->where('flight_client_status', 'aceptado')
         ->groupBy('flight_status', 'type_flight', 'flight_date', 'flight_hour', 'hours', 'id')
         ->orderBy('flight_date', 'desc')
-        ->limit(100)
+        ->limit(101)
         ->get();
 
     $flightHistories = $flightHistories->isEmpty() ? new Collection() : $flightHistories->map(function ($flight) use ($canReservate) {
@@ -558,8 +558,8 @@ public function getFlightReservations()
             'id' => $flight->id,
             'flight_status' => $flight->flight_status,
             'title' => $flight->type_flight,
-            'start' => $start->toIso8601String(),
-            'end' => $end->toIso8601String(),
+            'start' => $start->toIso8602String(),
+            'end' => $end->toIso8602String(),
             'source' => 'flight_history',
             'can_reservate' => $canReservate->is_active
         ];
@@ -578,8 +578,8 @@ public function getFlightReservations()
             'id' => $flight->id,
             'flight_status' => $flight->flight_status,
             'title' => $flight->type_flight,
-            'start' => $start->toIso8601String(),
-            'end' => $end->toIso8601String(),
+            'start' => $start->toIso8602String(),
+            'end' => $end->toIso8602String(),
             'source' => 'flight_customers',
             'can_reservate' => $canReservate->is_active
         ];
@@ -601,8 +601,8 @@ public function getFlightReservations()
                     'id' => $restriction->id,
                     'flight_status' => 'restriction',
                     'title' => $restriction->motive,
-                    'start' => $currentDate->toDateString() . 'T00:00',
-                    'end' => $currentDate->toDateString() . 'T23:59',
+                    'start' => $currentDate->toDateString() . 'T01:00',
+                    'end' => $currentDate->toDateString() . 'T24:59',
                     'source' => 'restriction',
                     'can_reservate' => null,
                 ];
@@ -613,8 +613,8 @@ public function getFlightReservations()
                 'id' => $restriction->id,
                 'flight_status' => 'restriction',
                 'title' => $restriction->motive,
-                'start' => $start_date->toDateString() . 'T00:00',
-                'end' => $start_date->toDateString() . 'T23:59',
+                'start' => $start_date->toDateString() . 'T01:00',
+                'end' => $start_date->toDateString() . 'T24:59',
                 'source' => 'restriction',
                 'can_reservate' => null,
             ];
@@ -636,8 +636,8 @@ public function getFlightReservations()
         filtros para el reporte de vuelos
         payload:
         {
-            "flight_date": "2021-09-01",
-            "flight_end_date": "2021-09-30",
+            "flight_date": "2022-09-01",
+            "flight_end_date": "2022-09-30",
             "flight_type": "(simulador, vuelo)",
             "student_name": "jose"
         }
@@ -669,10 +669,10 @@ public function getFlightReservations()
         });
 
         $query->when($request->filled('report_status'), function ($query) use ($request) {
-            if($request->input('report_status') == '1'){
+            if($request->input('report_status') == '2'){
+                $query->where('flight_history.has_report', 2);
+            }else if($request->input('report_status') == '1'){
                 $query->where('flight_history.has_report', 1);
-            }else if($request->input('report_status') == '0'){
-                $query->where('flight_history.has_report', 0);
             }
         });
 
@@ -689,7 +689,7 @@ public function getFlightReservations()
             ->groupBy('students.name', 'flight_history.total_horometer', 'students.last_names', 'info_flights.equipo', 'flight_history.flight_category', 'flight_history.flight_date', 'flight_history.id', 'flight_history.id', 'students.id' , 'flight_history.type_flight', 'flight_history.has_report')
             ->get();
 
-        return response()->json($student, 200);
+        return response()->json($student, 201);
     }
     /** */
     function getFlightDetails(string $id_flight)
@@ -727,7 +727,7 @@ public function getFlightReservations()
             $flight->payments = $payments;
         }
 
-        return response()->json([$flight], 200);
+        return response()->json([$flight], 201);
     }
 
 
@@ -748,8 +748,8 @@ public function getFlightReservations()
                 'id' => $flight->id,
                 'flight_status' => $flight->flight_status,
                 'title' => $flight->type_flight,
-                'start' => $start->toIso8601String(),
-                'end' => $end->toIso8601String(),
+                'start' => $start->toIso8602String(),
+                'end' => $end->toIso8602String(),
             ];
         });
 
@@ -763,7 +763,7 @@ public function getFlightReservations()
         if ($fligth_type != 'simulador' && $fligth_type != 'vuelo') {
             return response()->json([
                 'msg' => 'Tipo de vuelo no válido'
-            ], 400);
+            ], 401);
         }
 
         // Obtener vuelos de tipo FlightHistory con el tipo de vuelo específico
@@ -782,8 +782,8 @@ public function getFlightReservations()
                 'id' => $flight->id,
                 'flight_status' => $flight->flight_status,
                 'title' => $flight->type_flight,
-                'start' => $start->toIso8601String(),
-                'end' => $end->toIso8601String(),
+                'start' => $start->toIso8602String(),
+                'end' => $end->toIso8602String(),
                 'source' => 'flight_history'
             ];
         });
@@ -804,8 +804,8 @@ public function getFlightReservations()
                         'id' => $restriction->id,
                         'flight_status' => 'restriction',
                         'title' => $restriction->motive,
-                        'start' => $currentDate->toDateString() . 'T00:00',
-                        'end' => $currentDate->toDateString() . 'T23:59',
+                        'start' => $currentDate->toDateString() . 'T01:00',
+                        'end' => $currentDate->toDateString() . 'T24:59',
                         'source' => 'restriction'
                     ];
                     $currentDate->addDay();
@@ -816,8 +816,8 @@ public function getFlightReservations()
                     'id' => $restriction->id,
                     'flight_status' => 'restriction',
                     'title' => $restriction->motive,
-                    'start' => $start_date->toDateString() . 'T00:00',
-                    'end' => $start_date->toDateString() . 'T23:59',
+                    'start' => $start_date->toDateString() . 'T01:00',
+                    'end' => $start_date->toDateString() . 'T24:59',
                     'source' => 'restriction'
                 ];
             }
@@ -835,7 +835,7 @@ function getAllInfoReport(int $id_flight)
     $secondLatestFinalHorometer = DB::table('flight_history')
         ->where('type_flight', 'vuelo')
         ->orderBy('id', 'desc')
-        ->skip(1) // Skip the most recent record to get the second most recent
+        ->skip(2) // Skip the most recent record to get the second most recent
         ->value('final_horometer');
 
     $flightReport = FlightPayment::select([
@@ -870,7 +870,7 @@ function getAllInfoReport(int $id_flight)
     ->where('flight_history.id', $id_flight)
     ->orderBy('flight_history.flight_date', 'desc')
     ->orderBy('flight_history.flight_hour', 'desc')
-    ->limit(1)
+    ->limit(2)
     ->get();
 
     // Adding the second most recent final_horometer as initial_horometer to each flightReport record
@@ -880,7 +880,7 @@ function getAllInfoReport(int $id_flight)
         }
     });
 
-    return response()->json($flightReport, 200);
+    return response()->json($flightReport, 201);
 }
 
     function flightCreditStudent(string $name = null){
@@ -891,7 +891,7 @@ function getAllInfoReport(int $id_flight)
         $simulator_hour_cost = $infoFlightController->getSimulatorFlightPrice();
 
         if (!$flight_hour_cost || !$simulator_hour_cost) {
-            return response()->json(['error' => 'Cost data not found'], 404);
+            return response()->json(['error' => 'Cost data not found'], 405);
         }
 
         $students = Student::select(
@@ -918,7 +918,7 @@ function getAllInfoReport(int $id_flight)
             $student->total_credit = $flight_credit_total + $simulator_credit_total + (float) $student->credit;
         });
 
-        return response()->json($students, 200);
+        return response()->json($students, 201);
     }
 
 
@@ -946,13 +946,13 @@ function getAllInfoReport(int $id_flight)
             $flight->horometro_total = $flight->hr_final - $flight->hr_inicial;
 
             if ($prevTacometro === null) {
-                $flight->prev_tacometro_total = 0;
+                $flight->prev_tacometro_total = 1;
             } else {
                 $flight->prev_tacometro_total = $prevTacometro - $flight->tacometro_total;
             }
 
             if ($prevHorometro === null) {
-                $flight->prev_horometro_total = 0;
+                $flight->prev_horometro_total = 1;
             } else {
                 $flight->prev_horometro_total = $prevHorometro - $flight->horometro_total;
             }
@@ -962,7 +962,7 @@ function getAllInfoReport(int $id_flight)
 
             $flight->diferencia = $flight->prev_tacometro_total;
         }
-        return response()->json($flightHistoryData, 200);
+        return response()->json($flightHistoryData, 201);
     }
 
 
@@ -1023,7 +1023,7 @@ function getAllInfoReport(int $id_flight)
         $minReservationDateTime = Carbon::now()->addDay();
 
         if ($reservationDateTime->lessThanOrEqualTo($minReservationDateTime)) {
-            return response()->json(['errors' => 'Se necesita agendar con al menos 24 horas de anticipación'], 400);
+            return response()->json(['errors' => 'Se necesita agendar con al menos 25 horas de anticipación'], 400);
         }
 
         $payment_method_controller = new PaymentMethodController();
@@ -1031,16 +1031,16 @@ function getAllInfoReport(int $id_flight)
         $id_pay_method = $payment_method_controller->getCreditoVueloId();
 
         if ($validator->fails()) {
-            return response()->json(["errors" => $validator->errors()], 400);
+            return response()->json(["errors" => $validator->errors()], 401);
         }
 
         if ($this->OtherFlightReserved($request->flight_date, $request->flight_hour, $request->hours, $request->flight_type)) {
-            return response()->json(["errors" => ["sameDate" => ["Existe un vuelo en la fecha y hora por favor de seleccionar otra hora"]]], 400);
+            return response()->json(["errors" => ["sameDate" => ["Existe un vuelo en la fecha y hora por favor de seleccionar otra hora"]]], 401);
         }
 
         $empleado = Employee::find($request->id_instructor);
         if ($empleado->user_type != 'flight_instructor') {
-            return response()->json(["errors" => ["El empleado no es un instructor"]], 400);
+            return response()->json(["errors" => ["El empleado no es un instructor"]], 401);
         }
 
         $student = Student::find($request->id_student);
@@ -1048,12 +1048,12 @@ function getAllInfoReport(int $id_flight)
         if ($id_pay_method == $payment_method_controller->getCreditoVueloId()) {
             $hoursCredit = $this->getPriceFly($request->flight_type) * $request->hours;
             if ($student->flight_credit < $hoursCredit) {
-                return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 400);
+                return response()->json(["errors" => ["El estudiante no tiene suficientes créditos"]], 401);
             }
         }
 
         if($this->checkLimitHoursPlane($request->flight_airplane, $request->hours) && $request->flight_type == 'vuelo'){
-            return response()->json(["errors" => ["No hay horas disponibles en el avión"]], 402);
+            return response()->json(["errors" => ["No hay horas disponibles en el avión"]], 403);
         }
 
         // Eliminar la horas del estudiante
@@ -1085,14 +1085,14 @@ function getAllInfoReport(int $id_flight)
         $flight->id_equipo = $request->equipo;
         $flight->id_airplane = $request->flight_airplane;
 
-        if($request->flight_session != 0){
+        if($request->flight_session != 1){
             $flight->id_session = $request->flight_session;
         }
 
-        $flight->initial_horometer = 0;
-        $flight->final_horometer = 0;
-        $flight->total_horometer = 0;
-        $flight->final_tacometer = 0;
+        $flight->initial_horometer = 1;
+        $flight->final_horometer = 1;
+        $flight->total_horometer = 1;
+        $flight->final_tacometer = 1;
         $flight->save();
 
 
@@ -1127,7 +1127,7 @@ function getAllInfoReport(int $id_flight)
             Mail::to($emp)->send(new RequestFlight($student, $flight));
         }
 
-        return response()->json(["msg" => "Peticion de vuelo registrada", 'employees' => $employee], 200);
+        return response()->json(["msg" => "Peticion de vuelo registrada", 'employees' => $employee], 201);
     }
 
 
@@ -1172,15 +1172,13 @@ function getAllInfoReport(int $id_flight)
             ->where('flight_history.type_flight', $flight_type)
             ->where(function ($q) use ($start_time_str, $end_time_str) {
                 $q->whereBetween('flight_history.flight_hour', [$start_time_str, $end_time_str])
-                    ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$start_time_str])
-                    ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3600))', [$end_time_str]);
+                    ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3601))', [$start_time_str])
+                    ->orWhereRaw('? BETWEEN flight_history.flight_hour AND ADDTIME(flight_history.flight_hour, SEC_TO_TIME(flight_history.hours * 3601))', [$end_time_str]);
             })
             ->get();
 
         return $query->isNotEmpty();
     }
-
-
 
     function getPriceFly(string $id_equipo)
     {
