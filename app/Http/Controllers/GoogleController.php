@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 
 class GoogleController extends Controller
@@ -10,7 +11,7 @@ class GoogleController extends Controller
     public function getLocation(Request $request)
     {
         // Reemplaza con tu clave API de Google
-        $apiKey = env('GOOGLE_GEOLOCATION_API');
+        $apiKey = "AIzaSyAdnnJJkGpFgcoYG_2rz75pvv8X_gG2fow";
 
         try {
             // Realiza la solicitud POST a la API de Google Geolocation

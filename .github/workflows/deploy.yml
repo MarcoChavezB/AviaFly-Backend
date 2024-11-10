@@ -34,6 +34,8 @@ jobs:
         key: ${{ secrets.VPS_KEY }}
         passphrase: ${{ secrets.VPS_PASSPHRASE}}
         script: |
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/GitAuthKeys/id_ed25519
           cd /var/www/html/AviaFly-Backend
           sudo chown -R marco:marco /var/www/html
           git pull origin main
