@@ -10,6 +10,7 @@ class GoogleController extends Controller
 {
     public function getLocation(Request $request)
     {
+        return
         // Reemplaza con tu clave API de Google
         $apiKey = "AIzaSyAdnnJJkGpFgcoYG_2rz75pvv8X_gG2fow";
 
