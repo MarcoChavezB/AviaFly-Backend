@@ -201,7 +201,7 @@ public function fingerPrintList($id_finger)
     $currentDateTimeFormatted = $currentTime->format('Y-m-d H:i:s');
     $user_type = $employee->user_type;
 
-    if ($type === 'entrada') {
+    /* if ($type === 'entrada') {
 
         $admins = Employee::whereIn('user_type', ['root'])->get();
         foreach ($admins as $admin) {
@@ -213,7 +213,7 @@ public function fingerPrintList($id_finger)
 
     if($type != 'entrada'){
         Mail::to($employee->email)->send(new EmailCheckNotification($employeeName, $currentDateTimeFormatted, $type));
-    }
+    } */
     return response()->json(['message' => 'Registro de asistencia exitoso']);
 }
 
