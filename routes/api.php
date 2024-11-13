@@ -198,6 +198,8 @@ Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/nearby', [FlightHistoryController::class, 'nearby']);
 });
 
+
+
 Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
     Route::post('/amount', [PaymentsController::class, 'addPayment']);
     Route::post('/change/status', [PaymentsController::class, 'changeFlightPaymentStatus']);
