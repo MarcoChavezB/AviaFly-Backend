@@ -1203,15 +1203,3 @@ function getAllInfoReport(int $id_flight)
         return response()->json($flights);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
