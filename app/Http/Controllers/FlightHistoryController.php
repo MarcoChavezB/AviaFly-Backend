@@ -1184,4 +1184,34 @@ function getAllInfoReport(int $id_flight)
     {
         return InfoFlight::find($id_equipo);
     }
+
+    function nearby(){
+        $flights = flightHistory::select(
+            'students.user_identification',
+            'students.id as id_student',
+            'students.name',
+            'students.last_names',
+            'flight_history.type_flight',
+            'flight_history.hours',
+            'flight_history.flight_date',
+            'flight_history.flight_hour'
+        )
+        ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
+        ->join('students', 'students.id', '=', 'flight_payments.id_student')
+        ->whereBetween('flight_history.flight_date', [Carbon::now()->subDay(), Carbon::now()])->get();
+
+        return response()->json($flights);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+

@@ -195,6 +195,7 @@ Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::post('/store/request/student/flight', [FlightHistoryController::class, 'requestFlightReservation']);
     Route::post('/change/status/request', [FlightHistoryController::class, 'changeStatusRequest']);
     Route::get('/credit/students/index', [FlightHistoryController::class, 'flightCreditStudent']);
+    Route::get('/nearby', [FlightHistoryController::class, 'nearby']);
 });
 
 Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
