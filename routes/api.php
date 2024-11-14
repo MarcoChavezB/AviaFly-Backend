@@ -29,6 +29,7 @@ use App\Http\Controllers\LessonController;
 use App\Http\Controllers\NewSletterController;
 use App\Http\Controllers\OptionController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\PDFController;
@@ -379,6 +380,14 @@ Route::prefix('/support')->group(function () {
 Route::prefix('/google')->group(function () {
     Route::post('/get/user/geolocation', [GoogleController::class, 'getLocation']);
 });
+
+Route::prefix('/passwords')->middleware(['auth:sanctum', 'role:root,admin,employee'])->group(function () {
+    Route::get('/index', [PasswordController::class, 'index']);
+    Route::post('/store', [PasswordController::class, 'store']);
+    Route::get('/show/{idRecord}', [PasswordController::class, 'showPassword']);
+    Route::get('/destroy/{idRecord}', [PasswordController::class, 'destroy']);
+});
+
 Route::get('/test', function(){
     return response()->json([
         'message' => 'functionando'
