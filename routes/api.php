@@ -384,6 +384,7 @@ Route::prefix('/google')->group(function () {
 Route::prefix('/passwords')->middleware(['auth:sanctum', 'role:root,admin,employee'])->group(function () {
     Route::get('/index', [PasswordController::class, 'index']);
     Route::post('/store', [PasswordController::class, 'store']);
+    Route::post('/update/{id}', [PasswordController::class, 'update']);
     Route::get('/show/{idRecord}', [PasswordController::class, 'showPassword']);
     Route::get('/destroy/{idRecord}', [PasswordController::class, 'destroy']);
 });

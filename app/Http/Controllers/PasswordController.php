@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Password;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Validator;
 use Nette\Utils\Validators;
 
@@ -117,21 +118,32 @@ class PasswordController extends Controller
      * @param  \App\Models\Password  $password
      * @return \Illuminate\Http\Response
      */
-    public function edit(Password $password)
+    public function update(Request $request, int $id)
     {
-        //
-    }
+        // Encuentra la contraseña o retorna un error 404 si no existe
+        $password = Password::findOrFail($id);
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Password  $password
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Password $password)
-    {
-        //
+        // Validar los datos recibidos
+        $validatedData = $request->validate([
+            'site' => 'sometimes|required|string|max:255',
+            'user_name' => 'sometimes|required|string|max:255',
+            'password' => 'sometimes|required|string|max:255',
+            'notes' => 'nullable|string',
+        ]);
+
+        // Si hay una nueva contraseña, la encriptamos
+        if (isset($validatedData['password'])) {
+            $validatedData['password'] = Crypt::encryptString($validatedData['password']);
+        }
+
+        // Actualiza solo los campos que fueron modificados
+        $password->update($validatedData);
+
+        // Retorna una respuesta indicando éxito
+        return response()->json([
+            'message' => 'Password updated successfully',
+            'data' => $password
+        ]);
     }
 
     /**
