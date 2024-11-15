@@ -558,8 +558,8 @@ public function getFlightReservations()
             'id' => $flight->id,
             'flight_status' => $flight->flight_status,
             'title' => $flight->type_flight,
-            'start' => $start->toIso8602String(),
-            'end' => $end->toIso8602String(),
+            'start' => $start->toIso8601String(),
+            'end' => $end->toIso8601String(),
             'source' => 'flight_history',
             'can_reservate' => $canReservate->is_active
         ];
@@ -574,13 +574,12 @@ public function getFlightReservations()
         $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
         $end = $start->copy()->addHours($flight->hours);
 
-
         return [
             'id' => $flight->id,
             'flight_status' => $flight->flight_status,
             'title' => $flight->type_flight,
-            'start' => $start instanceof Carbon ? $start->toIso8602String() : null,
-            'end' => $end instanceof Carbon ? $end->toIso8602String() : null,
+            'start' => $start->toIso8601String(),
+            'end' => $end->toIso8601String(),
             'source' => 'flight_customers',
             'can_reservate' => $canReservate->is_active
         ];
