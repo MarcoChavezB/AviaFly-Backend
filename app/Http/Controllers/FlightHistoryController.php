@@ -593,6 +593,8 @@ public function getFlightReservations()
     foreach ($restrictions as $restriction) {
         $start_date = Carbon::parse($restriction->start_date);
         $end_date = $restriction->end_date ? Carbon::parse($restriction->end_date) : null;
+        $start_hour = $restriction->start_hour ?? '01:00';
+        $end_hour = $restriction->end_hour ?? '23:59';
 
         if ($end_date) {
             $currentDate = $start_date->copy();
@@ -601,8 +603,8 @@ public function getFlightReservations()
                     'id' => $restriction->id,
                     'flight_status' => 'restriction',
                     'title' => $restriction->motive,
-                    'start' => $currentDate->toDateString() . 'T01:00',
-                    'end' => $currentDate->toDateString() . 'T24:59',
+                    'start' => $currentDate->toDateString() . 'T' . $start_hour,
+                    'end' => $currentDate->toDateString() . 'T' . $end_hour,
                     'source' => 'restriction',
                     'can_reservate' => null,
                 ];
@@ -613,8 +615,8 @@ public function getFlightReservations()
                 'id' => $restriction->id,
                 'flight_status' => 'restriction',
                 'title' => $restriction->motive,
-                'start' => $start_date->toDateString() . 'T01:00',
-                'end' => $start_date->toDateString() . 'T24:59',
+                'start' => $start_date->toDateString() . 'T' . $start_hour,
+                'end' => $start_date->toDateString() . 'T' . $end_hour,
                 'source' => 'restriction',
                 'can_reservate' => null,
             ];
