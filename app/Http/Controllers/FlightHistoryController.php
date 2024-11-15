@@ -579,7 +579,7 @@ public function getFlightReservations()
             'flight_status' => $flight->flight_status,
             'title' => $flight->type_flight,
             'start' => $start->toIso8602String(),
-            'end' => $end->toIso8602String(),
+            'end' => $end->toIso8602String() ?? null,
             'source' => 'flight_customers',
             'can_reservate' => $canReservate->is_active
         ];
