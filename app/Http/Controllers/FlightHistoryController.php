@@ -574,12 +574,14 @@ public function getFlightReservations()
         $start = Carbon::createFromFormat('Y-m-d H:i', $flight->flight_date . ' ' . $flight->flight_hour);
         $end = $start->copy()->addHours($flight->hours);
 
+        $endDateParse = $end ? $end->toIso8601String() : $end;
+
         return [
             'id' => $flight->id,
             'flight_status' => $flight->flight_status,
             'title' => $flight->type_flight,
             'start' => $start->toIso8602String(),
-            'end' => $end->toIso8602String() ?? null,
+            'end' => $endDateParse,
             'source' => 'flight_customers',
             'can_reservate' => $canReservate->is_active
         ];
