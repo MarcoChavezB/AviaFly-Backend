@@ -1059,6 +1059,7 @@ public function getInfoVueloAlumno(int $id = null)
                 $query->where('flight_history.flight_status', 'proceso')
                       ->orWhere('flight_history.flight_status', 'hecho');
             })
+            ->limit(100)
             ->get();
 
         return response()->json($student, 200);
