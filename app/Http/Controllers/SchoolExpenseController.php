@@ -22,6 +22,7 @@ class SchoolExpenseController extends Controller
             'paymentMethod'
         ])
         ->orderBy('created_at', 'desc')
+        ->limit(100)
         ->get();
         return response()->json($expenses);
     }
