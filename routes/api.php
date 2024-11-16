@@ -251,7 +251,7 @@ Route::prefix('/prices')->middleware('auth:sanctum')->group(function () {
 });
 
 Route::prefix('/calendars')->middleware('auth:sanctum')->group(function () {
-    Route::get('/flight/reservate', [FlightHistoryController::class, 'getFlightReservations']);
+    Route::post('/flight/reservate/{id_student?}', [FlightHistoryController::class, 'getFlightReservations']);
     Route::get('/flight/types/{flight_type}', [FlightHistoryController::class, 'getFLightTypes']);
     Route::get('/flight/reservate/{id_student}', [FlightHistoryController::class, 'getFLightReservationsById']);
     Route::get('/flight/details/{id_flight}', [FlightHistoryController::class, 'getFlightDetails']);
