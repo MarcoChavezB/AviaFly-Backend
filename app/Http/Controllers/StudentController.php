@@ -569,9 +569,9 @@ public function getInfoVueloAlumno(int $id = null)
             return response()->json(["errors" => $validator->errors()], 400);
         }
 
-        /* if ($this->OtherFlightReserved($request->flight_date, $request->flight_hour, $request->hours, $request->flight_type)) {
+        if ($this->OtherFlightReserved($request->flight_date, $request->flight_hour, $request->hours, $request->flight_type)) {
             return response()->json(["errors" => ["sameDate" => ["Existe un vuelo en la fecha y hora por favor de seleccionar otra hora"]]], 400);
-        } */
+        }
 
         if ($this->isDateRestricted($request->flight_date, $request->flight_hour, $request->hours, $request->equipo)) {
             return response()->json(["errors" => ["La fecha seleccionada coincide con una fecha inhabil. Por favor, selecciona otra hora."]], 400);
