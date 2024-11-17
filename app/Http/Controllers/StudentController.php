@@ -583,6 +583,7 @@ public function getInfoVueloAlumno(int $id = null)
         $InfoFlight = $this->getPriceFly($request->equipo);
         $hoursCredit = $InfoFlight->hours;
 
+
         $creditMapping = [
             "flight" => $student->flight_credit,
             "simulator" => $student->simulator_credit
