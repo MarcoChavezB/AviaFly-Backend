@@ -522,8 +522,7 @@ function resetFlightData($id_flight)
             : 1;
         $airplane->tacometer = $actual_tacometer + $difference;
 
-        // quitando funcion de diferencia de tacometro
-/*      $airplane->save(); */
+        $airplane->save();
 
         return response()->json([
             'msg' => "El reporte se ha guardado correctamente"
