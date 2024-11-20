@@ -51,14 +51,15 @@ class IncomesController extends Controller
     }
 
 
-    public function generateTicket(array $data, string $employeeName, string $employeeLastNames, int $employeeBaseId, int $incomeDetailsId, int $studentID): string
+    public function generateTicket(array $data, string $employeeName, string $employeeLastNames, int $employeeBaseId, int $incomeDetailsId, int $studentID, bool $hasExtraHour): string
     {
         $fileController = new FileController();
         $studentData = Student::findOrFail($studentID);
         $baseData = Base::findOrFail($employeeBaseId);
         $incomeDetails = IncomeDetails::findOrFail($incomeDetailsId);
 
-        $pdf = PDF::loadView('income_ticket', compact('data', 'studentData', 'employeeName', 'employeeLastNames', 'baseData', 'incomeDetails'));
+
+        $pdf = PDF::loadView('income_ticket', compact('data', 'studentData', 'employeeName', 'employeeLastNames', 'baseData', 'incomeDetails', 'hasExtraHour'));
 
         $baseName = $this->sanitizeName($baseData->name);
         $fileName = $this->generateFileName($baseName, $studentData->user_identification, 'tickets');
@@ -91,14 +92,27 @@ class IncomesController extends Controller
     {
         $this->validateRequest($request);
         $student = Student::find($request->student_id);
-        foreach($request->payments as $payment){
-            if($payment['concept'] == "Horas simulador" && $payment['quantity'] >= 10){
+        $extraHour = false;
+
+        // agregar la hora extra si es mayor a 10 las horas compradas
+        $payments = $request->payments; // Hacemos una copia del arreglo
+
+        foreach ($payments as &$payment) { // Usamos referencia para modificar la copia
+            $payment['hasExtraHour'] = false;
+
+            if ($payment['concept'] == "Horas simulador" && $payment['quantity'] >= 10) {
                 $student->simulator_credit = $student->simulator_credit + 1;
+                $payment['hasExtraHour'] = true;
+                $extraHour = true;
             }
-            if($payment['concept'] == "Horas de vuelo"  && $payment['quantity'] >= 10){
+
+            if ($payment['concept'] == "Horas de vuelo" && $payment['quantity'] >= 10) {
                 $student->flight_credit = $student->flight_credit + 1;
+                $payment['hasExtraHour'] = true;
+                $extraHour = true;
             }
         }
+
         $student->save();
 
         $employee = $this->getAuthenticatedEmployee();
@@ -110,10 +124,14 @@ class IncomesController extends Controller
 
 
 
-        $this->saveIncomeEntries($request->input('payments'), $incomeDetailsId, $request->input('student_id'));
+        $this->saveIncomeEntries($payments, $incomeDetailsId, $request->input('student_id'));
 
-        $ticketUrl = $this->generateTicket($request->input('payments'), $employee->name,
-            $employee->last_names, $employee->id_base, $incomeDetailsId, $request->input('student_id'));
+        $ticketUrl = $this->generateTicket($payments, $employee->name,
+            $employee->last_names,
+            $employee->id_base,
+            $incomeDetailsId,
+            $request->input('student_id'),
+            $extraHour);
 
         return response()->json(['message' => 'ok', 'ticketUrl' => $ticketUrl], 201);
     }

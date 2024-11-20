@@ -104,7 +104,12 @@
             <tbody>
             @foreach($data as $item)
                 <tr>
-                    <td>{{$item['quantity']}}</td>
+                    <td>
+                        {{$item['quantity']}}
+                        @if($item['hasExtraHour'])
+                            + 1
+                        @endif
+                    </td>
                     <td>{{ $item['concept'] }}</td>
                     <td>${{ $item['total'] }}</td>
                 </tr>
