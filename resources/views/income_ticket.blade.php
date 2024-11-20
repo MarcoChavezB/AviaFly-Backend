@@ -118,7 +118,17 @@
         </table>
     </div>
     <div class="payment-info">
-        <p><span>Forma de pago:</span> <span>{{ $incomeDetails->payment_method }}</span></p>
+
+        <p>
+            <span>Forma de pago:</span>
+
+            @if($incomeDetails->payment_method == "Transferencia")
+                <span>{{ $incomeDetails->bank_account }}</span>
+            @else
+                <span>{{ $incomeDetails->payment_method }}</span>
+            @endif
+        </p>
+
         <p><span>Comision:</span> <span>${{ $incomeDetails->commission }}</span></p>
         <p class="total"><span>Total:</span> <span>${{ $incomeDetails->total }}</span></p> <!-- Clase modificada -->
     </div>
