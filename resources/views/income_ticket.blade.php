@@ -123,7 +123,7 @@
             <span>Forma de pago:</span>
 
             @if($incomeDetails->payment_method == "Transferencia")
-                <span>{{ $incomeDetails->bank_account }}</span>
+                <span> Transferencia {{ $incomeDetails->bank_account }}</span>
             @else
                 <span>{{ $incomeDetails->payment_method }}</span>
             @endif
