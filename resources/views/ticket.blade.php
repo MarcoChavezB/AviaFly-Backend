@@ -75,7 +75,7 @@
 <body>
 <main>
     <div class="header">
-        <img src="http://aviabackend.site/IMG/logo_avia.png" alt="logo">
+        <img src="http://api.aviafly.site:8080/AviaFly-Backend/public/newsletters/bases/Torreon/files/avia.png" alt="logo">
     </div>
     <div class="text">
         <p>AVIATRAINING AND<br>
