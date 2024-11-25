@@ -1072,9 +1072,9 @@ function getAllInfoReport(int $id_flight)
             }
         }
 
-        if($this->checkLimitHoursPlane($request->flight_airplane, $request->hours) && $request->flight_type == 'vuelo'){
+        /*if($this->checkLimitHoursPlane($request->flight_airplane, $request->hours) && $request->flight_type == 'vuelo'){
             return response()->json(["errors" => ["No hay horas disponibles en el avión"]], 403);
-        }
+        }*/
 
         // Eliminar la horas del estudiante
         $flightTypeReservation = $request->flight_type;
