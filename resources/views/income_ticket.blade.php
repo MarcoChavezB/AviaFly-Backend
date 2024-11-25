@@ -106,7 +106,7 @@
                 <tr>
                     <td>
                         {{$item['quantity']}}
-                        @if($item['hasExtraHour'])
+                        @if(isset($item['hasExtraHour']) && $item['hasExtraHour'])
                             + 1
                         @endif
                     </td>

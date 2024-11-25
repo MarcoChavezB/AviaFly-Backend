@@ -513,6 +513,7 @@ public function getInfoVueloAlumno(int $id = null)
 */
     function storeFlight(Request $request)
     {
+
         $user = Employee::where('user_identification', Auth::user()->user_identification)->first();
 
         $validator = Validator::make($request->all(), [
@@ -598,9 +599,9 @@ public function getInfoVueloAlumno(int $id = null)
         }
 /*         } */
 
-        /* if($this->checkLimitHoursPlane($request->flight_airplane, $request->hours) && $request->flight_type == 'vuelo'){
+        /*if($this->checkLimitHoursPlane($request->flight_airplane, $request->hours) && $request->flight_type == 'vuelo'){
             return response()->json(["errors" => ["No hay horas disponibles en el avión"]], 402);
-        } */
+        }*/
 
         DB::statement('CALL storeAcademicFlight(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $request->id_student,             // id_student: INT

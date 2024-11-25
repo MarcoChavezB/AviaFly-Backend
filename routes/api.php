@@ -389,8 +389,5 @@ Route::prefix('/passwords')->middleware(['auth:sanctum', 'role:root,admin,employ
     Route::get('/destroy/{idRecord}', [PasswordController::class, 'destroy']);
 });
 
-Route::get('/test', function(){
-    return response()->json([
-        'message' => 'functionando'
-    ]);
+Route::get('/test/{user_identification}', function(){
 });
