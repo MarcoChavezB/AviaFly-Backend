@@ -546,7 +546,7 @@ function resetFlightData($id_flight)
             ->first();
 
         // Obtener los registros de FlightHistory
-        $flightHistories = FlightHistory::select('flight_status', 'flight_history.id as flight_history_id', 'type_flight', 'flight_date', 'flight_hour', 'hours')
+        $flightHistories = FlightHistory::select( 'flight_status', 'flight_history.id as flight_history_id', 'type_flight', 'flight_date', 'flight_hour', 'hours')
             ->where('flight_client_status', 'aceptado')
             ->groupBy('flight_history.flight_status', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours', 'flight_history.id')
             ->orderBy('flight_history.flight_date', 'desc')
@@ -570,7 +570,7 @@ function resetFlightData($id_flight)
             $end = $start->copy()->addHours($flight->hours);
 
             return [
-                'id' => $flight->id,
+                'id' => $flight->flight_history_id,
                 'flight_status' => $flight->flight_status,
                 'title' => $flight->type_flight,
                 'start' => $start->toIso8601String(),
