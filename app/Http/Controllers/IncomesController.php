@@ -454,117 +454,166 @@ class IncomesController extends Controller
 
         return response()->json(["income" => $income, "incomeDetail" => $incomeDetail]);
     }
-public function indexIncomes() {
-    $students = DB::table('students')
-        ->select(
-            'students.id as student_id',
-            'income_details.id as income_details_id',
-            'students.user_identification',
-            'students.name as student_name',
-            'students.last_names as student_lastnames',
-            'incomes.concept as concept',
-            'incomes.total as concept_total',
-            'incomes.discount as discount',
-            'incomes.quantity as quantity',
-            DB::raw('COUNT(incomes.id) as income_count'),
-            DB::raw('SUM(incomes.total) as total_incomes')
-        )
-        ->rightJoin('income_details', 'income_details.student_id', '=', 'students.id')
-        ->rightJoin('incomes', 'income_details.id', '=', 'incomes.income_details_id')
-        ->groupBy(
-            'students.id',
-            'students.user_identification',
-            'students.name',
-            'students.last_names',
-            'income_details.id',
-            'incomes.concept',
-            'incomes.total',
-            'incomes.discount',
-            'incomes.quantity'
-        )
-        ->get();
 
-    $studentData = [];
+    public function indexIncomes() {
+        $students = DB::table('students')
+            ->select(
+                'students.id as student_id',
+                'income_details.id as income_details_id',
+                'students.user_identification',
+                'students.name as student_name',
+                'students.last_names as student_lastnames',
+                'incomes.concept as concept',
+                'incomes.total as concept_total',
+                'incomes.discount as discount',
+                'incomes.quantity as quantity',
+                DB::raw('COUNT(incomes.id) as income_count'),
+                DB::raw('SUM(incomes.total) as total_incomes')
+            )
+            ->rightJoin('income_details', 'income_details.student_id', '=', 'students.id')
+            ->rightJoin('incomes', 'income_details.id', '=', 'incomes.income_details_id')
+            ->groupBy(
+                'students.id',
+                'students.user_identification',
+                'students.name',
+                'students.last_names',
+                'income_details.id',
+                'incomes.concept',
+                'incomes.total',
+                'incomes.discount',
+                'incomes.quantity'
+            )
+            ->orderBy('income_details.payment_date', 'desc')
+            ->get();
 
-    foreach ($students as $student) {
-        if (!isset($studentData[$student->student_id])) {
-            $studentData[$student->student_id] = [
-                'id_student' => $student->student_id,
-                'user_identification' => $student->user_identification,
-                'student_name' => $student->student_name,
-                'student_lastnames' => $student->student_lastnames,
-                'income_count' => 0,
-                'total_incomes' => 0,
-                'incomes' => []
-            ];
+        $studentData = [];
+
+        foreach ($students as $student) {
+            if (!isset($studentData[$student->student_id])) {
+                $studentData[$student->student_id] = [
+                    'id_student' => $student->student_id,
+                    'user_identification' => $student->user_identification,
+                    'student_name' => $student->student_name,
+                    'student_lastnames' => $student->student_lastnames,
+                    'income_count' => 0,
+                    'total_incomes' => 0,
+                    'incomes' => []
+                ];
+            }
+
+            $income = IncomeDetails::with('employee')->find($student->income_details_id);
+
+            if ($income && $income->employee) {
+                $studentData[$student->student_id]['incomes'][] = [
+                    'id' => $income->id,
+                    'employee_name' => $income->employee->name,
+                    'student_id' => $income->student_id,
+                    'commission' => $income->commission,
+                    'payment_method' => $income->payment_method,
+                    'bank_account' => $income->bank_account,
+                    'file_path' => $income->file_path,
+                    'ticket_path' => $income->ticket_path,
+                    'total' => $income->total,
+                    'payment_date' => $income->payment_date,
+                    'created_at' => $income->created_at,
+                    'updated_at' => $income->updated_at,
+                    'concept' => $student->concept,
+                    'concept_total' => $student->concept_total,
+                    'discount' => $student->discount,
+                    'quantity' => $student->quantity
+                ];
+            }
+
+            $studentData[$student->student_id]['income_count'] += $student->income_count;
+            $studentData[$student->student_id]['total_incomes'] += $student->total_incomes;
         }
 
-        $income = IncomeDetails::with('employee')->find($student->income_details_id);
+        $studentData = array_values($studentData);
 
-        if ($income && $income->employee) {
-            $studentData[$student->student_id]['incomes'][] = [
-                'id' => $income->id,
-                'employee_name' => $income->employee->name,
-                'student_id' => $income->student_id,
-                'commission' => $income->commission,
-                'payment_method' => $income->payment_method,
-                'bank_account' => $income->bank_account,
-                'file_path' => $income->file_path,
-                'ticket_path' => $income->ticket_path,
-                'total' => $income->total,
-                'payment_date' => $income->payment_date,
-                'created_at' => $income->created_at,
-                'updated_at' => $income->updated_at,
-                'concept' => $student->concept,
-                'concept_total' => $student->concept_total,
-                'discount' => $student->discount,
-                'quantity' => $student->quantity
-            ];
+        return response()->json(['students' => $studentData], 200);
+    }
+
+
+    /*
+     * paylod :
+     * {
+     *      'id_income': string,
+     *      'date': string
+     * }
+     */
+
+    public function incomeModifyDate(Request $request)
+    {
+        // Validación de los datos recibidos
+        $validator = Validator::make($request->all(), [
+            'id_income' => 'required',
+            'date' => 'required|date'  // Se agrega validación de formato de fecha
+        ], [
+            'id_income.required' => 'El id del ingreso es requerido',
+            'date.required' => 'La nueva fecha es requerida',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['resp' => $validator->errors()], 400);
         }
 
-        $studentData[$student->student_id]['income_count'] += $student->income_count;
-        $studentData[$student->student_id]['total_incomes'] += $student->total_incomes;
+        // Encuentra el ingreso por su ID
+        $income = Income::find($request->id_income);
+
+        if (!$income) {
+            return response()->json(['resp' => 'Ingreso no existente'], 404);
+        }
+
+        // Accede a los detalles del ingreso a través de la relación
+        $incomeDetails = $income->incomeDetails;
+
+        if (!$incomeDetails) {
+            return response()->json(['resp' => 'Detalles del ingreso no encontrados'], 404);
+        }
+
+        // Modifica el campo payment_date
+        $incomeDetails->payment_date = $request->date;
+
+        // Guarda los cambios en el modelo de IncomeDetails
+        $incomeDetails->save();
+
+        // Devuelve la respuesta con el modelo actualizado
+        return response()->json(['resp' => 'Se modificó correctamente el ingreso', 'data' => $incomeDetails], 200);
     }
 
-    $studentData = array_values($studentData);
+    public function getIncomesByStudentId($studentId) {
+        // Asegúrate de que el ID del estudiante sea un número
+        if (!is_numeric($studentId)) {
+            return response()->json(['error' => 'Invalid student ID'], 400);
+        }
 
-    return response()->json(['students' => $studentData], 200);
-}
+        // Consulta los ingresos del estudiante por ID
+        $incomes = DB::table('incomes')
+            ->select(
+                'incomes.id',
+                'employees.name as employee_name',
+                'income_details.student_id',
+                'income_details.commission',
+                'income_details.payment_method',
+                'income_details.bank_account',
+                'income_details.file_path',
+                'income_details.ticket_path',
+                'income_details.total',
+                'income_details.payment_date',
+                'incomes.concept',
+                'incomes.discount',
+                'incomes.quantity'
+            )
+            ->join('income_details', 'incomes.income_details_id', '=', 'income_details.id')
+            ->join('employees', 'income_details.employee_id', '=', 'employees.id')
+            ->where('income_details.student_id', $studentId)
+            ->get();
 
+        // Si no se encuentran ingresos, devolver un mensaje
+        if ($incomes->isEmpty()) {
+            return response()->json(['message' => 'No incomes found for this student'], 404);
+        }
 
-public function getIncomesByStudentId($studentId) {
-    // Asegúrate de que el ID del estudiante sea un número
-    if (!is_numeric($studentId)) {
-        return response()->json(['error' => 'Invalid student ID'], 400);
+        return response()->json($incomes, 200);
     }
-
-    // Consulta los ingresos del estudiante por ID
-    $incomes = DB::table('incomes')
-        ->select(
-            'incomes.id',
-            'employees.name as employee_name',
-            'income_details.student_id',
-            'income_details.commission',
-            'income_details.payment_method',
-            'income_details.bank_account',
-            'income_details.file_path',
-            'income_details.ticket_path',
-            'income_details.total',
-            'income_details.payment_date',
-            'incomes.concept',
-            'incomes.discount',
-            'incomes.quantity'
-        )
-        ->join('income_details', 'incomes.income_details_id', '=', 'income_details.id')
-        ->join('employees', 'income_details.employee_id', '=', 'employees.id')
-        ->where('income_details.student_id', $studentId)
-        ->get();
-
-    // Si no se encuentran ingresos, devolver un mensaje
-    if ($incomes->isEmpty()) {
-        return response()->json(['message' => 'No incomes found for this student'], 404);
-    }
-
-    return response()->json($incomes, 200);
-}
 }
