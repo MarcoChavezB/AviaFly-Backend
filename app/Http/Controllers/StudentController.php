@@ -750,7 +750,8 @@ public function getInfoVueloAlumno(int $id = null)
             SELECT DISTINCT
                 employees.id,
                 employees.name AS instructor,
-                employees.user_type
+                employees.user_type,
+                employees.user_identification
             FROM employees
             LEFT JOIN student_subjects ON employees.id = student_subjects.id_teacher
             LEFT JOIN students ON student_subjects.id_student = students.id
