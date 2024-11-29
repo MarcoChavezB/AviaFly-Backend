@@ -1105,7 +1105,7 @@ function getAllInfoReport(int $id_flight)
         $flight->id_equipo = $request->equipo;
         $flight->id_airplane = $request->flight_airplane;
 
-        if($request->flight_session != 1){
+        if($request->flight_session != 0){
             $flight->id_session = $request->flight_session;
         }
 
