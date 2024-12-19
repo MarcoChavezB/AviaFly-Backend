@@ -1183,6 +1183,7 @@ public function getInfoVueloAlumno(int $id = null)
         return response()->json($student, 200);
     }
 
+
     public function getStudentSubjectsAsStudent()
     {
         $user = Auth::user();

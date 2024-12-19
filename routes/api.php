@@ -373,7 +373,6 @@ Route::prefix('/fingerPrint')->group(function () {
     Route::post('/check/list/{id_finger}', [EmployeeController::class, 'fingerPrintList']);
 });
 
-
 Route::prefix('/support')->group(function () {
     Route::post('/error', [SupportController::class, 'notifyErrorFromStudent']);
 });
