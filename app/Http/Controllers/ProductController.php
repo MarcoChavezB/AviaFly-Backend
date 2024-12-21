@@ -99,17 +99,15 @@ class ProductController extends Controller
             'name.string' => 'El campo debe ser de tipo texto',
             'name.max' => 'El campo debe tener un máximo de 255 caracteres',
             'price.required' => 'Campo requerido',
-            'price.numeric' => 'El campo debe ser de tipo numérico',
             'stock.required' => 'Campo requerido',
-            'stock.integer' => 'El campo debe ser de tipo entero',
             'product_status.required' => 'Campo requerido',
             'product_status.in' => 'El campo debe ser activo o inactivo'
         ]);
 
 
-        if($data['product_status'] == 'activo' && ($data['stock'] == 0 || $data['price'] == 0)){
+        /* if($data['product_status'] == 'activo' && ($data['stock'] == 0 || $data['price'] == 0)){
             return response()->json(["errors" => "El stock y el precio deben ser mayores a 0"], 400);
-        }
+        } */
 
         if($validator->fails()){
             return response()->json(["errors" => $validator->errors()], 400);
