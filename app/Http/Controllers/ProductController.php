@@ -83,7 +83,8 @@ class ProductController extends Controller
  *      "name": "Product 1",
  *      "price": 100.00,
  *      "stock": 10,
- *      "product_status": "activo"
+ *      "product_status": "activo",
+ *      "type": "mtto"
  *      }
      * */
 
@@ -118,6 +119,7 @@ class ProductController extends Controller
 
         $product->name = $data['name'] ?? $product->name;
         $product->price = $data['price'] ?? $product->price;
+        $product->type = $data['type'] ?? $product->type;
         $product->stock = $data['stock'] ?? $product->stock;
         $product->product_status = $data['product_status'] ?? $product->product_status;
 
