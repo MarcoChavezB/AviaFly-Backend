@@ -15,6 +15,7 @@ class ProductController extends Controller
             ->leftJoin('order_details', 'products.id', '=', 'order_details.id_product')
             ->select(
                 'products.id',
+                'products.type',
                 DB::raw('COALESCE(SUM(order_details.quantity), 0) as quantity_sales'),
                 'products.name',
                 'products.price',
@@ -24,7 +25,7 @@ class ProductController extends Controller
                 'products.updated_at'
             )
             ->where('products.name', 'like', '%'.$name.'%')
-            ->groupBy('products.id', 'products.name', 'products.price', 'products.stock', 'products.product_status', 'products.created_at', 'products.updated_at')
+            ->groupBy('products.id', 'products.type' ,'products.name', 'products.price', 'products.stock', 'products.product_status', 'products.created_at', 'products.updated_at')
             ->orderBy('products.created_at', 'asc');
 
         if($name != null){

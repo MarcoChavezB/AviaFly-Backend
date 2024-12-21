@@ -19,6 +19,10 @@ return new class extends Migration
             $table->decimal('price', 8, 2);
             $table->integer('stock');
             $table->enum('product_status', ['activo', 'inactivo']);
+
+            // $table->enum('type', ['uniforme', 'mtto', 'libro', 'otro'])->default('otro')->after('product_status');
+            // $table->softDeletes();
+
             $table->timestamps();
         });
     }
