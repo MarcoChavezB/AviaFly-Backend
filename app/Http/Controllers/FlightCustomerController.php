@@ -260,7 +260,7 @@ class FlightCustomerController extends Controller
             $customerPayment->save();
         }
 
-        return response()->json(['message' => 'Reservacion creada con exito'], 201);
+        return response()->json(['message' => 'Reservacion creada con exito', 'tiket' => $urlTicket], 201);
     }
 
     public function create()
