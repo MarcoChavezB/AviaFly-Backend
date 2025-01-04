@@ -363,7 +363,6 @@ Route::prefix('/recreatives')->group(function () {
     Route::get('/index/amount/info', [RecreativeConceptController::class, 'index']);
     Route::get('/report/{id_flight_customer}', [RecreativeConceptController::class, 'reportFlight']);
     Route::post('/amount', [RecreativeConceptController::class, 'storeInstallment']);
-
     Route::get('/delete/{id_customer_flight}', [RecreativeConceptController::class, 'destroy']);
 });
 
