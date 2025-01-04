@@ -574,6 +574,8 @@ class IncomesController extends Controller
         // Modifica el campo payment_date
         $incomeDetails->payment_date = $request->date;
 
+
+
         // Guarda los cambios en el modelo de IncomeDetails
         $incomeDetails->save();
 

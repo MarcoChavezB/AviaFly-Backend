@@ -304,5 +304,38 @@ class PDFController extends Controller
 
         return $response;
     }
+
+
+    public function generateRecreativeTicket($employee, $data, $concept, $payment_method){
+
+        $data = [
+            'baseData' => (object)[
+                'location' => 'BLVD. INDEPENDENCIA 746  LOCAL 17
+                                COL. NUEVA LOS ANGELES, TORREÓN, COAH.',
+            ],
+            'employeeName' => $employee['name'],
+            'employeeLastNames' => $employee['last_names'],
+            'studentData' => (object)[
+                'user_identification' => '----',
+                'name' => 'Recreativo',
+                'last_names' => '',
+            ],
+            'incomeDetails' => (object)[
+                'payment_method' => $payment_method['type'],
+                'commission' => $payment_method['commission'],
+                'total' => $data['total_price'],
+            ],
+            'data' => $concept,
+        ];
+
+        $pdf = PDF::loadView('recreative.recreative_ticket', $data);
+
+        $student = new Student();
+        $student->user_identification = 'ClienteAvia';
+
+        $fileController = new FileController();
+        $url = $fileController->saveTicket($pdf, $student, '1');
+        return $url;
+    }
 }
 

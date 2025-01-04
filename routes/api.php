@@ -38,6 +38,7 @@ use App\Http\Controllers\RecreativeConceptController;
 use App\Http\Controllers\SchoolExpenseController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\WhaController;
 use Symfony\Component\CssSelector\Parser\Handler\CommentHandler;
 
 /*
@@ -362,6 +363,7 @@ Route::prefix('/recreatives')->group(function () {
     Route::get('/index/amount/info', [RecreativeConceptController::class, 'index']);
     Route::get('/report/{id_flight_customer}', [RecreativeConceptController::class, 'reportFlight']);
     Route::post('/amount', [RecreativeConceptController::class, 'storeInstallment']);
+    Route::get('/delete/{id_customer_flight}', [RecreativeConceptController::class, 'destroy']);
 });
 
 Route::prefix('/expenses')->middleware(['auth:sanctum'])->group(function () {
@@ -391,5 +393,4 @@ Route::prefix('/passwords')->middleware(['auth:sanctum', 'role:root,admin,employ
     Route::get('/destroy/{idRecord}', [PasswordController::class, 'destroy']);
 });
 
-Route::get('/test/{user_identification}', function(){
-});
+Route::get('/test', [WhaController::class, 'envia']);

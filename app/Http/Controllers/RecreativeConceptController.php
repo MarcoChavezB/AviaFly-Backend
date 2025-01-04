@@ -10,6 +10,7 @@ use App\Models\PaymentMethod;
 use App\Models\RecreativeConcept;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class RecreativeConceptController extends Controller
 {
@@ -173,8 +174,32 @@ class RecreativeConceptController extends Controller
      * @param  \App\Models\RecreativeConcept  $recreativeConcept
      * @return \Illuminate\Http\Response
      */
-    public function destroy(RecreativeConcept $recreativeConcept)
-    {
-        //
+    public function destroy($id_customer_flight){
+
+        $customer_flight = FlightCustomer::find($id_customer_flight);
+        if(!$customer_flight){
+            return response()->json(['resp' => 'the id provided not exist']);
+        }
+
+        $customer_flight->delete();
+
+        return response()->json(['resp' => 'the register has been deleted succefully']);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

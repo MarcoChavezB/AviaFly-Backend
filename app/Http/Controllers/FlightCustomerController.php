@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\AirPlane;
 use App\Models\CustomerPayment;
+use App\Models\Employee;
 use App\Models\FlightCustomer;
 use App\Models\InfoFlight;
+use App\Models\PaymentMethod;
+use App\Models\RecreativeConcept;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -240,12 +243,20 @@ class FlightCustomerController extends Controller
 
         $flightCustomer->save();
 
+        $concept = RecreativeConcept::find($data['id_flight_type']);
+        $employee = Employee::find($employeeId);
+        $payment_method = PaymentMethod::find($data['payment_method']);
+
+        $pdfController = new PDFController();
+        $urlTicket = $pdfController->generateRecreativeTicket($employee, $data, $concept, $payment_method);
 
         $customerPayment = new CustomerPayment();
         if($data['payment_method'] != $this->paymentMethodIdController->getAbonosId()){
             $customerPayment->amount = $data['total_price'];
             $customerPayment->id_payment_method = $data['payment_method'];
             $customerPayment->id_customer_flight = $flightCustomer->id;
+            $customerPayment->payment_ticket = $urlTicket;
+
             $customerPayment->save();
         }
 
@@ -345,7 +356,6 @@ class FlightCustomerController extends Controller
         $flightCustomer->total = $data['total_price'] ?? $flightCustomer->total;
 
         $flightCustomer->id_employee = $employeeId;
-        $flightCustomer->id_flight = $data['id_flight_type'] ?? $flightCustomer->id_flight;
         $flightCustomer->id_payment_method = $data['payment_method'] ?? $flightCustomer->id_payment_method;
         $flightCustomer->id_pilot = $data['id_pilot'] ?? $flightCustomer->id_pilot;
 
