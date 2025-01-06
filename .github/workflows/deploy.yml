@@ -39,6 +39,7 @@ jobs:
           cd /var/www/html/AviaFly-Backend
           sudo chown -R marco:marco /var/www/html
           git pull origin main
+          sudo composer install
           composer install --no-dev --optimize-autoloader
           sudo php artisan migrate
           sudo php artisan optimize
