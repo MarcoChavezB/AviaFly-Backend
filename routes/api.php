@@ -400,3 +400,5 @@ Route::prefix('/finance')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [SystemIncomeController::class, 'index']);
 });
 
+Route::get('/notify', [StudentController::class, 'notifyStudent']);
+
