@@ -314,6 +314,25 @@ class IncomesController extends Controller
         }
 
         $incomes = $query->orderBy('income_details.payment_date', 'desc')
+            ->groupBy(
+                'students.user_identification',
+                'students.name',
+                'students.last_names',
+                'incomes.id',
+                'income_details.payment_date',
+                'incomes.concept',
+                'income_details.payment_method',
+                'income_details.file_path',
+                'incomes.discount',
+                'incomes.original_import',
+                'income_details.total',
+                'employees.name',
+                'employees.last_names',
+                'income_details.bank_account',
+                'incomes.iva',
+                'income_details.commission',
+                'income_details.ticket_path'
+            )
             ->paginate($perPage);
 
         $paginationData = [
