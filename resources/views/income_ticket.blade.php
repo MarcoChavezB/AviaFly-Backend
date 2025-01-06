@@ -133,7 +133,7 @@
 
         <p><span>Comision:</span> <span>${{ $incomeDetails->commission }}</span></p>
         @if(isset($product) && $product !== null )
-            <p><span>Regalo:</span> <span>${{ $product->name }}</span></p>
+            <p><span>Regalo:</span> <span>{{ $product->name }}</span></p>
         @endif
         <p class="total"><span>Total:</span> <span>${{ $incomeDetails->total }}</span></p> <!-- Clase modificada -->
     </div>

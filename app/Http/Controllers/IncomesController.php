@@ -117,6 +117,7 @@ class IncomesController extends Controller
 
         // agregar la hora extra si es mayor a 10 las horas compradas
         $payments = $request->payments; // Hacemos una copia del arreglo
+        $uniform = null;
 
         foreach ($payments as &$payment) { // Usamos referencia para modificar la copia
             $payment['hasExtraHour'] = false;
