@@ -394,4 +394,3 @@ Route::prefix('/passwords')->middleware(['auth:sanctum', 'role:root,admin,employ
     Route::get('/destroy/{idRecord}', [PasswordController::class, 'destroy']);
 });
 
-Route::get('/test', [WhaController::class, 'envia']);
