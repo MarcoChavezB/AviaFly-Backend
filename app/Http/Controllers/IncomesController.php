@@ -513,7 +513,6 @@ class IncomesController extends Controller
             ->rightJoin('incomes', 'income_details.id', '=', 'incomes.income_details_id')
 
             // ingreso como (products)
-            ->rightJoin('');
             ->groupBy(
                 'students.id',
                 'students.user_identification',
