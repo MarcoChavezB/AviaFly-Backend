@@ -110,7 +110,12 @@
                             + 1
                         @endif
                     </td>
-                    <td>{{ $item['concept'] }}</td>
+                    <td>
+                        {{ $item['concept'] }}
+                        @if(isset($item['product']) && $item['product'] !== null)
+                            - {{ $item['product']->name }}
+                        @endif
+                    </td>
                     <td>${{ $item['total'] }}</td>
                 </tr>
             @endforeach

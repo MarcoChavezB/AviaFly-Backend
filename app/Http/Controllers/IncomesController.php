@@ -10,6 +10,8 @@ use App\Models\Income;
 use App\Models\IncomeDetails;
 use App\Models\MonthlyPayment;
 use App\Models\PaymentMethod;
+use App\Models\Payments;
+use App\Models\Product;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -51,7 +53,16 @@ class IncomesController extends Controller
     }
 
 
-    public function generateTicket(array $data, string $employeeName, string $employeeLastNames, int $employeeBaseId, int $incomeDetailsId, int $studentID, bool $hasExtraHour): string
+    public function generateTicket(
+        array $data,
+        string $employeeName,
+        string $employeeLastNames,
+        int $employeeBaseId,
+        int $incomeDetailsId,
+        int $studentID,
+        bool $hasExtraHour,
+        Product $product = null
+    ): string
     {
         $fileController = new FileController();
         $studentData = Student::findOrFail($studentID);
@@ -59,7 +70,16 @@ class IncomesController extends Controller
         $incomeDetails = IncomeDetails::findOrFail($incomeDetailsId);
 
 
-        $pdf = PDF::loadView('income_ticket', compact('data', 'studentData', 'employeeName', 'employeeLastNames', 'baseData', 'incomeDetails', 'hasExtraHour'));
+        $pdf = PDF::loadView('income_ticket', compact(
+            'data',
+            'studentData',
+            'employeeName',
+            'employeeLastNames',
+            'baseData',
+            'incomeDetails',
+            'hasExtraHour',
+            'product'
+        ));
 
         $baseName = $this->sanitizeName($baseData->name);
         $fileName = $this->generateFileName($baseName, $studentData->user_identification, 'tickets');
@@ -90,6 +110,7 @@ class IncomesController extends Controller
 
     public function createIncomes(Request $request)
     {
+
         $this->validateRequest($request);
         $student = Student::find($request->student_id);
         $extraHour = false;
@@ -111,17 +132,21 @@ class IncomesController extends Controller
                 $payment['hasExtraHour'] = true;
                 $extraHour = true;
             }
+
+            if($payment['uniform_id']){
+                $uniform = Product::find($payment['uniform_id']);
+            }
         }
 
-        $student->save();
 
+        $student->save();
         $employee = $this->getAuthenticatedEmployee();
+
 
         $voucherPath = $this->handleFileUpload($request, $employee->id_base, $request->input('student_id'));
 
         $paymentDetails = $this->extractPaymentDetails($request, $voucherPath);
         $incomeDetailsId = $this->saveIncomeDetails($paymentDetails, $employee->id);
-
 
 
         $this->saveIncomeEntries($payments, $incomeDetailsId, $request->input('student_id'));
@@ -131,7 +156,9 @@ class IncomesController extends Controller
             $employee->id_base,
             $incomeDetailsId,
             $request->input('student_id'),
-            $extraHour);
+            $extraHour,
+            $uniform
+        );
 
         return response()->json(['message' => 'ok', 'ticketUrl' => $ticketUrl], 201);
     }

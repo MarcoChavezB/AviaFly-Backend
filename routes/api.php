@@ -230,6 +230,7 @@ Route::prefix('/products')->middleware(['auth:sanctum', 'role:root,admin,employe
     Route::post('/store', [ProductController::class, 'store']);
     Route::put('/update/{id_product}', [ProductController::class, 'update']);
     Route::post('/filters', [ProductController::class, 'filters']);
+    Route::get('/uniforms', [ProductController::class, 'getUniforms']);
 });
 
 Route::prefix('/enum/values')->middleware('auth:sanctum')->group(function () {
