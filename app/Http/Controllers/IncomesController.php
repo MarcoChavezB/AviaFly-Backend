@@ -136,6 +136,8 @@ class IncomesController extends Controller
 
             if($payment['uniform_id']){
                 $uniform = Product::find($payment['uniform_id']);
+                $uniform->stock = $uniform->stock - 1;
+                $uniform->save();
             }
         }
 
@@ -482,6 +484,15 @@ class IncomesController extends Controller
         return response()->json(["income" => $income, "incomeDetail" => $incomeDetail]);
     }
 
+    /*
+        * Retorna todos los ingresos registrados en el sistema
+        *
+        * Incomes, flight, orders (products)
+        *
+        * Recreatives
+        *
+     * */
+
     public function indexIncomes() {
         $students = DB::table('students')
             ->select(
@@ -497,8 +508,12 @@ class IncomesController extends Controller
                 DB::raw('COUNT(incomes.id) as income_count'),
                 DB::raw('SUM(incomes.total) as total_incomes')
             )
+            // ingresos como (credito, mensualidades)
             ->rightJoin('income_details', 'income_details.student_id', '=', 'students.id')
             ->rightJoin('incomes', 'income_details.id', '=', 'incomes.income_details_id')
+
+            // ingreso como (products)
+            ->rightJoin('');
             ->groupBy(
                 'students.id',
                 'students.user_identification',

@@ -2,6 +2,7 @@
 
 
 use App\Http\Controllers\AcademicFileController;
+use App\Http\Controllers\SystemIncomeController;
 use App\Http\Controllers\AirPlaneController;
 use App\Http\Controllers\AnalyticController;
 use App\Http\Controllers\CareerController;
@@ -392,5 +393,10 @@ Route::prefix('/passwords')->middleware(['auth:sanctum', 'role:root,admin,employ
     Route::post('/update/{id}', [PasswordController::class, 'update']);
     Route::get('/show/{idRecord}', [PasswordController::class, 'showPassword']);
     Route::get('/destroy/{idRecord}', [PasswordController::class, 'destroy']);
+});
+
+
+Route::prefix('/finance')->middleware('auth:sanctum')->group(function () {
+    Route::get('/index', [SystemIncomeController::class, 'index']);
 });
 
