@@ -112,9 +112,6 @@
                     </td>
                     <td>
                         {{ $item['concept'] }}
-                        @if(isset($item['product']) && $item['product'] !== null)
-                            - {{ $item['product']->name }}
-                        @endif
                     </td>
                     <td>${{ $item['total'] }}</td>
                 </tr>
@@ -135,6 +132,9 @@
         </p>
 
         <p><span>Comision:</span> <span>${{ $incomeDetails->commission }}</span></p>
+        @if(isset($product) && $product !== null )
+            <p><span>Regalo:</span> <span>${{ $product->name }}</span></p>
+        @endif
         <p class="total"><span>Total:</span> <span>${{ $incomeDetails->total }}</span></p> <!-- Clase modificada -->
     </div>
     <div class="footer">

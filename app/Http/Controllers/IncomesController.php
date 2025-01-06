@@ -138,6 +138,8 @@ class IncomesController extends Controller
             }
         }
 
+        return response()->json($uniform);
+
 
         $student->save();
         $employee = $this->getAuthenticatedEmployee();
