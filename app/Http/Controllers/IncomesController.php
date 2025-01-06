@@ -290,8 +290,7 @@ class IncomesController extends Controller
                 'income_details.file_path as voucher',
                 'incomes.discount',
                 'incomes.original_import as subtotal',
-                DB::raw("income_details.total - incomes.discount as total"),
-/*                 'income_details.total', */
+                'income_details.total',
                 DB::raw("CONCAT(employees.name, ' ', employees.last_names) as employee_name"),
                 'income_details.bank_account',
                 'incomes.iva as iva',
