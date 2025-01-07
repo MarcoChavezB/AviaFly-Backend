@@ -134,7 +134,7 @@ class IncomesController extends Controller
                 $extraHour = true;
             }
 
-            if($payment['uniform_id']){
+        if (isset($payment['uniform_id']) && $payment['uniform_id']) {
                 $uniform = Product::find($payment['uniform_id']);
                 $uniform->stock = $uniform->stock - 1;
                 $uniform->save();
