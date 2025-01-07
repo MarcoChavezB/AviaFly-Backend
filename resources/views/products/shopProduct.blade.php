@@ -26,7 +26,7 @@
         }
         img {
             width: 100%;
-            height: 70px;
+            height: 140px;
         }
         .items {
             flex-grow: 1;
