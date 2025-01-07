@@ -45,4 +45,5 @@ jobs:
           sudo php artisan optimize
           sudo php artisan cache:clear
           sudo chown -R www-data:www-data /var/www/html
+          sudo composer install
           sudo systemctl restart apache2
