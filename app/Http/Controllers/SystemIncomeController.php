@@ -41,6 +41,7 @@ class SystemIncomeController extends Controller
             ->leftJoin('students', 'orders.id_client', '=', 'students.id')
             ->join('employees', 'orders.id_employe', '=', 'employees.id')
             ->select(
+                DB::raw("CASE WHEN students.user_identification IS NOT NULL THEN students.user_identification ELSE 'Cliente' END as user_identification"),
                 'students.user_identification',
                 'orders.id',
                 DB::raw("CASE WHEN students.id IS NOT NULL THEN students.name ELSE 'Cliente' END as student_name"),
