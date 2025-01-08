@@ -41,8 +41,7 @@ class SystemIncomeController extends Controller
             ->leftJoin('students', 'orders.id_client', '=', 'students.id')
             ->join('employees', 'orders.id_employe', '=', 'employees.id')
             ->select(
-                DB::raw("CASE WHEN students.user_identification IS NOT NULL THEN students.user_identification ELSE 'Cliente' END as user_identification"),
-                'students.user_identification',
+                DB::raw("CASE WHEN students.user_identification IS NOT NULL THEN students.user_identification ELSE 'N/A' END as user_identification"),
                 'orders.id',
                 DB::raw("CASE WHEN students.id IS NOT NULL THEN students.name ELSE 'Cliente' END as student_name"),
                 'employees.name as income_by',
@@ -54,6 +53,7 @@ class SystemIncomeController extends Controller
                 'product_payments.payment_ticket as ticket',
                 'product_payments.payment_voucher as voucher'
             )
+            ->limit(100)
             ->get();
 
         // Incomes
@@ -74,6 +74,7 @@ class SystemIncomeController extends Controller
                 'income_details.ticket_path as ticket',
                 'income_details.file_path as voucher'
             )
+            ->limit(100)
             ->get();
 
         // Flight Payments
@@ -96,6 +97,7 @@ class SystemIncomeController extends Controller
                 'payments.payment_ticket as ticket',
                 'payments.payment_voucher as voucher'
             )
+            ->limit(100)
             ->get();
 
         // Recreative
@@ -116,6 +118,7 @@ class SystemIncomeController extends Controller
                 'customer_payments.payment_ticket as ticket',
                 'customer_payments.payment_voucher as voucher'
             )
+            ->limit(100)
             ->get();
 
         // Combinar todas las colecciones en una
