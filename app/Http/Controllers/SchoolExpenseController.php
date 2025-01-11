@@ -90,8 +90,7 @@ class SchoolExpenseController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-
-        $user_id = Auth()->user()->id;
+        $user_id = Auth()->user();
         $employee_id = Employee::where('user_identification', $user_id->user_identification)->get();
 
         $expense = new SchoolExpense();
