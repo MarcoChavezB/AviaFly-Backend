@@ -99,7 +99,7 @@ class SchoolExpenseController extends Controller
         $expense->date = $data['date'];
         $expense->amount = $data['monto'];
         $expense->payment_method = $data['payment_method'];
-        $expense->created_by = $employee_id;
+        $expense->created_by = $employee_id->id;
         $expense->status = 'pendiente';
 
         $expense->save();
