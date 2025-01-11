@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\SchoolExpense;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class SchoolExpenseController extends Controller
@@ -89,13 +91,16 @@ class SchoolExpenseController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        $user_id = Auth()->user()->id;
+        $employee_id = Employee::where('user_identification', $user_id->user_identification)->get();
+
         $expense = new SchoolExpense();
         $expense->name = $data['name'];
         $expense->motive = $data['motive'] ?? null;
         $expense->date = $data['date'];
         $expense->amount = $data['monto'];
         $expense->payment_method = $data['payment_method'];
-        $expense->created_by = Auth()->user()->id;
+        $expense->created_by = $employee_id;
         $expense->status = 'pendiente';
 
         $expense->save();
