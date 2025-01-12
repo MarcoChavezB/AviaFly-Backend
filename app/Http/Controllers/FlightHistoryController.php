@@ -1143,31 +1143,9 @@ function getAllInfoReport(int $id_flight)
             ->get();
 
 
-        $employeePhone = Employee::select('phone')
-            ->join('users', 'users.user_identification', '=', 'employees.user_identification')
-            ->where(function($query) {
-                $query->where('users.user_type', 'admin')
-                      ->orWhere('users.user_type', 'root')
-                      ->orWhere('users.user_type', 'employee');
-            })
-            ->get();
-
-
-
-        $messageController = new MessageController();
-
-        /* foreach ($employeeEmail as $emp) {
+        foreach ($employeeEmail as $emp) {
             Mail::to($emp)->send(new RequestFlight($student, $flight));
-        } */
-
-        foreach ($employeePhone as $emp) {
-            // Concatenar +52 al número de teléfono
-            $formattedPhone = '+52' . $emp->phone;  // Asumiendo que 'phone' es el atributo que contiene el número
-
-            // Llamar al método sendMessage con el número formateado
-            $messageController->sendMessage($formattedPhone, "Peticion de vuelo de estudiante");
         }
-
         return response()->json(["msg" => "Peticion de vuelo registrada", 'employees' => $employeeEmail], 201);
     }
 
