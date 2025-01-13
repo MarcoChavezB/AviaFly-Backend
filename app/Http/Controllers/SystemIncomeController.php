@@ -38,7 +38,7 @@ class SystemIncomeController extends Controller
             ->leftJoin('order_details', 'orders.id', '=', 'order_details.id_order')
             ->leftJoin('products', 'order_details.id_product', '=', 'products.id')
             ->leftJoin('payment_methods', 'product_payments.id_payment_method', '=', 'payment_methods.id')
-            ->leftleftJoin('students', 'orders.id_client', '=', 'students.id')
+            ->leftJoin('students', 'orders.id_client', '=', 'students.id')
             ->leftJoin('employees', 'orders.id_employe', '=', 'employees.id')
             ->select(
                 DB::raw("CASE WHEN students.user_identification IS NOT NULL THEN students.user_identification ELSE 'N/A' END as user_identification"),
