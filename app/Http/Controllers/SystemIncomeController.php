@@ -34,12 +34,12 @@ class SystemIncomeController extends Controller
     {
         // Orders
         $orders = DB::table('orders')
-            ->join('product_payments', 'product_payments.id_order', '=', 'orders.id')
-            ->join('order_details', 'orders.id', '=', 'order_details.id_order')
-            ->join('products', 'order_details.id_product', '=', 'products.id')
-            ->join('payment_methods', 'product_payments.id_payment_method', '=', 'payment_methods.id')
-            ->leftJoin('students', 'orders.id_client', '=', 'students.id')
-            ->join('employees', 'orders.id_employe', '=', 'employees.id')
+            ->leftJoin('product_payments', 'product_payments.id_order', '=', 'orders.id')
+            ->leftJoin('order_details', 'orders.id', '=', 'order_details.id_order')
+            ->leftJoin('products', 'order_details.id_product', '=', 'products.id')
+            ->leftJoin('payment_methods', 'product_payments.id_payment_method', '=', 'payment_methods.id')
+            ->leftleftJoin('students', 'orders.id_client', '=', 'students.id')
+            ->leftJoin('employees', 'orders.id_employe', '=', 'employees.id')
             ->select(
                 DB::raw("CASE WHEN students.user_identification IS NOT NULL THEN students.user_identification ELSE 'N/A' END as user_identification"),
                 'orders.id',
@@ -58,9 +58,9 @@ class SystemIncomeController extends Controller
 
         // Incomes
         $incomes = DB::table('income_details')
-            ->join('incomes', 'income_details.id', '=', 'incomes.income_details_id')
-            ->join('employees', 'income_details.employee_id', '=', 'employees.id')
-            ->join('students', 'income_details.student_id', '=', 'students.id')
+            ->leftJoin('incomes', 'income_details.id', '=', 'incomes.income_details_id')
+            ->leftJoin('employees', 'income_details.employee_id', '=', 'employees.id')
+            ->leftJoin('students', 'income_details.student_id', '=', 'students.id')
             ->select(
                 'students.user_identification',
                 'incomes.id as id',
@@ -79,11 +79,11 @@ class SystemIncomeController extends Controller
 
         // Flight Payments
         $flightPayments = DB::table('flight_payments')
-            ->join('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
-            ->join('payments', 'flight_payments.id', '=', 'payments.id_flight')
-            ->join('payment_methods', 'payments.id_payment_method', '=', 'payment_methods.id')
-            ->join('students', 'flight_payments.id_student', '=', 'students.id')
-            ->join('employees', 'flight_payments.id_employee', '=', 'employees.id')
+            ->leftJoin('flight_history', 'flight_history.id', '=', 'flight_payments.id_flight')
+            ->leftJoin('payments', 'flight_payments.id', '=', 'payments.id_flight')
+            ->leftJoin('payment_methods', 'payments.id_payment_method', '=', 'payment_methods.id')
+            ->leftJoin('students', 'flight_payments.id_student', '=', 'students.id')
+            ->leftJoin('employees', 'flight_payments.id_employee', '=', 'employees.id')
             ->select(
                 'students.user_identification',
                 'flight_history.id',
@@ -102,9 +102,9 @@ class SystemIncomeController extends Controller
 
         // Recreative
         $recreative = DB::table('customer_payments')
-            ->join('flight_customers', 'flight_customers.id', '=', 'customer_payments.id_customer_flight')
-            ->join('payment_methods', 'payment_methods.id', '=', 'customer_payments.id_payment_method')
-            ->join('employees', 'flight_customers.id_employee', '=', 'employees.id')
+            ->leftJoin('flight_customers', 'flight_customers.id', '=', 'customer_payments.id_customer_flight')
+            ->leftJoin('payment_methods', 'payment_methods.id', '=', 'customer_payments.id_payment_method')
+            ->leftJoin('employees', 'flight_customers.id_employee', '=', 'employees.id')
             ->select(
                 DB::raw("'N/A' as user_identification"),
                 'customer_payments.id',
