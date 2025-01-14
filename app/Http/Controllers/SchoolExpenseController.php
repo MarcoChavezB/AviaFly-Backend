@@ -91,7 +91,7 @@ class SchoolExpenseController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
         $user_id = Auth()->user();
-        $employee_id = Employee::where('user_identification', $user_id->user_identification)->get();
+        $employee = Employee::where('user_identification', $user_id->user_identification)->first();
 
         $expense = new SchoolExpense();
         $expense->name = $data['name'];
@@ -99,7 +99,7 @@ class SchoolExpenseController extends Controller
         $expense->date = $data['date'];
         $expense->amount = $data['monto'];
         $expense->payment_method = $data['payment_method'];
-        $expense->created_by = $employee_id->id;
+        $expense->created_by = $employee->id;
         $expense->status = 'pendiente';
 
         $expense->save();
