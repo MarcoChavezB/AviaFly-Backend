@@ -540,15 +540,34 @@ function resetFlightData($id_flight)
      */
     public function getFlightReservations(Request $request, $id_student = null)
     {
+
         // Obtener la opción de reserva
         $canReservate = Option::select('option_type', 'is_active')
             ->where('option_type', 'can_reservate_flight')
             ->first();
 
         // Obtener los registros de FlightHistory
-        $flightHistories = FlightHistory::select( 'flight_status', 'flight_history.id as flight_history_id', 'type_flight', 'flight_date', 'flight_hour', 'hours')
-            ->where('flight_client_status', 'aceptado')
-            ->groupBy('flight_history.flight_status', 'flight_history.type_flight', 'flight_history.flight_date', 'flight_history.flight_hour', 'flight_history.hours', 'flight_history.id')
+        $flightHistories = FlightHistory::select(
+                'students.name',
+                'flight_status',
+                'flight_history.id as flight_history_id',
+                'type_flight',
+                'flight_date',
+                'flight_hour',
+                'hours'
+            )
+            ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->join('students', 'students.id', '=', 'flight_payments.id_student')
+            ->where('flight_history.flight_client_status', 'aceptado')
+            ->groupBy(
+                'flight_history.flight_status',
+                'flight_history.type_flight',
+                'flight_history.flight_date',
+                'flight_history.flight_hour',
+                'flight_history.hours',
+                'flight_history.id',
+                'students.name'
+            )
             ->orderBy('flight_history.flight_date', 'desc')
             ->limit(101);
 
@@ -570,6 +589,7 @@ function resetFlightData($id_flight)
             $end = $start->copy()->addHours($flight->hours);
 
             return [
+                'student_name' => $flight->name,
                 'id' => $flight->flight_history_id,
                 'flight_status' => $flight->flight_status,
                 'title' => $flight->type_flight,
