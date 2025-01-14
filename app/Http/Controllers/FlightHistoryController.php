@@ -1074,9 +1074,9 @@ function getAllInfoReport(int $id_flight)
             return response()->json(["errors" => $validator->errors()], 401);
         }
 
-        if ($this->OtherFlightReserved($request->flight_date, $request->flight_hour, $request->hours, $request->flight_type)) {
+        /* if ($this->OtherFlightReserved($request->flight_date, $request->flight_hour, $request->hours, $request->flight_type)) {
             return response()->json(["errors" => ["sameDate" => ["Existe un vuelo en la fecha y hora por favor de seleccionar otra hora"]]], 400);
-        }
+        } */
 
         $empleado = Employee::find($request->id_instructor);
         if ($empleado->user_type != 'flight_instructor') {
