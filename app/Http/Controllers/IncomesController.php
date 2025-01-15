@@ -277,25 +277,45 @@ class IncomesController extends Controller
         $studentFilter = $request->get('student_filter', null);
         $baseFilter = $request->get('base_filter', 0);
 
-        $query = DB::table('income_details')
-            ->join('incomes', 'income_details.id', '=', 'incomes.income_details_id')
-            ->join('employees', 'income_details.employee_id', '=', 'employees.id')
-            ->join('students', 'income_details.student_id', '=', 'students.id')
-            ->select('students.user_identification as student_registration',
-                DB::raw("CONCAT(students.name, ' ', students.last_names) as student_name"),
-                'incomes.id as income_id',
-                'income_details.payment_date',
-                'incomes.concept',
-                'income_details.payment_method',
-                'income_details.file_path as voucher',
-                'incomes.discount',
-                'incomes.original_import as subtotal',
-                DB::raw("SUM(COALESCE(incomes.total, 0) + COALESCE(income_details.commission, 0)) as total"),
-                DB::raw("CONCAT(employees.name, ' ', employees.last_names) as employee_name"),
-                'income_details.bank_account',
-                'incomes.iva as iva',
-                'income_details.commission',
-                'income_details.ticket_path as ticket');
+    $query = DB::table('income_details')
+        ->join('incomes', 'income_details.id', '=', 'incomes.income_details_id')
+        ->join('employees', 'income_details.employee_id', '=', 'employees.id')
+        ->join('students', 'income_details.student_id', '=', 'students.id')
+        ->select(
+            'students.user_identification as student_registration',
+            DB::raw("CONCAT(students.name, ' ', students.last_names) as student_name"),
+            'incomes.id as income_id',
+            'income_details.payment_date',
+            'incomes.concept',
+            'income_details.payment_method',
+            'income_details.file_path as voucher',
+            'incomes.discount',
+            'incomes.original_import as subtotal',
+            DB::raw("SUM(COALESCE(incomes.total, 0) + COALESCE(income_details.commission, 0)) as total"),
+            DB::raw("CONCAT(employees.name, ' ', employees.last_names) as employee_name"),
+            'income_details.bank_account',
+            'incomes.iva as iva',
+            'income_details.commission',
+            'income_details.ticket_path as ticket'
+        )
+        ->groupBy(
+            'students.user_identification',
+            'students.name',
+            'students.last_names',
+            'incomes.id',
+            'income_details.payment_date',
+            'incomes.concept',
+            'income_details.payment_method',
+            'income_details.file_path',
+            'incomes.discount',
+            'incomes.original_import',
+            'employees.name',
+            'employees.last_names',
+            'income_details.bank_account',
+            'incomes.iva',
+            'income_details.commission',
+            'income_details.ticket_path'
+        );
 
         if ($startDate && $endDate) {
             $query->whereBetween('income_details.payment_date', [$startDate, $endDate]);
