@@ -81,13 +81,13 @@
         <p>AVIATRAINING AND<br>
             TECHNOLOGY<br>
             ATA100618L60<br>
-            {{ $date }}<br>
+            {{ date('Y-m-d H:i:s') }}<br>
             {{$baseData->location}}
         </p>
     </div>
     <div class="user">
         <p>Autoriza: <span>{{ $employeeName }}  {{ $employeeLastNames  }}</span><br>
-            Fecha: {{ date('Y-m-d') }}<br>
+            Fecha: {{ $date }}<br>
             Matrícula: <span>{{ $studentData->user_identification }}</span><br>
             Nombre: <span>{{ $studentData->name }}  {{ $studentData->last_names }}</span><br>
         </p>
