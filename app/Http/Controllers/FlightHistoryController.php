@@ -494,7 +494,7 @@ function resetFlightData($id_flight)
             ? floatval($data['tacometro'])
             : 1;
         $flight->comment = $data['comments'];
-        $flight->has_report = 2;
+        $flight->has_report = 1;
 
         $flight->save();
 

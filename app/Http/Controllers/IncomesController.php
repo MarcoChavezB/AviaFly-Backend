@@ -644,60 +644,60 @@ class IncomesController extends Controller
         return response()->json(['resp' => 'Se modificó correctamente el ingreso', 'data' => $incomeDetails], 200);
     }
 
-public function getIncomesByStudentId($studentId) {
-    // Asegúrate de que el ID del estudiante sea un número
-    if (!is_numeric($studentId)) {
-        return response()->json(['error' => 'Invalid student ID'], 400);
-    }
-
-    // Consulta los ingresos del estudiante por ID
-    $incomes = DB::table('incomes')
-        ->select(
-            'incomes.id',
-            'employees.name as employee_name',
-            'income_details.student_id',
-            'income_details.commission',
-            'income_details.payment_method',
-            'income_details.bank_account',
-            'income_details.file_path',
-            'income_details.ticket_path',
-            'income_details.total',
-            'income_details.payment_date',
-            'incomes.concept',
-            'incomes.discount',
-            'incomes.quantity'
-        )
-        ->join('income_details', 'incomes.income_details_id', '=', 'income_details.id')
-        ->join('employees', 'income_details.employee_id', '=', 'employees.id')
-        ->where('income_details.student_id', $studentId)
-        ->get();
-
-    // Si no se encuentran ingresos, devolver un mensaje
-    if ($incomes->isEmpty()) {
-        return response()->json(['message' => 'No incomes found for this student'], 404);
-    }
-
-    // Combinar ingresos duplicados
-    $groupedIncomes = [];
-    foreach ($incomes as $income) {
-        $key = $income->payment_method . '|' . $income->ticket_path . '|' . $income->total . '|' . $income->payment_date;
-
-        if (isset($groupedIncomes[$key])) {
-            // Si el ingreso ya existe, agregar el concepto al arreglo
-            if (is_array($groupedIncomes[$key]->concept)) {
-                $groupedIncomes[$key]->concept[] = $income->concept;
-            } else {
-                $groupedIncomes[$key]->concept = [$groupedIncomes[$key]->concept, $income->concept];
-            }
-        } else {
-            // Si no existe, agregar el ingreso al arreglo agrupado
-            $groupedIncomes[$key] = clone $income;
+    public function getIncomesByStudentId($studentId) {
+        // Asegúrate de que el ID del estudiante sea un número
+        if (!is_numeric($studentId)) {
+            return response()->json(['error' => 'Invalid student ID'], 400);
         }
+
+        // Consulta los ingresos del estudiante por ID
+        $incomes = DB::table('incomes')
+            ->select(
+                'incomes.id',
+                'employees.name as employee_name',
+                'income_details.student_id',
+                'income_details.commission',
+                'income_details.payment_method',
+                'income_details.bank_account',
+                'income_details.file_path',
+                'income_details.ticket_path',
+                'income_details.total',
+                'income_details.payment_date',
+                'incomes.concept',
+                'incomes.discount',
+                'incomes.quantity'
+            )
+            ->join('income_details', 'incomes.income_details_id', '=', 'income_details.id')
+            ->join('employees', 'income_details.employee_id', '=', 'employees.id')
+            ->where('income_details.student_id', $studentId)
+            ->get();
+
+        // Si no se encuentran ingresos, devolver un mensaje
+        if ($incomes->isEmpty()) {
+            return response()->json(['message' => 'No incomes found for this student'], 404);
+        }
+
+        // Combinar ingresos duplicados
+        $groupedIncomes = [];
+        foreach ($incomes as $income) {
+            $key = $income->payment_method . '|' . $income->ticket_path . '|' . $income->total . '|' . $income->payment_date;
+
+            if (isset($groupedIncomes[$key])) {
+                // Si el ingreso ya existe, agregar el concepto al arreglo
+                if (is_array($groupedIncomes[$key]->concept)) {
+                    $groupedIncomes[$key]->concept[] = $income->concept;
+                } else {
+                    $groupedIncomes[$key]->concept = [$groupedIncomes[$key]->concept, $income->concept];
+                }
+            } else {
+                // Si no existe, agregar el ingreso al arreglo agrupado
+                $groupedIncomes[$key] = clone $income;
+            }
+        }
+
+        // Reindexar los ingresos agrupados
+        $result = array_values($groupedIncomes);
+
+        return response()->json($result, 200);
     }
-
-    // Reindexar los ingresos agrupados
-    $result = array_values($groupedIncomes);
-
-    return response()->json($result, 200);
-}
 }
