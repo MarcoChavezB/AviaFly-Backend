@@ -10,7 +10,6 @@ use App\Models\Income;
 use App\Models\IncomeDetails;
 use App\Models\MonthlyPayment;
 use App\Models\PaymentMethod;
-use App\Models\Payments;
 use App\Models\Product;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -54,6 +53,7 @@ class IncomesController extends Controller
 
 
     public function generateTicket(
+        string $date,
         array $data,
         string $employeeName,
         string $employeeLastNames,
@@ -71,6 +71,7 @@ class IncomesController extends Controller
 
 
         $pdf = PDF::loadView('income_ticket', compact(
+            'date',
             'data',
             'studentData',
             'employeeName',
@@ -153,7 +154,10 @@ class IncomesController extends Controller
 
         $this->saveIncomeEntries($payments, $incomeDetailsId, $request->input('student_id'));
 
-        $ticketUrl = $this->generateTicket($payments, $employee->name,
+        $ticketUrl = $this->generateTicket(
+            $request->payment_date,
+            $payments,
+            $employee->name,
             $employee->last_names,
             $employee->id_base,
             $incomeDetailsId,

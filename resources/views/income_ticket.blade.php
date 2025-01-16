@@ -81,7 +81,7 @@
         <p>AVIATRAINING AND<br>
             TECHNOLOGY<br>
             ATA100618L60<br>
-            {{ date('Y-m-d H:i:s') }}<br>
+            {{ $date }}<br>
             {{$baseData->location}}
         </p>
     </div>
