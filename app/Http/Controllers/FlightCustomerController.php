@@ -63,65 +63,60 @@ class FlightCustomerController extends Controller
      *  }
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
-        // Obtener todos los registros ordenados por created_at en orden descendente
-        $flightCustomers = FlightCustomer::orderBy('created_at', 'desc')->get();
-        $flightCustomersArray = [];
+public function index()
+{
+    $flightCustomers = FlightCustomer::with(['concept', 'airplane', 'employee', 'pilot', 'paymentMethod'])
+        ->join('customer_payments', 'customer_payments.id_customer_flight', '=', 'flight_customers.id')
+        ->orderBy('flight_customers.created_at', 'desc')
+        ->get();
 
-        foreach ($flightCustomers as $flightCustomer) {
-            $flightCustomerArray = [
-                'id_reservation' => $flightCustomer->id,
-                'id_flight_type' => $flightCustomer->concept->id,
-                'id_airplane' => $flightCustomer->airplane?->id ?? 0,
-                'flight_type' => $flightCustomer->concept->concept,
-                'reservation_status' => $flightCustomer->flight_status,
-                'employee' => $flightCustomer->employee->name,
-                'id_pilot' => $flightCustomer->pilot->id,
-                'pilot' => $flightCustomer->pilot->name,
-                'flight_hours' => $flightCustomer->flight_hours,
-                'flight_passengers' => $flightCustomer->number_of_passengers,
-                'id_payment_method' => $flightCustomer->paymentMethod->id,
-                'payment_method' => $flightCustomer->paymentMethod->type,
-                'total_price' => $flightCustomer->total,
-                'flight_reservation_date' => $flightCustomer->reservation_date,
-                'flight_reservation_hour' => $flightCustomer->reservation_hour,
-                'first_passenger_name' => $flightCustomer->first_passenger_name,
-                'first_passenger_age' => $flightCustomer->first_passenger_age,
-                'first_passenger_weight' => $flightCustomer->first_passenger_weight,
-                'second_passenger_name' => $flightCustomer->second_passenger_name,
-                'second_passenger_age' => $flightCustomer->second_passenger_age,
-                'second_passenger_weight' => $flightCustomer->second_passenger_weight,
-                'tird_passenger_name' => $flightCustomer->tird_passenger_name,
-                'tird_passenger_age' => $flightCustomer->tird_passenger_age,
-                'tird_passenger_weight' => $flightCustomer->tird_passenger_weight,
-                'pilot_weight' => $flightCustomer->pilot_weight,
-                'total_weight' => $flightCustomer->total_weight,
-                'passengers' => []
-            ];
 
-            // Añadir los datos de los pasajeros adicionales si existen
-            if ($flightCustomer->number_of_passengers > 1) {
-                $flightCustomerArray['passengers'][] = [
-                    'name' => $flightCustomer->second_passenger_name,
-                    'age' => $flightCustomer->second_passenger_age,
-                    'weight' => $flightCustomer->second_passenger_weight
+    $flightCustomersArray = $flightCustomers->map(function ($flightCustomer) {
+        $passengers = [];
+
+        // Add additional passengers dynamically
+        for ($i = 2; $i <= $flightCustomer->number_of_passengers; $i++) {
+            $nameField = "passenger_{$i}_name";
+            $ageField = "passenger_{$i}_age";
+            $weightField = "passenger_{$i}_weight";
+
+            if (!empty($flightCustomer->$nameField)) {
+                $passengers[] = [
+                    'name' => $flightCustomer->$nameField,
+                    'age' => $flightCustomer->$ageField,
+                    'weight' => $flightCustomer->$weightField,
                 ];
             }
-
-            if ($flightCustomer->number_of_passengers > 2) {
-                $flightCustomerArray['passengers'][] = [
-                    'name' => $flightCustomer->tird_passenger_name,
-                    'age' => $flightCustomer->tird_passenger_age,
-                    'weight' => $flightCustomer->tird_passenger_weight
-                ];
-            }
-
-            $flightCustomersArray[] = $flightCustomerArray;
         }
 
-        return response()->json($flightCustomersArray, 200);
-    }
+        return [
+            'id_reservation' => $flightCustomer->id,
+            'id_flight_type' => $flightCustomer->concept->id ?? null,
+            'id_airplane' => $flightCustomer->airplane->id ?? 0,
+            'flight_type' => $flightCustomer->concept->concept ?? 'N/A',
+            'reservation_status' => $flightCustomer->flight_status,
+            'employee' => $flightCustomer->employee->name ?? 'N/A',
+            'id_pilot' => $flightCustomer->pilot->id ?? null,
+            'pilot' => $flightCustomer->pilot->name ?? 'N/A',
+            'flight_hours' => $flightCustomer->flight_hours,
+            'flight_passengers' => $flightCustomer->number_of_passengers,
+            'id_payment_method' => $flightCustomer->paymentMethod->id ?? null,
+            'payment_method' => $flightCustomer->paymentMethod->type ?? 'N/A',
+            'total_price' => $flightCustomer->total,
+            'flight_reservation_date' => $flightCustomer->reservation_date,
+            'flight_reservation_hour' => $flightCustomer->reservation_hour,
+            'first_passenger_name' => $flightCustomer->first_passenger_name,
+            'first_passenger_age' => $flightCustomer->first_passenger_age,
+            'first_passenger_weight' => $flightCustomer->first_passenger_weight,
+            'pilot_weight' => $flightCustomer->pilot_weight,
+            'total_weight' => $flightCustomer->total_weight,
+            'ticket_path' => $flightCustomer->payment_ticket ?? 'N/A', // Ticket Path
+            'passengers' => $passengers,
+        ];
+    });
+
+    return response()->json($flightCustomersArray, 200);
+}
 
     /**
      * Show the form for creating a new resource.
