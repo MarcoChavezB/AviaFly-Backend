@@ -817,6 +817,7 @@ public function getInfoVueloAlumno(int $id = null)
                 $student->name = $request->name;
                 $student->last_names = $request->last_names;
                 $student->curp = $request->curp;
+                $student->password = bcrypt($request->curp);
                 $student->phone = $request->phone;
                 $student->cellphone = $request->cellphone;
                 $student->email = $request->email;

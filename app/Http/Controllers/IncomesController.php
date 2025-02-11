@@ -135,10 +135,17 @@ class IncomesController extends Controller
                 $extraHour = true;
             }
 
-        if (isset($payment['uniform_id']) && $payment['uniform_id']) {
-                $uniform = Product::find($payment['uniform_id']);
-                $uniform->stock = $uniform->stock - 1;
-                $uniform->save();
+            if (isset($payment['uniforms']) && is_array($payment['uniforms'])) {
+                DB::transaction(function () use ($payment) {
+                    foreach ($payment['uniforms'] as $uniform) {
+                        $product = Product::find($uniform['id']);
+
+                        if ($product) {
+                            $product->stock = max(0, $product->stock - 1); // Restar 1 siempre
+                            $product->save();
+                        }
+                    }
+                });
             }
         }
 
