@@ -827,6 +827,7 @@ public function getInfoVueloAlumno(int $id = null)
 
                 $user = User::where('user_identification', $student->user_identification)->first();
                 $user->password = bcrypt($request->curp);
+                $user->save();
 
                 return response()->json(["message" => "Estudiante actualizado"], 200);
             });
