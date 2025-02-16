@@ -576,8 +576,7 @@ function resetFlightData($id_flight)
         }
 
         if ($id_student) {
-            $flightHistories->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
-                                 ->where('flight_payments.id_student', $id_student);
+            $flightHistories->where('flight_payments.id_student', $id_student);
         }
 
         $flightHistories = $flightHistories->get();
