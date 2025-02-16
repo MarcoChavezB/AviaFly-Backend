@@ -16,8 +16,33 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
 
-    public function test(){
+    public function deleteUserAccess(Request $request){
+        $user = User::where('user_identification', $request->user_identification)->first();
 
+        if(!$user){
+            return response()->json(['resp' => 'Usuario no encontrado'], 404);
+        }
+
+        $user->is_active = 0;
+
+        $user->save();
+
+        return response()->json(['resp' => 'Se a eliminado el acceso del usurio'], 200);
+    }
+
+
+    public function enableUserAccess(Request $request){
+        $user = User::where('user_identification', $request->user_identification)->first();
+
+        if(!$user){
+            return response()->json(['resp' => 'Usuario no encontrado'], 404);
+        }
+
+        $user->is_active = 1;
+
+        $user->save();
+
+        return response()->json(['resp' => 'Se a habilitado el acceso del usurio'], 200);
     }
 
     public function getUserData(){

@@ -21,14 +21,15 @@ class EmployeeController extends Controller
 
         $employees = DB::table('employees')
             ->join('bases', 'employees.id_base', '=', 'bases.id')
-            ->select('employees.id', 'employees.name', 'employees.last_names', 'employees.user_identification', 'employees.user_type','bases.name as base')
+            ->join('users', 'employees.user_identification', '=', 'users.user_identification')
+            ->select('employees.id', 'employees.name', 'employees.last_names', 'employees.user_identification', 'employees.user_type','bases.name as base', 'users.is_active')
             ->orderBy('employees.id', 'desc')
             ->get();
 
         return response()->json(['employees' => $employees]);
     }
     public function show($id){
-        $employee = Employee::where('id', $id)->with('base:id,name')->first();
+        $employee = Employee::where('id', $id)->with(['base:id,name', 'user:user_identification,is_active'])->first();
 
         if(!$employee){
             return response()->json(['message' => 'Empleado no encontrado'], 414);
@@ -217,59 +218,4 @@ public function fingerPrintList($id_finger)
     return response()->json(['message' => 'Registro de asistencia exitoso']);
 }
 
-    public function deleteAccessUser($id){
-
-        try {
-            $employee = Employee::where('id', $id)->first();
-
-            if(!$employee){
-                return response()->json(['message' => 'Empleado no encontrado'], 414);
-            }
-
-            $user = User::where('user_identification', $employee->user_identification)->first();
-
-            if(!$user){
-                return response()->json(['errors' => ['El usuario no tiene acceso']], 414);
-            }
-
-            DB::transaction(function() use ($user){
-                DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
-                $user->delete();
-            });
-
-            return response()->json(['message' => 'Accesos eliminados correctamente']);
-
-        }catch (\Exception $e) {
-            return response()->json(['message' => 'Internal Server Error'], 510);
-        }
-    }
-
-    public function createAccessUser($id){
-        try {
-
-            $employee = Employee::where('id', $id)->first();
-
-            if(!$employee){
-                return response()->json(['message' => 'Empleado no encontrado'], 414);
-            }
-
-            $user = User::where('user_identification', $employee->user_identification)->first();
-
-            if($user){
-                return response()->json(['errors' => ['El usuario ya tiene acceso']], 410);
-            }
-
-            $user = User::create([
-                'user_identification' => $employee->user_identification,
-                'password' => bcrypt($employee->curp),
-                'user_type' => $employee->user_type,
-                'id_base' => $employee->id_base,
-            ]);
-
-            return response()->json(['message' => 'Acceso creado correctamente']);
-
-        }catch (\Exception $e){
-            return response()->json(['message' => $e->getMessage()], 510);
-        }
-    }
 }

@@ -120,8 +120,6 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
         ->middleware('role:student,root,admin,employee');
 
     Route::middleware('role:admin,root')->group(function (){ /**/
-        Route::delete('/delete/access-user/{id}', [StudentController::class, 'deleteAccessUser'])->where('id', '[0-9]+');
-        Route::post('/create/access-user/{id}', [StudentController::class, 'createAccessUser'])->where('id', '[0-9]+');
         Route::delete('/delete/{id}', [StudentController::class, 'deleteStudent'])->where('id', '[0-9]+');
     });
 
@@ -221,8 +219,6 @@ Route::prefix('/employees')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:root,admin')->group(function (){
         Route::put('/update/{id}', [EmployeeController::class, 'update'])->where('id', '[0-9]+');
         Route::put('/update/password/{id}', [EmployeeController::class, 'updatePassword'])->where('id', '[0-9]+');
-        Route::delete('/delete/access-user/{id}', [EmployeeController::class, 'deleteAccessUser'])->where('id', '[0-9]+');
-        Route::post('/create/access-user/{id}', [EmployeeController::class, 'createAccessUser'])->where('id', '[0-9]+');
     });
 });
 
@@ -395,10 +391,12 @@ Route::prefix('/passwords')->middleware(['auth:sanctum', 'role:root,admin,employ
     Route::get('/destroy/{idRecord}', [PasswordController::class, 'destroy']);
 });
 
+Route::prefix('/control')->middleware(['auth:sanctum', 'role:root,admin'])->group(function () {
+    Route::post('/enable/user', [UserController::class, 'enableUserAccess']);
+    Route::post('/disable/user', [UserController::class, 'deleteUserAccess']);
+});
 
 Route::prefix('/finance')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [SystemIncomeController::class, 'index']);
 });
-
-Route::get('/notify', [StudentController::class, 'notifyStudent']);
 

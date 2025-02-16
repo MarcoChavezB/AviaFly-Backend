@@ -19,6 +19,8 @@ return new class extends Migration
             $table->enum('user_type', ['root', 'admin', 'employee', 'instructor', 'student', 'flight_instructor']);
             $table->unsignedBigInteger('id_base');
             $table->string('password');
+
+/*             $table->boolean('is_active')->default(true)->after('password'); // Agrega la columna después de 'email' */
             $table->rememberToken();
             $table->timestamps();
 

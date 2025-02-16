@@ -1165,7 +1165,7 @@ function getAllInfoReport(int $id_flight)
         foreach ($employeeEmail as $emp) {
             Mail::to($emp)->send(new RequestFlight($student, $flight));
         }
-        return response()->json(["msg" => "Peticion de vuelo registrada", 'employees' => $employeeEmail], 201);
+        return response()->json(["msg" => "Peticion de vuelo registrada"], 201);
     }
 
 

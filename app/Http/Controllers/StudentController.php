@@ -1279,58 +1279,6 @@ public function getInfoVueloAlumno(int $id = null)
     }
 }
 
-    public function deleteAccessUser($id){
-        try{
-            $student = Student::find($id);
-
-            if(!$student){
-                return response()->json(["error" => "Estudiante no encontrado"], 404);
-            }
-
-            $user = User::where('user_identification', $student->user_identification)->first();
-
-            if(!$user){
-                return response()->json(["errors" => ["El usuario de acceso no existe"]], 404);
-            }
-
-            DB::transaction(function() use ($user) {
-                DB::table('personal_access_tokens')->where('tokenable_id', $user->id)->delete();
-                $user->delete();
-            });
-
-            return response()->json(["msg" => "Usuario eliminado"], 200);
-        }catch (\Exception $e){
-            return response()->json(["error" => "Internal Server Error"], 500);
-        }
-    }
-
-    public function createAccessUser($id){
-        try{
-            $student = Student::find($id);
-
-            if(!$student){
-                return response()->json(["error" => "Estudiante no encontrado"], 404);
-            }
-
-            $user = User::where('user_identification', $student->user_identification)->first();
-
-            if($user){
-                return response()->json(["errors" => ["El usuario ya existe"]], 400);
-            }
-
-            $user = User::create([
-                'user_identification' => $student->user_identification,
-                'password' => bcrypt($student->curp),
-                'user_type' => 'student',
-                'id_base' => $student->id_base
-            ]);
-
-            return response()->json(["msg" => "Usuario creado"], 201);
-
-        }catch(\Exception $e){
-            return response()->json(["error" => "Internal Server Error"], 500);
-        }
-    }
 
     public function deleteDirectory($dirPath) {
         if (! is_dir($dirPath)) {
