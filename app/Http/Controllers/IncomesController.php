@@ -61,7 +61,7 @@ class IncomesController extends Controller
         int $incomeDetailsId,
         int $studentID,
         bool $hasExtraHour,
-        Product $product = null
+        $uniforms = []
     ): string
     {
         $fileController = new FileController();
@@ -79,7 +79,7 @@ class IncomesController extends Controller
             'baseData',
             'incomeDetails',
             'hasExtraHour',
-            'product'
+            'uniforms'
         ));
 
         $baseName = $this->sanitizeName($baseData->name);
@@ -116,6 +116,8 @@ class IncomesController extends Controller
         $student = Student::find($request->student_id);
         $extraHour = false;
 
+        $allUniforms = [];
+
         // agregar la hora extra si es mayor a 10 las horas compradas
         $payments = $request->payments; // Hacemos una copia del arreglo
         $uniform = null;
@@ -136,6 +138,11 @@ class IncomesController extends Controller
             }
 
             if (isset($payment['uniforms']) && is_array($payment['uniforms'])) {
+
+                // agregar los uniformes encontrados en el arreglo
+                $allUniforms = array_merge($allUniforms, $payment["uniforms"]);
+
+                // transaction para restar el stock del producto
                 DB::transaction(function () use ($payment) {
                     foreach ($payment['uniforms'] as $uniform) {
                         $product = Product::find($uniform['id']);
@@ -170,7 +177,7 @@ class IncomesController extends Controller
             $incomeDetailsId,
             $request->input('student_id'),
             $extraHour,
-            $uniform
+            $allUniforms
         );
 
         return response()->json(['message' => 'ok', 'ticketUrl' => $ticketUrl], 201);

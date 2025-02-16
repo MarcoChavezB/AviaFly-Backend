@@ -116,6 +116,15 @@
                     <td>${{ $item['total'] }}</td>
                 </tr>
             @endforeach
+            @if(!empty($uniforms))
+                @foreach($uniforms as $uniform)
+                    <tr>
+                        <td>1</td>
+                        <td>{{ $uniform['name'] }}</td>
+                        <td>$0</td>
+                    </tr>
+                @endforeach
+            @endif
             </tbody>
         </table>
     </div>
