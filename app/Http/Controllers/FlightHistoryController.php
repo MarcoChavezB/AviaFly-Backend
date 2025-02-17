@@ -1061,9 +1061,11 @@ function getAllInfoReport(int $id_flight)
 
         $minReservationDateTime = Carbon::now()->addDay();
 
-        if ($reservationDateTime->lessThanOrEqualTo($minReservationDateTime)) {
+        // validacion de la hora de vuelo
+
+        /* if ($reservationDateTime->lessThanOrEqualTo($minReservationDateTime)) {
             return response()->json(['errors' => 'Se necesita agendar con al menos 25 horas de anticipación'], 400);
-        }
+        } */
 
         $payment_method_controller = new PaymentMethodController();
 
@@ -1154,11 +1156,8 @@ function getAllInfoReport(int $id_flight)
 
         $employeeEmail = Employee::select('email')
             ->join('users', 'users.user_identification', '=', 'employees.user_identification')
-            ->where(function($query) {
-                $query->where('users.user_type', 'admin')
-                      ->orWhere('users.user_type', 'root')
-                      ->orWhere('users.user_type', 'employee');
-            })
+            ->whereIn('users.user_type', ['admin', 'root', 'employee'])
+            ->where('users.is_active', 1)
             ->get();
 
 
