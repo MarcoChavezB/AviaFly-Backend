@@ -87,7 +87,7 @@
     </div>
     <div class="user">
         <p>Autoriza: <span>{{ $employeeName }}  {{ $employeeLastNames  }}</span><br>
-            Fecha: {{ $date }}<br>
+            Fecha: {{ $date  ?? date('Y-m-d H:i:s') }}<br>
             Matrícula: <span>{{ $studentData->user_identification }}</span><br>
             Nombre: <span>{{ $studentData->name }}  {{ $studentData->last_names }}</span><br>
         </p>

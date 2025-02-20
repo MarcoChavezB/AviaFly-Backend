@@ -630,7 +630,9 @@ public function getInfoVueloAlumno(int $id = null)
         $lastPaymentInsert = Payments::latest('id')->first();
 
         $PdfController = new PDFController();
-        $urlTicket = $PdfController->generateTicket($last_id_insert->id, $request->payment_comission);
+        $urlTicket = $PdfController->generateTicket(
+            $last_id_insert->id,
+            $request->payment_comission);
 
         $lastPaymentInsert->payment_ticket = $urlTicket;
         $lastPaymentInsert->save();

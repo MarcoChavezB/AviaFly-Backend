@@ -358,6 +358,11 @@ public function changeStatusFlight(Request $request)
     }
 
     $flight->flight_status = $data['status'];
+
+
+
+    // bloque de vuelo cancelado
+
     if ($data['status'] == 'cancelado') {
         $fileController = new FileController();
         $flightPayment->payment_status = "cancelado";
@@ -410,6 +415,8 @@ public function changeStatusFlight(Request $request)
             Mail::to($instructor->email)->send(new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details, $penalty));
         }
     }
+
+    // fin de bloque de cancelado
 
     $flightPayment->save(); // Guarda el estado del pago del vuelo
     $flight->save(); // Guarda el estado del vuelo
