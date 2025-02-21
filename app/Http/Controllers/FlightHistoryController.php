@@ -328,13 +328,18 @@ public function changeStatusFlight(Request $request)
 
     $flightPayment = FlightPayment::where('id_flight', $data['id_flight'])->first();
     $payments = Payments::where('id_flight', $data['id_flight'])->get();
+
     $student = Student::join('flight_payments', 'students.id', '=', 'flight_payments.id_student')
         ->where('flight_payments.id_flight', $data['id_flight'])
         ->first();
     $studentPerson = Student::find($student->id_student);
 
+
+    // FIX: Cuando el vuelo ya esta cancelado [ ELIMINAR BLOQUE ]
+
     // quitar el credito devuelto
     if ($flight->flight_status == 'cancelado') {
+
         if ($payments) {
             foreach ($payments as $item) {
                 if ($item->id_payment_method == $infoPayment->getCreditoVueloId()) {
@@ -353,19 +358,22 @@ public function changeStatusFlight(Request $request)
         if($studentPerson->flight_credit < $totalCreditFlight){
             return response()->json(['msg' => "El alumno no tiene suficientes creditos para restaurar el estado"], 401);
         }
+
         $studentPerson->flight_credit = (float)$studentPerson->flight_credit - $totalCreditFlight;
         $studentPerson->save();
     }
 
+    // FIX: Cuando el vuelo ya esta cancelado [ ELIMINAR BLOQUE ]
+
     $flight->flight_status = $data['status'];
 
-
-
-    // bloque de vuelo cancelado
+    // FIX: bloque de vuelo cancelado
 
     if ($data['status'] == 'cancelado') {
+
         $fileController = new FileController();
         $flightPayment->payment_status = "cancelado";
+
 
         $instructor = Employee::join('flight_payments', 'employees.id', '=', 'flight_payments.id_instructor')
             ->where('flight_payments.id_flight', $data['id_flight'])
@@ -395,18 +403,29 @@ public function changeStatusFlight(Request $request)
             if ($flight->type_flight == "vuelo") {
                 $totalFlightHoursConvert = $totalCreditFlight / $infoFlightController->getFlightPrice();
                 $studentPerson->flight_credit = (float)$studentPerson->flight_credit + $totalFlightHoursConvert;
+
             } elseif ($flight->type_flight == "simulador") {
                 $totalSimulatorConvert = $totalCreditFlight / $infoFlightController->getSimulatorFlightPrice();
                 $studentPerson->simulator_credit = (float)$studentPerson->simulator_credit + $totalSimulatorConvert;
             }
         }
 
+
+        // FIX: CAMBIAR ESTO PARA SIMULADOR TAMBIEN
+
+/*         return response()->json(['credito actual del estudiante' => $studentPerson->flight_credit, 'horas del vuelo' => $flight->hours, 'credito total' => $totalCreditFlight, 'suma' => (float)$flight->hours + $totalCreditFlight]); */
+        $studentPerson->flight_credit = (float)$flight->hours + $studentPerson->flight_credit;
         $studentPerson->save();
+
         $this->resetFlightData($flight->id);
 
         $details = new stdClass();
         $details->motive = $data['motive'] ?? null;
         $details->details = $data['details'] ?? null;
+
+        $flight->delete();
+
+        // FIX: decomentar linea
 
         if ($student) {
             Mail::to($student->email)->send(new FlightStatusNotify($student, $flight, $instructor, $data['status'], $details, $penalty));
@@ -419,7 +438,7 @@ public function changeStatusFlight(Request $request)
     // fin de bloque de cancelado
 
     $flightPayment->save(); // Guarda el estado del pago del vuelo
-    $flight->save(); // Guarda el estado del vuelo
+    $flight->save(); // Elimina el vuelo
 
     return response()->json([
         'msg' => 'El vuelo se ha modificado correctamente',
