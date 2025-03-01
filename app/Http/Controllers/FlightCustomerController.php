@@ -12,6 +12,7 @@ use App\Models\RecreativeConcept;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class FlightCustomerController extends Controller
@@ -63,18 +64,34 @@ class FlightCustomerController extends Controller
      *  }
      * @return \Illuminate\Http\Response
      */
+
 public function index()
 {
-    $flightCustomers = FlightCustomer::with(['concept', 'airplane', 'employee', 'pilot', 'paymentMethod'])
-        ->join('customer_payments', 'customer_payments.id_customer_flight', '=', 'flight_customers.id')
+    $flightCustomers = DB::table('flight_customers')
+        ->leftJoin('recreative_concepts', 'flight_customers.id_concept', '=', 'recreative_concepts.id')
+        ->leftJoin('air_planes', 'flight_customers.id_air_planes', '=', 'air_planes.id')
+        ->leftJoin('employees as employee', 'flight_customers.id_employee', '=', 'employee.id')
+        ->leftJoin('employees as pilot', 'flight_customers.id_pilot', '=', 'pilot.id')
+        ->leftJoin('payment_methods', 'flight_customers.id_payment_method', '=', 'payment_methods.id')
+        ->leftJoin('customer_payments', 'customer_payments.id_customer_flight', '=', 'flight_customers.id')
+        ->select(
+            'flight_customers.*',
+            'recreative_concepts.id as id_flight_type',
+            'recreative_concepts.concept as flight_type',
+            'air_planes.id as id_airplane',
+            'employee.name as employee_name',
+            'pilot.id as id_pilot',
+            'pilot.name as pilot_name',
+            'payment_methods.id as id_payment_method',
+            'payment_methods.type as payment_method'
+        )
         ->orderBy('flight_customers.created_at', 'desc')
         ->get();
-
 
     $flightCustomersArray = $flightCustomers->map(function ($flightCustomer) {
         $passengers = [];
 
-        // Add additional passengers dynamically
+        // Generar pasajeros dinámicamente según el número de pasajeros
         for ($i = 2; $i <= $flightCustomer->number_of_passengers; $i++) {
             $nameField = "passenger_{$i}_name";
             $ageField = "passenger_{$i}_age";
@@ -91,17 +108,17 @@ public function index()
 
         return [
             'id_reservation' => $flightCustomer->id,
-            'id_flight_type' => $flightCustomer->concept->id ?? null,
-            'id_airplane' => $flightCustomer->airplane->id ?? 0,
-            'flight_type' => $flightCustomer->concept->concept ?? 'N/A',
+            'id_flight_type' => $flightCustomer->id_flight_type ?? null,
+            'id_airplane' => $flightCustomer->id_airplane ?? 0,
+            'flight_type' => $flightCustomer->flight_type ?? 'N/A',
             'reservation_status' => $flightCustomer->flight_status,
-            'employee' => $flightCustomer->employee->name ?? 'N/A',
-            'id_pilot' => $flightCustomer->pilot->id ?? null,
-            'pilot' => $flightCustomer->pilot->name ?? 'N/A',
+            'employee' => $flightCustomer->employee_name ?? 'N/A',
+            'id_pilot' => $flightCustomer->id_pilot ?? null,
+            'pilot' => $flightCustomer->pilot_name ?? 'N/A',
             'flight_hours' => $flightCustomer->flight_hours,
             'flight_passengers' => $flightCustomer->number_of_passengers,
-            'id_payment_method' => $flightCustomer->paymentMethod->id ?? null,
-            'payment_method' => $flightCustomer->paymentMethod->type ?? 'N/A',
+            'id_payment_method' => $flightCustomer->id_payment_method ?? null,
+            'payment_method' => $flightCustomer->payment_method ?? 'N/A',
             'total_price' => $flightCustomer->total,
             'flight_reservation_date' => $flightCustomer->reservation_date,
             'flight_reservation_hour' => $flightCustomer->reservation_hour,
@@ -110,7 +127,7 @@ public function index()
             'first_passenger_weight' => $flightCustomer->first_passenger_weight,
             'pilot_weight' => $flightCustomer->pilot_weight,
             'total_weight' => $flightCustomer->total_weight,
-            'ticket_path' => $flightCustomer->payment_ticket ?? 'N/A', // Ticket Path
+            'ticket_path' => $flightCustomer->payment_ticket ?? 'N/A',
             'passengers' => $passengers,
         ];
     });
