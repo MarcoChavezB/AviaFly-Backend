@@ -29,7 +29,9 @@ class Student extends Model
         'id_history_flight',
         'id_career',
         'start_date',
-        'simulator_credit'
+        'simulator_credit',
+        'afac_user',
+        'afac_password',
     ];
 
     public function career()

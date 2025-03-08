@@ -48,6 +48,54 @@ class StudentController extends Controller
         return response()->json($studens, 200);
     }
 
+    /*
+     *  payload : {
+     *     user_identification,
+     *     user_name,
+     *     password,
+     *  }
+     *  */
+    function afacChange(Request $request){
+        $validator = Validator::make($request->all(), [
+            'user_identification' => 'required|string|exists:students,user_identification',
+        ], [
+            'required_without' => 'El campo :attribute es obligatorio cuando :values no está presente.',
+        ]);
+
+        $validator->sometimes('user_name', 'required_without:password', function ($input) {
+            return empty($input->password);
+        });
+
+        $validator->sometimes('password', 'required_without:user_name', function ($input) {
+            return empty($input->user_name);
+        });
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $student = Student::where('user_identification', $request->user_identification)->first();
+
+        if (!$student) {
+            return response()->json(['errors' => ['El estudiante no existe']], 404);
+        }
+
+        if ($request->user_name) {
+            $student->afac_user = $request->user_name;
+        }
+
+        if ($request->password) {
+            $student->afac_password = $request->password;
+        }
+
+        $student->save();
+
+        return response()->json(['resp' => 'Datos actualizados'], 200);
+    }
+    function afacDelete($id_student){
+
+    }
+
 
     function indexId(string $identificator)
     {

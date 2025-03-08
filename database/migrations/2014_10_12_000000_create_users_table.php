@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('password');
 
 /*             $table->boolean('is_active')->default(true)->after('password'); // Agrega la columna después de 'email' */
+
+            /* $table->string('afac_user')->nullable();
+            $table->string('afac_password')->nullable(); */
             $table->rememberToken();
             $table->timestamps();
 

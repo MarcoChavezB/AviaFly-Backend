@@ -38,8 +38,6 @@ use App\Http\Controllers\RecreativeConceptController;
 use App\Http\Controllers\SchoolExpenseController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SupportController;
-use App\Http\Controllers\WhaController;
-use Symfony\Component\CssSelector\Parser\Handler\CommentHandler;
 
 
 /*
@@ -107,6 +105,10 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
         Route::put('/update', [StudentController::class, 'update']);
         Route::get('/student/owed-monthly-payments/{id}', [StudentController::class, 'getStudentAndOwedMonthlyPayments'])->where('id', '[0-9]+');
         Route::get('/get/name-identification/{id}', [StudentController::class, 'getStudentNameAndIdentification'])->where('id', '[0-9]+');
+
+        //afac routes
+        Route::post('/afac/update', [StudentController::class, 'afacChange']);
+        Route::get('/afac/password/delete/{id_student}', [StudentController::class, 'getStudentNameAndIdentification']);
     });
 
     Route::middleware('role:student')->group(function (){ /**/
