@@ -106,7 +106,6 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
         Route::get('/student/owed-monthly-payments/{id}', [StudentController::class, 'getStudentAndOwedMonthlyPayments'])->where('id', '[0-9]+');
         Route::get('/get/name-identification/{id}', [StudentController::class, 'getStudentNameAndIdentification'])->where('id', '[0-9]+');
 
-        //afac routes
         Route::post('/afac/update', [StudentController::class, 'afacChange']);
         Route::get('/afac/password/delete/{id_student}', [StudentController::class, 'getStudentNameAndIdentification']);
     });
