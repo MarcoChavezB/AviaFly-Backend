@@ -774,7 +774,8 @@ function resetFlightData($id_flight)
             'students.id as id_student',
             'students.name as student_name',
             'students.last_names as student_last_name',
-            'students.phone as student_phone'
+            'students.phone as student_phone',
+            'flight_payments.id as id_payment'
         )
             ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->join('students', 'students.id', '=', 'flight_payments.id_student')
@@ -785,7 +786,7 @@ function resetFlightData($id_flight)
         $payments = DB::table('payments')
             ->select('payments.payment_ticket', 'payment_methods.type as payment_method')
             ->join('payment_methods', 'payment_methods.id', '=', 'payments.id_payment_method')
-            ->where('payments.id_flight', $id_flight)
+            ->where('payments.id_flight', $flight->id_payment)
             ->get();
 
         if ($flight) {
