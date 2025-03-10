@@ -678,6 +678,7 @@ public function getInfoVueloAlumno(int $id = null)
         $lastPaymentInsert = Payments::latest('id')->first();
 
         $PdfController = new PDFController();
+
         $urlTicket = $PdfController->generateTicket(
             $last_id_insert->id,
             $request->payment_comission);
@@ -685,7 +686,7 @@ public function getInfoVueloAlumno(int $id = null)
         $lastPaymentInsert->payment_ticket = $urlTicket;
         $lastPaymentInsert->save();
 
-        return response()->json(["msg" => $message, "id" => $last_id_insert->id], 201);
+        return response()->json(["msg" => $message, "id" => $last_id_insert->id, 'ticket_path' => $urlTicket], 201);
     }
 
     /*

@@ -7,7 +7,9 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\DomPDF\PDF as DomPDFPDF;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use stdClass;
+use Twilio\Rest\Notify;
 
 class PDFController extends Controller
 {
@@ -88,44 +90,49 @@ class PDFController extends Controller
 
     public function generateTicket($id_flight_history, $comission = 0)
     {
-        $response = $this->getReservationTicket($id_flight_history);
-        $apiData = $response->first();
+        try {
+            $response = $this->getReservationTicket($id_flight_history);
+            $apiData = $response->first();
 
-        if (!$apiData) {
-            abort(404, 'Ticket not found');
+            if (!$apiData) {
+                abort(404, 'Ticket not found');
+            }
+
+            $data = [
+                'baseData' => (object)[
+                    'location' => $apiData['location'],
+                ],
+                'employeeName' => $apiData['authorized_by'],
+                'employeeLastNames' => $apiData['authorized_by_last_names'],
+                'studentData' => (object)[
+                    'user_identification' => $apiData['student_identification'],
+                    'name' => $apiData['student_name'],
+                    'last_names' => $apiData['student_last_names'],
+                ],
+                'incomeDetails' => (object)[
+                    'payment_method' => $apiData['items']['payment_method'],
+                    'commission' => $comission,
+                    'total' => $apiData['items']['total'],
+                ],
+                'data' => [
+                    [
+                        'quantity' => $apiData['items']['quantity'],
+                        'concept' => $apiData['items']['item'],
+                        'total' => $apiData['items']['total'] - $comission,
+                    ]
+                ],
+            ];
+
+            $pdf = PDF::loadView('income_ticket', $data);
+            $student = Student::find($apiData['id_student']);
+
+            $fileController = new FileController();
+            $url =  $fileController->saveTicket($pdf, $student, $apiData['id_base']);
+            return $url;
+        } catch (\Exception $e) {
+            Log::channel('slack')->error('Error generating ticket: ' . $e->getMessage());
+            return response()->json(['error' => 'Error generating ticket'], 500);
         }
-
-        $data = [
-            'baseData' => (object)[
-                'location' => $apiData['location'],
-            ],
-            'employeeName' => $apiData['authorized_by'],
-            'employeeLastNames' => $apiData['authorized_by_last_names'],
-            'studentData' => (object)[
-                'user_identification' => $apiData['student_identification'],
-                'name' => $apiData['student_name'],
-                'last_names' => $apiData['student_last_names'],
-            ],
-            'incomeDetails' => (object)[
-                'payment_method' => $apiData['items']['payment_method'],
-                'commission' => $comission,
-                'total' => $apiData['items']['total'],
-            ],
-            'data' => [
-                [
-                    'quantity' => $apiData['items']['quantity'],
-                    'concept' => $apiData['items']['item'],
-                    'total' => $apiData['items']['total'] - $comission,
-                ]
-            ],
-        ];
-
-        $pdf = PDF::loadView('income_ticket', $data);
-        $student = Student::find($apiData['id_student']);
-
-        $fileController = new FileController();
-        $url =  $fileController->saveTicket($pdf, $student, $apiData['id_base']);
-        return $url;
     }
 
     public function generateProductTicket($order_id){
