@@ -25,6 +25,13 @@ class FlightCustomer extends Model
         'id_payment_method',
         'id_pilot',
         'id_air_planes',
+        'has_report',
+        'initial_horometer',
+        'final_horometer',
+        'total_horometer',
+        'final_tacometer',
+        'comment',
+        'flight_type',
     ];
 
     public function employee()

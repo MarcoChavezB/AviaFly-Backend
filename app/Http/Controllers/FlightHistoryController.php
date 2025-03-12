@@ -387,7 +387,7 @@ public function changeStatusFlight(Request $request)
                 }
             }
         }
-
+        return response()->json($penalty);
         // multar al estudiante
         if($penalty != 1){
             if($flight->type_flight == "vuelo"){

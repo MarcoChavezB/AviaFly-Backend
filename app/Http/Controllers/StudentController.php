@@ -6,6 +6,7 @@ use App\Jobs\ProcessStudentCreation;
 use App\Mail\WelcomeSistem;
 use App\Models\Base;
 use App\Models\Employee;
+use App\Models\FlightCustomer;
 use App\Models\flightHistory;
 use App\Models\InfoFlight;
 use App\Models\Payments;
@@ -1095,7 +1096,7 @@ public function getInfoVueloAlumno(int $id = null)
 
     function indexStudentsReport()
     {
-        $student = Student::select(
+        $flights = Student::select(
             'flight_history.id as id_flight',
             'students.id as id_student',
             'students.name',
@@ -1120,7 +1121,33 @@ public function getInfoVueloAlumno(int $id = null)
             ->limit(100)
             ->get();
 
-        return response()->json($student, 200);
+        $flightsCustomers = FlightCustomer::select(
+            'flight_customers.id as id_flight',
+            DB::raw("'N/A' as id_student"),
+            DB::raw("'Recreativo' as name"),
+            DB::raw("'Recreativo' as last_names"),
+            'air_planes.model as equipo',
+            'flight_customers.flight_type as type_flight',
+            DB::raw("'no academico' as flight_category"),
+            'flight_customers.reservation_date as flight_date',
+            'flight_customers.has_report',
+        )
+            ->join('air_planes', 'flight_customers.id_air_planes', '=', 'air_planes.id')
+            ->join('recreative_concepts', 'flight_customers.id_concept', '=', 'recreative_concepts.id')
+            ->groupBy('flight_customers.id', 'air_planes.model', 'flight_customers.flight_type', 'flight_customers.reservation_date', 'flight_customers.has_report')
+            ->orderBy('flight_customers.created_at', 'desc')
+            ->where(function($query) {
+                $query->where('flight_customers.flight_status', 'pendiente')
+                      ->orWhere('flight_customers.flight_status', 'realizado')
+                      ->orWhere('recreative_concepts.id', '2')
+                      ->orWhere('recreative_concepts.id', '3');
+            })
+            ->limit(100)
+            ->get();
+
+        $allData = $flights->concat($flightsCustomers)->sortByDesc('flight_date')->values()->all();
+
+        return response()->json($allData, 200);
     }
 
 

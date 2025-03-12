@@ -136,6 +136,56 @@ public function index()
 }
 
     /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     *{
+        "id_flight": 1,
+        "initial_horometer": 1,
+        "final_horometer": 3,
+        "total_horometer": 565,
+        "final_tacometer": 5656,
+        "comments": "Simona"
+     }
+     */
+    public function storeReportCustomer(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'id_flight' => 'required|exists:flight_customers,id',
+            'initial_horometer' => 'required|numeric',
+            'final_horometer' => 'required|numeric',
+            'total_horometer' => 'required|numeric',
+            'final_tacometer' => 'required|numeric',
+        ], [
+            'initial_horometer.required' => 'El horometro inicial es requerido',
+            'final_horometer.required' => 'El horometro final es requerido',
+            'total_horometer.required' => 'El total de horometros es requerido',
+            'final_tacometer.required' => 'El tacometro final es requerido',
+            'id_flight.required' => 'El id de la reservacion es requerido',
+        ]);
+
+        if($validator->fails()){
+            return response()->json($validator->errors(), 400);
+        }
+
+        $flightCustomer = FlightCustomer::find($request->id_flight);
+
+        $flightCustomer->flight_status = 'realizado';
+        $flightCustomer->has_report = 1;
+        $flightCustomer->initial_horometer = $request->initial_horometer;
+        $flightCustomer->final_horometer = $request->final_horometer;
+        $flightCustomer->total_horometer = $request->total_horometer;
+        $flightCustomer->final_tacometer = $request->final_tacometer;
+
+        if ($request->has('comments')) {
+            $flightCustomer->comment = $request->comments;
+        }
+
+        $flightCustomer->save();
+
+        return response()->json(['message' => 'Reporte de vuelo creado con exito'], 201);
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
