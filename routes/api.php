@@ -364,7 +364,6 @@ Route::prefix('/recreatives')->group(function () {
     Route::post('/amount', [RecreativeConceptController::class, 'storeInstallment']);
     Route::get('/delete/{id_customer_flight}', [RecreativeConceptController::class, 'destroy']);
 
-    // WARN: Reporte de vuelos recreativos
     Route::post('/report/store', [FlightCustomerController::class, 'storeReportCustomer']);
 });
 
