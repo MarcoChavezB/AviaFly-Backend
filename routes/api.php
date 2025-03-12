@@ -364,7 +364,7 @@ Route::prefix('/recreatives')->group(function () {
     Route::post('/amount', [RecreativeConceptController::class, 'storeInstallment']);
     Route::get('/delete/{id_customer_flight}', [RecreativeConceptController::class, 'destroy']);
 
-    Route::post('/report/store', [FlightCustomerController::class, 'storeReportCustomer']);
+    Route::post('/store/report', [FlightCustomerController::class, 'storeReportCustomer']);
 });
 
 Route::prefix('/expenses')->middleware(['auth:sanctum'])->group(function () {
