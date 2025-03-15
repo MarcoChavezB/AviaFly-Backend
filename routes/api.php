@@ -231,6 +231,7 @@ Route::prefix('/products')->middleware(['auth:sanctum', 'role:root,admin,employe
     Route::get('/uniforms', [ProductController::class, 'getUniforms']);
 });
 
+
 Route::prefix('/products')->group(function () {
     Route::get('/catalog', [ProductController::class, 'getCatalog']);
 });
