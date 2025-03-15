@@ -325,10 +325,27 @@ public function index()
         return response()->json(['message' => 'Reservacion creada con exito', 'tiket' => $urlTicket], 201);
     }
 
-    public function create()
-    {
-        //
+    public function detailsReport($id_flight) {
+        if($id_flight == null){
+            return response()->json(['message' => 'El id de la reservacion es requerido'], 400);
+        }
+
+        $flightCustomer = FlightCustomer::find($id_flight);
+
+        if($flightCustomer == null){
+            return response()->json(['message' => 'La reservacion no existe'], 404);
+        }
+
+
+        $flightCustomerDetails = DB::table('flight_customers')
+            ->select('flight_customers.initial_horometer', 'flight_customers.final_horometer', 'flight_customers.total_horometer', 'flight_customers.final_tacometer', 'flight_customers.comment', 'flight_customers.reservation_date', 'flight_customers.reservation_hour', 'flight_customers.total', 'flight_customers.flight_status', 'flight_customers.payment_status', 'customer_payments.payment_ticket')
+            ->leftJoin('customer_payments', 'customer_payments.id_customer_flight', '=', 'flight_customers.id')
+            ->where('flight_customers.id', $id_flight)
+            ->first();
+
+        return response()->json($flightCustomerDetails, 200);
     }
+
     /**
      * Display the specified resource.
      *
