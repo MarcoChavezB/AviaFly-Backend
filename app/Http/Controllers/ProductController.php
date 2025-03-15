@@ -38,6 +38,31 @@ class ProductController extends Controller
     }
 
 
+    public function getCatalog()
+    {
+        $products = DB::table('products')
+            ->leftJoin('order_details', 'products.id', '=', 'order_details.id_product')
+            ->select(
+                'products.id',
+                'products.type',
+                DB::raw('COALESCE(SUM(order_details.quantity), 0) as quantity_sales'),
+                'products.name',
+                'products.price',
+                'products.stock',
+                'products.product_status',
+                'products.created_at',
+                'products.updated_at'
+            )
+            ->where('products.product_status', 'activo')
+            ->groupBy('products.id', 'products.type' ,'products.name', 'products.price', 'products.stock', 'products.product_status', 'products.created_at', 'products.updated_at')
+            ->orderBy('products.created_at', 'asc');
+
+        $products = $products->get();
+
+        return response()->json($products, 200);
+    }
+
+
     public function getUniforms()
     {
         $products = DB::table('products')
