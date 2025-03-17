@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\AirPlane;
-use App\Models\Employee;
 use App\Models\Enrollment;
 use App\Models\flightHistory;
 use App\Models\MonthlyPayment;
 use App\Models\OrderDetail;
-use App\Models\Student;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;

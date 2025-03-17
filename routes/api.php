@@ -211,7 +211,6 @@ Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
 });
 
 Route::prefix('/employees')->middleware('auth:sanctum')->group(function () {
-
     Route::middleware('role:root,admin,employee')->group(function (){
         Route::get('/index', [EmployeeController::class, 'index']);
         Route::get('/show/{id}', [EmployeeController::class, 'show'])->where('id', '[0-9]+');
@@ -230,7 +229,6 @@ Route::prefix('/products')->middleware(['auth:sanctum', 'role:root,admin,employe
     Route::post('/filters', [ProductController::class, 'filters']);
     Route::get('/uniforms', [ProductController::class, 'getUniforms']);
 });
-
 
 Route::prefix('/products')->group(function () {
     Route::get('/catalog', [ProductController::class, 'getCatalog']);
