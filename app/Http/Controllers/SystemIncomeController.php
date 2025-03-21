@@ -130,6 +130,7 @@ class SystemIncomeController extends Controller
         ->limit(100)
         ->get();
 
+
         // Combinar todas las colecciones en una
         $allData = $orders
             ->merge($incomes)
