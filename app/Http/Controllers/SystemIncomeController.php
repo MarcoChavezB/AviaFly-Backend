@@ -42,6 +42,7 @@ class SystemIncomeController extends Controller
         ->leftJoin('students', 'orders.id_client', '=', 'students.id')
         ->leftJoin('employees', 'orders.id_employe', '=', 'employees.id')
         ->select(
+            DB::raw("'type' as orders"),
             DB::raw("CASE WHEN students.user_identification IS NOT NULL THEN students.user_identification ELSE 'N/A' END as user_identification"),
             'orders.id',
             DB::raw("CASE WHEN students.id IS NOT NULL THEN students.name ELSE 'Cliente' END as student_name"),
@@ -64,6 +65,7 @@ class SystemIncomeController extends Controller
         ->leftJoin('employees', 'income_details.employee_id', '=', 'employees.id')
         ->leftJoin('students', 'income_details.student_id', '=', 'students.id')
         ->select(
+            DB::raw("'type' as income_details"),
             'students.user_identification',
             'incomes.id as id',
             DB::raw("CONCAT(students.name, ' ', students.last_names) as student_name"),
@@ -88,6 +90,7 @@ class SystemIncomeController extends Controller
         ->leftJoin('students', 'flight_payments.id_student', '=', 'students.id')
         ->leftJoin('employees', 'flight_payments.id_employee', '=', 'employees.id')
         ->select(
+            DB::raw("'type' as flight_payments"),
             'students.user_identification',
             'flight_history.id',
             'students.name as student_name',
@@ -110,6 +113,7 @@ class SystemIncomeController extends Controller
         ->leftJoin('payment_methods', 'payment_methods.id', '=', 'customer_payments.id_payment_method')
         ->leftJoin('employees', 'flight_customers.id_employee', '=', 'employees.id')
         ->select(
+            DB::raw("'type' as customer_payments"),
             DB::raw("'N/A' as user_identification"),
             'customer_payments.id',
             DB::raw("'N/A' as student_name"),
