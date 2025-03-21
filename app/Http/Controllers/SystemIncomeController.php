@@ -67,7 +67,7 @@ class SystemIncomeController extends Controller
         ->select(
             DB::raw("'type' as income_details"),
             'students.user_identification',
-            'incomes.id as id',
+            'income_details.id as id',
             DB::raw("CONCAT(students.name, ' ', students.last_names) as student_name"),
             DB::raw("CONCAT(employees.name, ' ', employees.last_names) as income_by"),
             'income_details.payment_date as income_date',
