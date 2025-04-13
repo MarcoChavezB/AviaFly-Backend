@@ -94,6 +94,7 @@ class ProductController extends Controller
             "price": 100.00,
             "stock": 10,
             "product_status": "activo"
+            "type": "uniforme"
         }
     */
     function store(Request $request){
@@ -101,7 +102,8 @@ class ProductController extends Controller
 
         $validator = Validator::make($data, [
             'name' => 'required|string|max:255|unique:products',
-            'product_status' => 'required|in:activo,inactivo'
+            'product_status' => 'required|in:activo,inactivo',
+            'type' => 'in:uniforme,mtto,libro,otro'
         ], [
             'name.required' => 'Campo requerido',
             'name.string' => 'El campo debe ser de tipo texto',
@@ -112,7 +114,8 @@ class ProductController extends Controller
             'stock.required' => 'Campo requerido',
             'stock.integer' => 'El campo debe ser de tipo entero',
             'product_status.required' => 'Campo requerido',
-            'product_status.in' => 'El campo debe ser activo o inactivo'
+            'product_status.in' => 'El campo debe ser activo o inactivo',
+            'type.in' => 'El campo debe ser uniforme,mtto,libro,otro'
         ]);
 
         if ($validator->fails()) {
@@ -123,7 +126,13 @@ class ProductController extends Controller
             return response()->json(["errors" => "El stock y el precio deben ser mayores a 0"], 400);
         }
 
-        $product = Product::create($data);
+        $product = Product::create([
+            'name' => $data['name'],
+            'price' => $data['price'],
+            'stock' => $data['stock'],
+            'product_status' => $data['product_status'],
+            'type' => $data['product_type']
+        ]);
         $product->save();
 
         return response()->json(["msg" => "Producto creado correctamente"], 201);
