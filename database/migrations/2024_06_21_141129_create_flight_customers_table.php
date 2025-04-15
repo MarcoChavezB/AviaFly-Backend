@@ -59,15 +59,12 @@ return new class extends Migration
             $table->foreign('id_concept')->references('id')->on('recreative_concepts')->onDelete('cascade');
 
             $table->timestamps();
-
-            // agregada desde la tabla add_columns_to_flight_customer
-
-            /* $table->boolean('has_report')->default(false);
+            $table->boolean('has_report')->default(false);
             $table->decimal('initial_horometer', 8, 2)->default(0);
             $table->decimal('final_horometer', 8, 2)->default(0);
             $table->decimal('total_horometer', 8, 2)->default(0);
             $table->decimal('final_tacometer', 8, 2)->default(0);
-            $table->string('comment')->nullable(); */
+            $table->string('comment')->nullable();
         });
     }
 

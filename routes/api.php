@@ -19,6 +19,7 @@ use App\Http\Controllers\PendingController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EmployeeLicenseController;
 use App\Http\Controllers\FlightCustomerController;
 use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\FlightHoursRestrictionsController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\LicenseController;
 use App\Http\Controllers\NewSletterController;
 use App\Http\Controllers\OptionController;
 use App\Http\Controllers\OrderController;
@@ -38,7 +40,7 @@ use App\Http\Controllers\RecreativeConceptController;
 use App\Http\Controllers\SchoolExpenseController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SupportController;
-
+use App\Models\EmployeeLicense;
 
 /*
 |--------------------------------------------------------------------------
@@ -190,6 +192,17 @@ Route::prefix('/subjects')->middleware('auth:sanctum')->group(function () {
 Route::prefix('/employes')->middleware('auth:sanctum')->group(function () {
     Route::get('/get/tasks', [UserController::class, 'getEmployes']);
 });
+
+Route::prefix('/licenses')->middleware('auth:sanctum, role:admin,root')->group(function () {
+    Route::get('/get', [LicenseController::class, 'index']);
+    Route::post('/create', [LicenseController::class, 'create']);
+    Route::delete('/delete/{id}', [LicenseController::class, 'destroy']);
+
+    Route::post('/put/license/to/employee', [EmployeeLicenseController::class, 'putLicenseToEmployee']);
+    Route::post('/delte/license/to/employee', [EmployeeLicenseController::class, 'destroy']);
+
+});
+
 
 Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::get('/get', [InfoFlightController::class, 'index']);

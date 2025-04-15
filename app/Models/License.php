@@ -6,15 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Product extends Model
+class License extends Model
 {
     use HasFactory, SoftDeletes;
-    protected
-        $fillable = [
-            'name',
-            'price',
-            'stock',
-            'product_status',
-            'type'
-        ];
+
+    protected $fillable = [
+        'name',
+    ];
 }
