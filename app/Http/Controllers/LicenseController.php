@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class LicenseController extends Controller
 {
     public function index(){
-        $licenses = License::all()->orderBy('id', 'desc');
+        $licenses = License::orderBy('id', 'desc')->get();
 
         if ($licenses->isEmpty()) {
             return response()->json([
