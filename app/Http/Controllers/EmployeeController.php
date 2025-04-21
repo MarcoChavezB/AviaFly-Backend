@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\AdminEntryNotification;
-use App\Mail\EmailCheckNotification;
-use App\Mail\EmployeeEntryNotification;
 use App\Models\CheckInRecords;
 use App\Models\Employee;
 use App\Models\User;
@@ -12,7 +9,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class EmployeeController extends Controller
