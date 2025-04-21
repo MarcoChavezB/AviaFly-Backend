@@ -24,6 +24,18 @@ class EmployeeController extends Controller
             ->join('users', 'employees.user_identification', '=', 'users.user_identification')
             ->select('employees.id', 'employees.name', 'employees.last_names', 'employees.user_identification', 'employees.user_type','bases.name as base', 'users.is_active')
             ->orderBy('employees.id', 'desc')
+            ->where('users.is_active', '!=', 0)
+            ->get();
+
+        return response()->json(['employees' => $employees]);
+    }
+
+    public function allEmployees(Request $request){
+        $employees = DB::table('employees')
+            ->join('bases', 'employees.id_base', '=', 'bases.id')
+            ->join('users', 'employees.user_identification', '=', 'users.user_identification')
+            ->select('employees.id', 'employees.name', 'employees.last_names', 'employees.user_identification', 'employees.user_type','bases.name as base', 'users.is_active')
+            ->orderBy('employees.id', 'desc')
             ->get();
 
         return response()->json(['employees' => $employees]);

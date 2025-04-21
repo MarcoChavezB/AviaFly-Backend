@@ -227,6 +227,7 @@ Route::prefix('/payments')->middleware('auth:sanctum')->group(function () {
 Route::prefix('/employees')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:root,admin,employee')->group(function (){
         Route::get('/index', [EmployeeController::class, 'index']);
+        Route::get('/index/all', [EmployeeController::class, 'allEmployees']);
         Route::get('/show/{id}', [EmployeeController::class, 'show'])->where('id', '[0-9]+');
     });
 

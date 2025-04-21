@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class LicenseController extends Controller
 {
     public function index(){
-        $licenses = License::all();
+        $licenses = License::all()->orderBy('id', 'desc');
 
         if ($licenses->isEmpty()) {
             return response()->json([
@@ -48,6 +48,13 @@ class LicenseController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
+
+        if(License::where('name', $request->name)->exists()){
+            return response()->json([
+                'message' => 'Ya existe una licencia con ese nombre',
+                'successfully' => false
+            ]);
+        }
 
         $license = License::create($request->all());
 
