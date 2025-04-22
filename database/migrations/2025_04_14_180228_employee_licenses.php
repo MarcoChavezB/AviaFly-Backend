@@ -25,6 +25,8 @@ return new class extends Migration
             $table->date('expiration_date')->nullable();
             $table->string('license_date')->nullable();
 
+            $table->integer('group')->nullable();
+
             $table->timestamps();
             $table->softDeletes();
         });

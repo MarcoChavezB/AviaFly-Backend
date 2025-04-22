@@ -15,6 +15,7 @@ class EmployeeLicense extends Model
         'id_license',
         'expiration_date',
         'license_date',
+        'group',
     ];
 
 

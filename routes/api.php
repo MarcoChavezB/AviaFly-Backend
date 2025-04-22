@@ -200,7 +200,7 @@ Route::prefix('/licenses')->middleware('auth:sanctum, role:admin,root')->group(f
 
     Route::get('/get/licenses/employee', [EmployeeLicenseController::class, 'index']);
     Route::post('/put/license/to/employee', [EmployeeLicenseController::class, 'putLicenseToEmployee']);
-    Route::post('/delte/license/to/employee', [EmployeeLicenseController::class, 'destroy']);
+    Route::post('/delete/license/to/employee', [EmployeeLicenseController::class, 'destroy']);
 
 });
 

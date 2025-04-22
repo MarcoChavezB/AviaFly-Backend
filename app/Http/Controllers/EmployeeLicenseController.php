@@ -41,6 +41,7 @@ class EmployeeLicenseController extends Controller
                         'license_name' => $item->license->name ?? null,
                         'expiration_date' => $item->expiration_date,
                         'license_date' => $item->license_date,
+                        'group' => $item->group,
                     ];
                 })->values()
             ];
@@ -120,6 +121,13 @@ class EmployeeLicenseController extends Controller
         }
 
         DB::transaction(function () use ($licenses, $employee){
+            //NOTE: Obtener el grupo de la licencia por peticion a API
+            $maxNumber = EmployeeLicense::where('id_employee', $employee->id)
+                ->lockForUpdate()
+                ->max('group');
+
+            $group = ($maxNumber ?? 0) + 1;
+
             foreach($licenses as $license){
                 // Verificar si la licencia ya existe para el empleado
                 $existingLicense = EmployeeLicense::where('id_employee', $employee->id)
@@ -135,17 +143,73 @@ class EmployeeLicenseController extends Controller
                     continue;
                 }
 
+
                 EmployeeLicense::create([
                     'id_employee' => $employee->id,
                     'id_license' => $license['id'],
                     'expiration_date' => $license['end_date'],
                     'license_date' => $license['start_date'],
+                    'group' => $group,
                 ]);
             }
         });
 
         return response()->json([
             'message' => 'Licencias asignadas correctamente',
+            'successfully' => true
+        ]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     * @Body (
+     *  {
+            "id_employee": number,
+            "id_license": number,
+        }
+     */
+
+    public function destroy(Request $request){
+        $validator = Validator::make([
+            'id_employee' => $request->id_employee,
+            'id_license' => $request->id_license,
+        ], [
+            'id_employee' => 'required|exists:employees,user_identification',
+            'id_license' => 'required|exists:licenses,id',
+        ], [
+            'id_employee.required' => 'El campo id_employee es obligatorio.',
+            'id_employee.exists' => 'El empleado no existe.',
+            'id_license.required' => 'El campo id_license es obligatorio.',
+            'id_license.exists' => 'La licencia no existe.',
+        ]);
+
+        if($validator->fails()){
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $validator->errors(),
+                'successfully' => false
+            ], 422);
+        }
+
+        $employee = Employee::where('user_identification', $request->id_employee)->first();
+
+        $employeeLicense = EmployeeLicense::where('id_employee', $employee->id)
+            ->where('id_license', $request->id_license)
+            ->first();
+
+        if(!$employeeLicense){
+            return response()->json([
+                'message' => 'Licencia no encontrada para el empleado',
+                'successfully' => false
+            ], 404);
+        }
+
+        $employeeLicense->delete();
+        return response()->json([
+            'message' => 'Licencia eliminada correctamente',
             'successfully' => true
         ]);
     }
