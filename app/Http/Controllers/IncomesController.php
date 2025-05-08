@@ -8,6 +8,7 @@ use App\Models\Discount;
 use App\Models\Employee;
 use App\Models\Income;
 use App\Models\IncomeDetails;
+use App\Models\IncomeOption;
 use App\Models\MonthlyPayment;
 use App\Models\PaymentMethod;
 use App\Models\Product;
@@ -18,9 +19,50 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class IncomesController extends Controller
 {
+
+    public function indexOnlyIncomes(){
+        $incomes = Income::with(['incomeDetails', 'incomeDetails.employee', 'incomeDetails.student'])
+            ->whereHas('incomeDetails', function ($query) {
+                $query->where('bank_account', '!=', null);
+            })
+            ->join('income_details', 'incomes.income_details_id', '=', 'income_details.id')
+            ->orderBy('income_details.payment_date', 'desc')
+            ->select('incomes.*')
+            ->get();
+
+        if ($incomes->isEmpty()) {
+            return response()->json([
+                'message' => 'No incomes found',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'incomes' => $incomes,
+            'success' => true
+        ], 200);
+
+    }
+
+    public function getLastFactureDate(){
+        $lastFactureDate = IncomeOption::where('name', 'last_facture_date')->first();
+
+        if(!$lastFactureDate){
+            return response()->json([
+                'message' => 'No existe la fecha de la última factura',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'last_facture_date' => $lastFactureDate->value,
+            'success' => true
+        ], 200);
+    }
 
     public function saveIncomeDetails(array $paymentDetails, int $employeeId): int
     {
@@ -717,5 +759,21 @@ class IncomesController extends Controller
         $result = array_values($groupedIncomes);
 
         return response()->json($result, 200);
+    }
+
+    function getBankAccounts()
+    {
+        $bankAccounts = BankAccount::all();
+        if ($bankAccounts->isEmpty()) {
+            return response()->json([
+                'message' => 'No bank accounts found',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'bank_accounts' => $bankAccounts,
+            'success' => true
+        ], 200);
     }
 }

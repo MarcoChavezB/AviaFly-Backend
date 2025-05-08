@@ -25,6 +25,8 @@ use App\Http\Controllers\FlightHistoryController;
 use App\Http\Controllers\FlightHoursRestrictionsController;
 use App\Http\Controllers\FlightPaymentController;
 use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\IncomeOptionController;
+use App\Http\Controllers\IncomePaymentMethodController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\LicenseController;
@@ -170,12 +172,16 @@ Route::prefix('/careers')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/incomes')->middleware('auth:sanctum')->group(function (){
     Route::middleware('role:root,admin,employee')->group(function (){
+        Route::get('/get', [IncomesController::class, 'indexOnlyIncomes']);
+        Route::get('/get/option/last_date/facture', [IncomesController::class, 'getLastFactureDate']);
+        Route::get('/get/bank/accounts', [IncomesController::class, 'getBankAccounts']);
         Route::post('/create/income', [IncomesController::class, 'createIncomes']);
         Route::get('/get/all', [IncomesController::class, 'index']);
         Route::get('/show/{id}', [IncomesController::class, 'show'])->where('id', '[0-9]+');
         Route::post('/update', [IncomesController::class, 'update']);
         Route::post('/update/date', [IncomesController::class, 'incomeModifyDate']);
         Route::get('/delete/{id_income}', [IncomesController::class, 'delete']);
+        Route::get('/get/payment/methods', [IncomePaymentMethodController::class, 'index']);
     });
 });
 
@@ -358,6 +364,7 @@ Route::prefix('/arrival')->middleware(['auth:sanctum', 'role:root'])->group(func
 
 Route::prefix('/options')->middleware(['auth:sanctum', 'role:root,admin,employee'])->group(function () {
     Route::get('/change/flight/request', [OptionController::class, 'changeFlightRequest']);
+    Route::put('/update/last/export/income/date', [IncomeOptionController::class, 'updateLastExportIncomeDate']);
 });
 
 
@@ -421,4 +428,9 @@ Route::prefix('/control')->middleware(['auth:sanctum', 'role:root,admin'])->grou
 Route::prefix('/finance')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [SystemIncomeController::class, 'index']);
 });
+
+Route::prefix('/finance')->middleware(['auth:sanctum, role:root,admin,employee'])->group(function () {
+    Route::get('/index', [SystemIncomeController::class, 'index']);
+});
+
 

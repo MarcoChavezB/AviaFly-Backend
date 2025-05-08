@@ -24,4 +24,8 @@ class IncomeDetails extends Model
     public function employee(){
         return $this->belongsTo(Employee::class, 'employee_id');
     }
+
+    public function student(){
+        return $this->belongsTo(Student::class, 'student_id');
+    }
 }
