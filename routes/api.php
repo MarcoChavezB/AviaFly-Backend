@@ -31,6 +31,7 @@ use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\LicenseController;
 use App\Http\Controllers\NewSletterController;
+use App\Http\Controllers\NotifyController;
 use App\Http\Controllers\OptionController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PasswordController;
@@ -433,4 +434,7 @@ Route::prefix('/finance')->middleware(['auth:sanctum, role:root,admin,employee']
     Route::get('/index', [SystemIncomeController::class, 'index']);
 });
 
+Route::prefix('/notify')->middleware(['auth:sanctum, role:root,admin,employee'])->group(function () {
+    Route::post('/student/email', [NotifyController::class, 'notifyStudent']);
+});
 
