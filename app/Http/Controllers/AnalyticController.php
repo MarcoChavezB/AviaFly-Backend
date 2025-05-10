@@ -70,7 +70,7 @@ function getTotalDebt() {
         ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
         ->join('students', 'students.id', '=', 'flight_payments.id_student')
         ->where('flight_payments.payment_status', 'pendiente')
-        ->whereDate('flight_history.flight_date', Carbon::today())
+        ->whereDate('flight_history.flight_date', '<=', Carbon::today()) // Cambio aquí
         ->get());
 
     $monthlyPayments = collect(MonthlyPayment::select(
@@ -85,7 +85,7 @@ function getTotalDebt() {
         )
         ->join('students', 'students.id', '=', 'monthly_payments.id_student')
         ->where('monthly_payments.status', 'pending')
-        ->whereDate('monthly_payments.payment_date', Carbon::today())
+        ->whereDate('monthly_payments.payment_date', '<=', Carbon::today()) // Cambio aquí
         ->get());
 
     $orders = collect(OrderDetail::select(
@@ -102,13 +102,11 @@ function getTotalDebt() {
         ->join('products', 'order_details.id_product', '=', 'products.id')
         ->leftJoin('students', 'students.id', '=', 'orders.id_client')
         ->where('orders.payment_status', 'pendiente')
-        ->whereDate('orders.order_date', Carbon::today())
+        ->whereDate('orders.order_date', '<=', Carbon::today()) // Cambio aquí
         ->get());
 
-    // Aseguramos que todos los datos se fusionen correctamente
     $data = $flights->merge($monthlyPayments)->merge($orders);
 
-    // Retornamos todos los registros como JSON
     return response()->json($data);
 }
 
