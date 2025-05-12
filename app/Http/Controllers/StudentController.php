@@ -1118,7 +1118,7 @@ public function getInfoVueloAlumno(int $id = null)
                 $query->where('flight_history.flight_status', 'proceso')
                       ->orWhere('flight_history.flight_status', 'hecho');
             })
-            ->limit(100)
+            ->limit(200)
             ->get();
 
         $flightsCustomers = FlightCustomer::select(

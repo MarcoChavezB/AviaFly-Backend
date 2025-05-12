@@ -39,75 +39,59 @@ class AnalyticController extends Controller
             'pendings' => $totalReportsPending
         ]);
     }
-    function getEnrollmentsYear()
-    {
-        $enrollmentsByMonth = Enrollment::select(DB::raw('MONTH(date) as month'), DB::raw('COUNT(*) as enrollments'))
-            ->groupBy(DB::raw('MONTH(date)'))
-            ->get();
 
-        $formattedResponse = [];
-        foreach ($enrollmentsByMonth as $enrollment) {
-            $formattedResponse[] = [
-                'month' => $enrollment->month,
-                'enrollments' => $enrollment->enrollments
-            ];
-        }
-        return response()->json($formattedResponse);
+
+    function getTotalDebt() {
+        $flights = collect(flightHistory::select(
+                'flight_history.id as order_id',
+                'students.user_identification',
+                'students.id',
+                'students.name as student_name',
+                'students.phone',
+                'flight_history.flight_date as order_date',
+                'flight_payments.total as order_total',
+                'flight_history.type_flight as concept'
+            )
+            ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->join('students', 'students.id', '=', 'flight_payments.id_student')
+            ->where('flight_payments.payment_status', 'pendiente')
+            ->whereDate('flight_history.flight_date', '<=', Carbon::today()) // Cambio aquí
+            ->get());
+
+        $monthlyPayments = collect(MonthlyPayment::select(
+                'monthly_payments.id as order_id',
+                'students.user_identification',
+                'students.id',
+                'students.name as student_name',
+                'students.phone',
+                'monthly_payments.payment_date as order_date',
+                'monthly_payments.amount as order_total',
+                'monthly_payments.concept as concept'
+            )
+            ->join('students', 'students.id', '=', 'monthly_payments.id_student')
+            ->where('monthly_payments.status', 'pending')
+            ->whereDate('monthly_payments.payment_date', '<=', Carbon::today()) // Cambio aquí
+            ->get());
+
+        $orders = collect(OrderDetail::select(
+                'orders.id as order_id',
+                'students.user_identification',
+                'students.id',
+                'students.name as student_name',
+                'students.phone',
+                'orders.order_date as order_date',
+                'orders.total as order_total',
+                'products.name as concept'
+            )
+            ->join('orders', 'orders.id', '=', 'order_details.id_order')
+            ->join('products', 'order_details.id_product', '=', 'products.id')
+            ->leftJoin('students', 'students.id', '=', 'orders.id_client')
+            ->where('orders.payment_status', 'pendiente')
+            ->whereDate('orders.order_date', '<=', Carbon::today()) // Cambio aquí
+            ->get());
+
+        $data = $flights->merge($monthlyPayments)->merge($orders);
+
+        return response()->json($data);
     }
-
-
-function getTotalDebt() {
-    $flights = collect(flightHistory::select(
-            'flight_history.id as order_id',
-            'students.user_identification',
-            'students.id',
-            'students.name as student_name',
-            'students.phone',
-            'flight_history.flight_date as order_date',
-            'flight_payments.total as order_total',
-            'flight_history.type_flight as concept'
-        )
-        ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
-        ->join('students', 'students.id', '=', 'flight_payments.id_student')
-        ->where('flight_payments.payment_status', 'pendiente')
-        ->whereDate('flight_history.flight_date', '<=', Carbon::today()) // Cambio aquí
-        ->get());
-
-    $monthlyPayments = collect(MonthlyPayment::select(
-            'monthly_payments.id as order_id',
-            'students.user_identification',
-            'students.id',
-            'students.name as student_name',
-            'students.phone',
-            'monthly_payments.payment_date as order_date',
-            'monthly_payments.amount as order_total',
-            'monthly_payments.concept as concept'
-        )
-        ->join('students', 'students.id', '=', 'monthly_payments.id_student')
-        ->where('monthly_payments.status', 'pending')
-        ->whereDate('monthly_payments.payment_date', '<=', Carbon::today()) // Cambio aquí
-        ->get());
-
-    $orders = collect(OrderDetail::select(
-            'orders.id as order_id',
-            'students.user_identification',
-            'students.id',
-            'students.name as student_name',
-            'students.phone',
-            'orders.order_date as order_date',
-            'orders.total as order_total',
-            'products.name as concept'
-        )
-        ->join('orders', 'orders.id', '=', 'order_details.id_order')
-        ->join('products', 'order_details.id_product', '=', 'products.id')
-        ->leftJoin('students', 'students.id', '=', 'orders.id_client')
-        ->where('orders.payment_status', 'pendiente')
-        ->whereDate('orders.order_date', '<=', Carbon::today()) // Cambio aquí
-        ->get());
-
-    $data = $flights->merge($monthlyPayments)->merge($orders);
-
-    return response()->json($data);
-}
-
 }
