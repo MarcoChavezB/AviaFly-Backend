@@ -83,7 +83,8 @@ public function index()
             'pilot.id as id_pilot',
             'pilot.name as pilot_name',
             'payment_methods.id as id_payment_method',
-            'payment_methods.type as payment_method'
+            'payment_methods.type as payment_method',
+            'customer_payments.payment_ticket'
         )
         ->orderBy('flight_customers.created_at', 'desc')
         ->get();
