@@ -176,6 +176,7 @@ class PDFController extends Controller
         return $url;
     }
     public function getProductOrderTicket($orderId)
+
     {
         $results = DB::table('order_details')
             ->join('orders', 'orders.id', '=', 'order_details.id_order')
@@ -235,6 +236,7 @@ class PDFController extends Controller
             $response[$result->id_order]['items'][] = [
                 'quantity' => number_format($result->quantity, 2, '.', ''),
                 'concept' => $result->item,
+                'price' => $result->pice,
                 'payment_method' => $result->payment_method,
                 'total' => number_format($result->price, 2, '.', '') * $result->quantity,
             ];
