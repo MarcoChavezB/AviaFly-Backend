@@ -204,7 +204,7 @@ class PDFController extends Controller
                 'bases.location as location',
                 'order_details.quantity',
                 'products.name as item',
-                'products.price',
+                'products.price as product_price',
                 'payment_methods.type as payment_method',
                 'product_payments.amount as price'
             )
@@ -236,7 +236,7 @@ class PDFController extends Controller
             $response[$result->id_order]['items'][] = [
                 'quantity' => number_format($result->quantity, 2, '.', ''),
                 'concept' => $result->item,
-/*                 'price' => $result->pice, */
+                'price' => $result->product_price,
                 'payment_method' => $result->payment_method,
                 'total' => number_format($result->price, 2, '.', '') * $result->quantity,
             ];
