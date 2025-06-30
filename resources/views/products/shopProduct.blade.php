@@ -106,7 +106,7 @@
                     <tr>
                         <td>{{ $item['quantity'] >= 0 ? $item['quantity'] : '-' }}</td>
                         <td>{{ $item['concept'] }}</td>
-                        <td>${{ number_format($item['price'], 2, '.', '') }}</td>
+                        <td>${{ number_format($item['total'], 2, '.', '') }}</td>
                     </tr>
                 @endforeach
             </tbody>
