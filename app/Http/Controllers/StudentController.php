@@ -567,6 +567,7 @@ public function getInfoVueloAlumno(int $id = null)
 
         $validator = Validator::make($request->all(), [
             'id_instructor' => 'required|numeric|exists:employees,id',
+/*             'flight_session' => 'required|numeric|exists:sessions,id', */
             'flight_date' => 'required|string',
             'flight_hour' => 'required|string',
             'equipo' => 'required|exists:info_flights,id',
@@ -599,6 +600,7 @@ public function getInfoVueloAlumno(int $id = null)
             'hours.numeric' => 'Las horas de vuelo no son válidas',
             'total.required' => 'campo requerido',
             'total.numeric' => 'campo requerido',
+/*             'flight_session.exists' => 'se require la sesion', */
 /*             'id_pay_method.required' => 'campo requerido', */
             'due_week.numeric' => 'La semana de vencimiento no es válida',
             'installment_value.numeric' => 'El valor de la mensualidad no es válido',
