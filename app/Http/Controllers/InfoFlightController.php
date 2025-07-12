@@ -186,7 +186,7 @@ function flightHistory($id_student) {
                 'flight_date' => $data->flight_date,
                 'flight_hour' => $data->flight_hour,
                 'flight_hours' => number_format((float)$data->flight_hours, 1),
-                'session_name' => $data->session_name,
+                'session_name' => $data->session_name ?? 'Sesión de simulador',
                 'flight_status' => $data->flight_status,
                 'total' => number_format((float)$data->total, 1)
             ];

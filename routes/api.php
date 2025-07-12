@@ -30,6 +30,7 @@ use App\Http\Controllers\IncomePaymentMethodController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\LicenseController;
+use App\Http\Controllers\MobileFlightController;
 use App\Http\Controllers\NewSletterController;
 use App\Http\Controllers\NotifyController;
 use App\Http\Controllers\OptionController;
@@ -41,6 +42,7 @@ use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RecreativeConceptController;
 use App\Http\Controllers\SchoolExpenseController;
+use App\Http\Controllers\ServicePaymentController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SupportController;
 use App\Models\EmployeeLicense;
@@ -311,6 +313,7 @@ Route::prefix('/infoflights')->middleware('auth:sanctum')->group(function () {
     Route::get('/airplane/flight/index', [InfoFlightController::class, 'AirplaneFlightIndex']);
     Route::get('/request/flight', [InfoFlightController::class, 'flightRequestIndex']);
     Route::get('/get/hours/{id_student}', [InfoFlightController::class, 'studentHour']);
+    Route::get('/get/airplanes/index/data', [AirPlaneController::class, 'getIndexData']);
 });
 
 
@@ -323,6 +326,7 @@ Route::prefix('/customers')->middleware(['auth:sanctum', 'role:root,admin,employ
 Route::prefix('/airplanes')->middleware('auth:sanctum')->group(function () {
     Route::get('/flight/check/limit/hours', [FlightHistoryController::class, 'checkLimitHoursPlane']);
     Route::get('/flight/reset/hours', [AirPlaneController::class, 'resetHours']);
+    Route::post('/flight/put', [AirPlaneController::class, 'store']);
 });
 
 Route::prefix('/consumables')->middleware(['auth:sanctum', 'role:root,admin,flight_instructor,employee'])->group(function () {
@@ -438,3 +442,17 @@ Route::prefix('/notify')->middleware(['auth:sanctum, role:root,admin,employee'])
     Route::post('/student/email', [NotifyController::class, 'notifyStudent']);
 });
 
+Route::prefix('/services')->middleware(['auth:sanctum, role:root,admin,employee'])->group(function () {
+    Route::get('/index', [ServicePaymentController::class, 'index']);
+    Route::post('/store', [ServicePaymentController::class, 'store']);
+    Route::post('/toggle/status', [ServicePaymentController::class, 'toggleServiceStatus']);
+    Route::delete('/delete/service/{id_service}', [ServicePaymentController::class, 'deleteService']);
+});
+
+Route::prefix('/mobile')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/pilot/home/screen/data', [MobileFlightController::class, 'pilotHomeScreenMobile']);
+});
+
+Route::prefix('/test')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/shops/debug/{id_order}', [PDFController::class, 'getProductOrderTicket']);
+});
