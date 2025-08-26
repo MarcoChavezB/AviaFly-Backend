@@ -92,20 +92,33 @@ public function index()
     $flightCustomersArray = $flightCustomers->map(function ($flightCustomer) {
         $passengers = [];
 
-        // Generar pasajeros dinámicamente según el número de pasajeros
-        for ($i = 2; $i <= $flightCustomer->number_of_passengers; $i++) {
-            $nameField = "passenger_{$i}_name";
-            $ageField = "passenger_{$i}_age";
-            $weightField = "passenger_{$i}_weight";
-
-            if (!empty($flightCustomer->$nameField)) {
-                $passengers[] = [
-                    'name' => $flightCustomer->$nameField,
-                    'age' => $flightCustomer->$ageField,
-                    'weight' => $flightCustomer->$weightField,
-                ];
-            }
+        // Primer pasajero
+        if (!empty($flightCustomer->first_passenger_name)) {
+            $passengers[] = [
+                'name' => $flightCustomer->first_passenger_name,
+                'age' => $flightCustomer->first_passenger_age,
+                'weight' => $flightCustomer->first_passenger_weight,
+            ];
         }
+
+        // Segundo pasajero
+        if (!empty($flightCustomer->second_passenger_name)) {
+            $passengers[] = [
+                'name' => $flightCustomer->second_passenger_name,
+                'age' => $flightCustomer->second_passenger_age,
+                'weight' => $flightCustomer->second_passenger_weight,
+            ];
+        }
+
+        // Tercer pasajero
+        if (!empty($flightCustomer->tird_passenger_name)) {
+            $passengers[] = [
+                'name' => $flightCustomer->tird_passenger_name,
+                'age' => $flightCustomer->tird_passenger_age,
+                'weight' => $flightCustomer->tird_passenger_weight,
+            ];
+        }
+
 
         return [
             'id_reservation' => $flightCustomer->id,
