@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Base;
 use App\Models\IncomeDetails;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
+
 
 class DevelopController extends Controller
 {
