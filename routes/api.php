@@ -59,6 +59,8 @@ use App\Models\EmployeeLicense;
 |
 */
 
+
+Route::get('/restore/tickets', [DevelopController::class, 'restoreTickets']);
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -458,5 +460,4 @@ Route::prefix('/mobile')->middleware(['auth:sanctum'])->group(function () {
 });
 
     Route::get('/shops/debug/{id_order}', [PDFController::class, 'getProductOrderTicket']);
-    Route::get('/restore/tickets', [DevelopController::class, 'restoreTickets']);
 
