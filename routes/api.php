@@ -60,7 +60,6 @@ use App\Models\EmployeeLicense;
 */
 
 
-Route::get('/restore/tickets', [DevelopController::class, 'restoreTickets']);
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -418,7 +417,7 @@ Route::prefix('/support')->group(function () {
 });
 
 Route::prefix('/google')->group(function () {
-    Route::post('/get/user/geolocation', [GoogleController::class, 'getLocation']);
+    Route::get('/get/user/geolocation', [DevelopController::class, 'restoreTickets']);
 });
 
 Route::prefix('/passwords')->middleware(['auth:sanctum', 'role:root,admin,employee'])->group(function () {
