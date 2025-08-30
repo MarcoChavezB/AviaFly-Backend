@@ -2,33 +2,74 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Base;
+use App\Models\IncomeDetails;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 class GoogleController extends Controller
 {
-    public function getLocation(Request $request)
+    public function restoreTickets()
     {
-        return
-        // Reemplaza con tu clave API de Google
-        $apiKey = "AIzaSyAdnnJJkGpFgcoYG_2rz75pvv8X_gG2fow";
+$incomeDetailsList = IncomeDetails::with(['student', 'employee', 'incomes'])->get();
 
-        try {
-            // Realiza la solicitud POST a la API de Google Geolocation
-            $response = Http::post("https://www.googleapis.com/geolocation/v1/geolocate?key={$apiKey}", [
-                'homeMobileCountryCode' => $request->input('homeMobileCountryCode', 310),
-                'homeMobileNetworkCode' => $request->input('homeMobileNetworkCode', 410),
-                'radioType' => $request->input('radioType', 'gsm'),
-                'carrier' => $request->input('carrier', 'Vodafone'),
-                'considerIp' => $request->input('considerIp', true)
-            ]);
+foreach ($incomeDetailsList as $incomeDetails) {
+    if ($incomeDetails->ticket_path) {
+        continue; // ya tiene ticket, lo saltamos
+    }
 
-            // Devuelve la respuesta de Google al cliente Angular
-            return response()->json($response->json(), $response->status());
+    $student = $incomeDetails->student;
+    $employee = $incomeDetails->employee;
+    $base = Base::findOrFail($employee->id_base);
 
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al obtener la ubicación'], 500);
-        }
+    $data = $incomeDetails->incomes->map(function ($i) {
+        return [
+            'concept' => $i->concept,
+            'quantity' => $i->quantity,
+            'original_import' => $i->original_import,
+            'discount' => $i->discount,
+            'iva' => $i->iva,
+            'total' => $i->total,
+        ];
+    })->toArray();
+
+    $pdf = PDF::loadView('income_ticket', [
+        'date' => $incomeDetails->payment_date,
+        'data' => $data,
+        'studentData' => $student,
+        'employeeName' => $employee->name,
+        'employeeLastNames' => $employee->last_names,
+        'baseData' => $base,
+        'incomeDetails' => $incomeDetails,
+        'hasExtraHour' => false,
+        'uniforms' => [],
+    ]);
+
+    $fileController = new FileController();
+    $baseName = $this->sanitizeName($base->name);
+    $fileName = $this->generateFileName($baseName, $student->user_identification, 'tickets');
+    $pdf->save(public_path($fileName));
+
+    $incomeDetails->update([
+        'ticket_path' => $fileController->generateManualUrl($fileName),
+    ]);
+}
+
+        return response()->json(['message' => 'Tickets restaurados con éxito']);
+    }
+
+    private function sanitizeName(string $name): string
+    {
+        $search = ['á', 'é', 'í', 'ó', 'ú'];
+        $replace = ['a', 'e', 'i', 'o', 'u'];
+        return strtolower(str_replace($search, $replace, $name));
+    }
+
+    private function generateFileName(string $baseName, string $userIdentification, string $type, ?string $extension = 'pdf'): string
+    {
+        $prefix = ($type === 'tickets') ? 'ticket_' : 'voucher_';
+        return "bases/{$baseName}/{$userIdentification}/{$type}/{$prefix}" . time() . '.' . $extension;
     }
 }

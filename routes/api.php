@@ -45,7 +45,6 @@ use App\Http\Controllers\SchoolExpenseController;
 use App\Http\Controllers\ServicePaymentController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SupportController;
-use App\Http\Controllers\DevelopController;
 use App\Models\EmployeeLicense;
 
 /*
@@ -417,7 +416,7 @@ Route::prefix('/support')->group(function () {
 });
 
 Route::prefix('/google')->group(function () {
-    Route::get('/get/user/geolocation', [DevelopController::class, 'restoreTickets']);
+    Route::get('/get/user/geolocation', [GoogleController::class, 'restoreTickets']);
 });
 
 Route::prefix('/passwords')->middleware(['auth:sanctum', 'role:root,admin,employee'])->group(function () {
