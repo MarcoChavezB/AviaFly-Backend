@@ -45,6 +45,7 @@ use App\Http\Controllers\SchoolExpenseController;
 use App\Http\Controllers\ServicePaymentController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\DevelopController;
 use App\Models\EmployeeLicense;
 
 /*
@@ -98,6 +99,7 @@ Route::prefix('/students')->middleware('auth:sanctum')->group(function () {
     Route::get('/index', [StudentController::class, 'index']);
     Route::get('/index/{identificator}', [StudentController::class, 'indexByName']);
     Route::get('/indexId/{id_student}', [StudentController::class, 'indexId']);
+
 
 
     Route::middleware('role:root,admin,employee')->group(function (){ /**/
@@ -451,8 +453,10 @@ Route::prefix('/services')->middleware(['auth:sanctum, role:root,admin,employee'
 
 Route::prefix('/mobile')->middleware(['auth:sanctum'])->group(function () {
     Route::get('/pilot/home/screen/data', [MobileFlightController::class, 'pilotHomeScreenMobile']);
+    Route::get('/pilot/data/reserve', [MobileFlightController::class, 'getReserveData']);
+    Route::get('/flight/instructor/home/screen/data', [MobileFlightController::class, 'instructorNearbyFlights']);
 });
 
-Route::prefix('/test')->middleware(['auth:sanctum'])->group(function () {
     Route::get('/shops/debug/{id_order}', [PDFController::class, 'getProductOrderTicket']);
-});
+    Route::get('/restore/tickets', [DevelopController::class, 'restoreTickets']);
+
