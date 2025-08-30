@@ -26,7 +26,7 @@
         }
         img {
             width: 100%;
-            height: 50px;
+            height: 20px;
         }
         .items {
             flex-grow: 1;
@@ -78,7 +78,7 @@
         <img src="http://api.aviafly.site:8080/AviaFly-Backend/public/newsletters/bases/Torreon/files/avia.png" alt="logo">
     </div>
     <div class="text">
-        <p>AVIATRAINING AND<br>
+        <p>AVIATRAININGs AND<br>
             TECHNOLOGY<br>
             ATA100618L60<br>
             {{ date('Y-m-d H:i:s') }}<br>
