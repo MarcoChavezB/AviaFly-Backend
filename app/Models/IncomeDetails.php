@@ -28,4 +28,9 @@ class IncomeDetails extends Model
     public function student(){
         return $this->belongsTo(Student::class, 'student_id');
     }
+
+    public function incomes()
+    {
+        return $this->hasMany(Income::class, 'income_details_id');
+    }
 }
