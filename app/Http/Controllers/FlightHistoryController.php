@@ -1248,7 +1248,7 @@ function getAllInfoReport(int $id_flight)
         return InfoFlight::find($id_equipo);
     }
 
-    function nearby()
+    function nearby($studentId = null)
     {
         $flights = FlightHistory::select(
                 'students.user_identification',
@@ -1262,6 +1262,9 @@ function getAllInfoReport(int $id_flight)
             )
             ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
             ->join('students', 'students.id', '=', 'flight_payments.id_student')
+            ->when($studentId, function ($query, $studentId) {
+                return $query->where('students.id', $studentId);
+            })
             ->whereBetween('flight_history.flight_date', [
                 Carbon::now()->startOfDay(),                // Inicio de hoy
                 Carbon::now()->addDays(5)->endOfDay()       // Fin dentro de 5 días
@@ -1270,5 +1273,20 @@ function getAllInfoReport(int $id_flight)
 
         return response()->json($flights);
     }
+
+    function nearbyDetails()
+    {
+        $flights = FlightHistory::select("*")
+            ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
+            ->join('students', 'students.id', '=', 'flight_payments.id_student')
+            ->whereBetween('flight_history.flight_date', [
+                Carbon::now()->startOfDay(),                // Inicio de hoy
+                Carbon::now()->addDays(5)->endOfDay()       // Fin dentro de 5 días
+            ])
+            ->get();
+
+        return response()->json($flights);
+    }
+
 }
 

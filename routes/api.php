@@ -225,7 +225,8 @@ Route::prefix('/flights')->middleware('auth:sanctum')->group(function () {
     Route::post('/store/request/student/flight', [FlightHistoryController::class, 'requestFlightReservation']);
     Route::post('/change/status/request', [FlightHistoryController::class, 'changeStatusRequest']);
     Route::get('/credit/students/index', [FlightHistoryController::class, 'flightCreditStudent']);
-    Route::get('/nearby', [FlightHistoryController::class, 'nearby']);
+    Route::get('/nearby/{studentId?}', [FlightHistoryController::class, 'nearby']);
+    Route::get('/nearby/details', [FlightHistoryController::class, 'nearbyDetails']);
 });
 
 

@@ -1255,18 +1255,19 @@ public function getInfoVueloAlumno(int $id = null)
         return false;
     }
 
-    public function studentInfo(){
+public function studentInfo(){
 
-        $user = Auth::user();
-        $student = Student::where('user_identification', $user->user_identification)->first();
+    $user = Auth::user();
+    $student = Student::where('user_identification', $user->user_identification)->first();
 
-        if(!$student){
-            return response()->json(["error" => "Estudiante no encontrado"], 404);
-        }
-
-        return response()->json($student, 200);
+    if(!$student){
+        return response()->json(["error" => "Estudiante no encontrado"], 404);
     }
 
+    $student->total_credits = $student->credit + $student->flight_credit;
+
+    return response()->json($student, 200);
+}
 
     public function getStudentSubjectsAsStudent()
     {
