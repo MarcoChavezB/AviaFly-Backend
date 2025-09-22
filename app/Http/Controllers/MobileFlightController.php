@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\flightHistory;
 use App\Models\NewSletter;
 use App\Models\Student;
@@ -37,7 +38,19 @@ class MobileFlightController extends Controller
             ])
             ->get();
 
-        return $flights;
+        if(!$flights){
+            return response()->json([
+                "message" => "No se encontraron vuelos prontos",
+                "success" => false,
+                "data" => []
+            ]);
+        }
+
+        return response()->json([
+            "message" => "Registros obtenidos",
+            "success" => true,
+            "data" => $flights
+        ]);
     }
 
 
@@ -135,4 +148,89 @@ class MobileFlightController extends Controller
         ]);
 
     }
+
+    function getReserveData(){
+        $sessions = [
+            [
+                'label' => 'Horario 1: 7:30 - 9:30',
+                'hours' => 2,
+                'start' => '7:30',
+                'end' => '9:30',
+                'hour' => '7:30',
+            ],
+            [
+                'label' => 'Horario 2: 9:30 - 11:30',
+                'hours' => 2,
+                'start' => '9:30',
+                'end' => '11:30',
+                'hour' => '9:30',
+            ],
+            [
+                'label' => 'Horario 3: 11:30 - 13:30',
+                'hours' => 2,
+                'start' => '11:30',
+                'end' => '13:30',
+                'hour' => '11:30',
+            ],
+            [
+                'label' => 'Horario 4: 13:30 - 15:30',
+                'hours' => 2,
+                'start' => '13:30',
+                'end' => '15:30',
+                'hour' => '13:30',
+            ],
+            [
+                'label' => 'Horario 5: 15:30 - 17:30',
+                'hours' => 2,
+                'start' => '15:30',
+                'end' => '17:30',
+                'hour' => '15:30',
+            ],
+            [
+                'label' => 'Horario de ruta: 60 horas',
+                'hours' => 6,
+                'start' => '7:30',
+                'end' => '13:30',
+                'hour' => '7:30',
+            ],
+        ];
+
+        $category = ['VFR', 'IFR', 'IFR_NOCTURNO'];
+        $airplanes = ['XBPDY', 'Comanche'];
+
+        $response = [
+            'sessions' => $sessions,
+            'category' => $category,
+            'airplanes' => $airplanes
+        ];
+
+        return response()->json($response);
+    }
+
+public function instructorNearbyFlights(){
+    $flights = flightHistory::select(
+            'students.user_identification',
+            'students.id as id_student',
+            'students.name',
+            'students.last_names',
+            'flight_history.type_flight',
+            'flight_history.hours',
+            'flight_history.flight_date',
+            'flight_history.flight_hour',
+            'flight_history.id as id_flight',
+            'air_planes.model',
+            'flight_history.flight_status',
+            DB::raw("DATE_FORMAT(DATE_ADD(STR_TO_DATE(flight_history.flight_hour, '%H:%i'), INTERVAL flight_history.hours HOUR), '%H:%i') as end_hour")
+        )
+        ->join('flight_payments', 'flight_payments.id_flight', '=', 'flight_history.id')
+        ->join('students', 'students.id', '=', 'flight_payments.id_student')
+        ->join('air_planes', 'air_planes.id', '=', 'flight_history.id_airplane')
+        ->whereBetween('flight_history.flight_date', [
+            Carbon::now()->startOfDay(),                // Inicio de hoy
+            Carbon::now()->addDays(5)->endOfDay()       // Fin dentro de 5 días
+        ])
+        ->get();
+
+    return $flights;
+}
 }

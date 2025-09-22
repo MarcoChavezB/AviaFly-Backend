@@ -54,7 +54,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'https://api.aviafly.site'),
+    'url' => env('APP_URL', 'https://api.aviafly.mx'),
 
     'asset_url' => env('ASSET_URL'),
 

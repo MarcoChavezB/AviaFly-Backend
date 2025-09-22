@@ -13,14 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('air_planes', function (Blueprint $table) {
+        Schema::create('income_concepts', function (Blueprint $table) {
             $table->id();
-            $table->string('model');
-            $table->integer('limit_hours');
-            $table->string('limit_weight');
-            $table->string('limit_passengers');
-            $table->string('image_url')->nullable();
-            $table->decimal('tacometer', 8, 2)->default(0);
+            $table->string('value');
+            $table->string('view_value');
             $table->timestamps();
         });
     }
@@ -32,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('air_planes');
+        Schema::dropIfExists('income_concepts');
     }
 };

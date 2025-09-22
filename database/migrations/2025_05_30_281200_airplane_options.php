@@ -13,14 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('air_planes', function (Blueprint $table) {
+        Schema::create('airplane_options', function (Blueprint $table) {
             $table->id();
-            $table->string('model');
-            $table->integer('limit_hours');
-            $table->string('limit_weight');
-            $table->string('limit_passengers');
-            $table->string('image_url')->nullable();
-            $table->decimal('tacometer', 8, 2)->default(0);
+            $table->foreignId('airplane_id')->constrained('air_planes')->onDelete('cascade');
+            $table->foreignId('airplane_use_id')->constrained('airplane_uses')->onDelete('cascade');
+            $table->boolean('enabled')->default(false);
             $table->timestamps();
         });
     }
@@ -32,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('air_planes');
+        //
     }
 };

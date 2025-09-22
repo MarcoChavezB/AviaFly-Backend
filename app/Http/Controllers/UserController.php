@@ -94,7 +94,10 @@ class UserController extends Controller
             ->with('career')
             ->first();
             $userType = 'student';
+        } else {
+            $user = Employee::where('user_identification', $user->user_identification)->first();
         }
+
 
 
         $response = response()->json([

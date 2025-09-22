@@ -62,7 +62,7 @@
             </ul>
 
             <p>Por favor, asegúrese de ingresar su identificación de usuario como matrícula y su CURP como contraseña en el sistema. Puede acceder al sistema en el siguiente enlace:</p>
-            <p><a href="https://aviafly.site/" target="_blank">https://aviafly.site/</a></p>
+            <p><a href="https://aviafly.mx/" target="_blank">https://aviafly.mx/</a></p>
 
             <p>En caso de que experimente alguna dificultad al acceder o necesite asistencia, no dude en ponerse en contacto con nuestro equipo de soporte a través de los canales oficiales.</p>
 

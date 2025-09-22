@@ -13,7 +13,7 @@ class FileController extends Controller
 
     public function generateManualUrl(string $filePath): string
     {
-        $domain = 'http://api.aviafly.site:8080/AviaFly-Backend/public';
+        $domain = 'http://api.aviafly.mx:8080/AviaFly-Backend/public';
 
         return $domain . '/' . ltrim($filePath, '/');
     }
@@ -71,7 +71,7 @@ class FileController extends Controller
     *  */
     function deleteFile(string $url): bool
     {
-        $urlDomain = "http://api.aviafly.site:8080/AviaFly-Backend/public";
+        $urlDomain = "http://api.aviafly.mx:8080/AviaFly-Backend/public";
         $onlyUrl = str_replace($urlDomain, '', $url);
         $filePath = ltrim($onlyUrl, '/');
         $fullPath = public_path($filePath);

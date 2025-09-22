@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AirPlane;
+use App\Models\AirplaneUse;
 use Illuminate\Http\Request;
 
 class AirPlaneController extends Controller
@@ -43,9 +44,10 @@ class AirPlaneController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function getIndexData()
     {
-        //
+        $airplanes = Airplane::all();
+        return response()->json($airplanes);
     }
 
     /**
@@ -53,10 +55,57 @@ class AirPlaneController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
+     * @Request: {
+            "model": "Modelo ",
+            "limitHours": "10",
+            "limitWeight": "100",
+            "limitPassengers": "10",
+            "options": {
+                "recreative": true,
+                "academic": true
+            },
+            "file": {}
+        }
      */
     public function store(Request $request)
     {
-        //
+        // Validar los datos básicos
+        $validated = $request->validate([
+            'model' => 'required|string',
+            'limitHours' => 'required|integer',
+            'limitWeight' => 'required|string',
+            'limitPassengers' => 'required|string',
+            'options' => 'required|array',
+        ]);
+
+        // Manejar el archivo si viene
+
+        $imagePath = null;
+        if ($request->hasFile('file')) {
+            $fileController = new FileController();
+            $imagePath = $fileController->saveFile($request->file('file'), 1, 'todos', $fileController->getBasePath());
+        }
+
+
+        // Crear el avión
+        $airplane = AirPlane::create([
+            'model' => $validated['model'],
+            'limit_hours' => $validated['limitHours'],
+            'limit_weight' => $validated['limitWeight'],
+            'limit_passengers' => $validated['limitPassengers'],
+            'image_url' => $imagePath,
+        ]);
+
+        // Asignar opciones de uso (recreative, academic...)
+        foreach ($validated['options'] as $useKey => $enabled) {
+            // Buscar el uso por nombre
+            $use = AirplaneUse::where('name', $useKey)->first();
+            if ($use) {
+                $airplane->uses()->attach($use->id, ['enabled' => $enabled]);
+            }
+        }
+
+        return response()->json(['message' => 'Avión creado correctamente', 'airplane' => $airplane]);
     }
 
     /**

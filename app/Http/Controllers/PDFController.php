@@ -175,9 +175,35 @@ class PDFController extends Controller
         $url = $fileController->saveTicket($pdf, $student, $apiData['id_base']);
         return $url;
     }
-    public function getProductOrderTicket($orderId)
-
-    {
+ /*
+ *[
+      {
+        "id_student": 37,
+        "id_employee": 1,
+        "id_base": 1,
+        "authorized_by": "marco",
+        "authorized_by_last_names": "chavez ",
+        "student_identification": "AT37",
+        "student_name": "marcochave",
+        "student_last_names": "------- -------",
+        "subtotal": "3024.00",
+        "iva": "576.00",
+        "location": "Torreón",
+        "price": "3636.36",
+        "discount": 0,
+        "items": [
+          {
+            "quantity": "3.00",
+            "concept": "MANUAL DE PILOTO CONOCIMIENTOS AERONAUTICOS",
+            "price": "1200.00",
+            "payment_method": "Inbursa DEBITO",
+            "total": 10909.08
+          }
+        ],
+        "total": "3600.00"
+      }
+    ]
+ * */public function getProductOrderTicket($orderId){
         $results = DB::table('order_details')
             ->join('orders', 'orders.id', '=', 'order_details.id_order')
             ->join('products', 'products.id', '=', 'order_details.id_product')

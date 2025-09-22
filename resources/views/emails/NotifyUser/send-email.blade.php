@@ -9,7 +9,7 @@
         <!-- Header con logo -->
         <tr>
             <td style="text-align: center; padding: 40px 0; background-color: #ffffff;">
-                <img src="http://api.aviafly.site:8080/AviaFly-Backend/public/newsletters/bases/Torreon/files/avia.png" alt="AviaFly Logo" style="max-width: 180px;">
+                <img src="http://api.aviafly.mx:8080/AviaFly-Backend/public/newsletters/bases/Torreon/files/avia.png" alt="AviaFly Logo" style="max-width: 180px;">
             </td>
         </tr>
 
