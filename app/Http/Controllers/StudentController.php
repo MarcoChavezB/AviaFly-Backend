@@ -40,7 +40,7 @@ class StudentController extends Controller
 
         $studens = Student::select('students.email','students.phone','students.user_identification','students.id', 'students.name', 'students.last_names', 'students.curp', 'students.flight_credit', 'careers.name as career_name')
             ->leftJoin('careers', 'students.id_career', '=', 'careers.id')
-            ->where('careers.name', 'Piloto privado')
+            //->where('careers.name', 'Piloto privado')
             ->where('students.id_base', $id_base)
             ->where('students.name', 'like', "%$identificator%")
             ->groupBy('students.email','students.phone','students.user_identification', 'students.id', 'students.name', 'students.last_names', 'students.curp', 'students.flight_credit', 'careers.name')
