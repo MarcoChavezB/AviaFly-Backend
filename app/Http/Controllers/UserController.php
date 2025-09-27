@@ -107,7 +107,8 @@ class UserController extends Controller
             'data' => $user,
             'jwt' => $token,
             'expires_at' => $expiresAt,
-            'user_type' => $userType
+            'user_type' => $userType,
+            'version' => $currentVersion
         ])->withCookie($cookie);
 
         return $response;
