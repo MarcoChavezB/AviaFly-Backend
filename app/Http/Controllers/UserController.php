@@ -59,6 +59,8 @@ class UserController extends Controller
     }
 
     public function login(Request $request){
+        $currentVersion = '0.1';
+
         $validator = Validator::make($request->all(), [
             'user_identification' => 'required|string',
             'password' => 'required|string'

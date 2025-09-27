@@ -30,6 +30,7 @@ use App\Http\Controllers\IncomePaymentMethodController;
 use App\Http\Controllers\InfoFlightController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\LicenseController;
+use App\Http\Controllers\MobileController;
 use App\Http\Controllers\MobileFlightController;
 use App\Http\Controllers\NewSletterController;
 use App\Http\Controllers\NotifyController;
@@ -456,7 +457,8 @@ Route::prefix('/mobile')->middleware(['auth:sanctum'])->group(function () {
     Route::get('/pilot/home/screen/data', [MobileFlightController::class, 'pilotHomeScreenMobile']);
     Route::get('/pilot/data/reserve', [MobileFlightController::class, 'getReserveData']);
     Route::get('/flight/instructor/home/screen/data', [MobileFlightController::class, 'instructorNearbyFlights']);
+    Route::get('/dashboard/instructor/teacher/data', [MobileController::class, 'getTeacherData']);
 });
 
-    Route::get('/shops/debug/{id_order}', [PDFController::class, 'getProductOrderTicket']);
+Route::get('/shops/debug/{id_order}', [PDFController::class, 'getProductOrderTicket']);
 

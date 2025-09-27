@@ -12,4 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class MobileController extends Controller
 {
+    public function getTeacherData(){
+        $teacher = Auth::user();
+    }
 }
