@@ -173,7 +173,7 @@ class IncomesController extends Controller
                 $extraHour = true;
             }
 
-            if ($payment['concept'] == "Horas de vuelo" && $payment['quantity'] >= 10) {
+            if (($payment['concept'] == "Horas de vuelo" || $payment['concept'] == "Horas de vuelo 2025") && $payment['quantity'] >= 10) {
                 $student->flight_credit = $student->flight_credit + 1;
                 $payment['hasExtraHour'] = true;
                 $extraHour = true;
