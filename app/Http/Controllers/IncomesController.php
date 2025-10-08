@@ -153,44 +153,33 @@ class IncomesController extends Controller
 
     public function createIncomes(Request $request)
     {
-
         $this->validateRequest($request);
         $student = Student::find($request->student_id);
         $extraHour = false;
-
         $allUniforms = [];
+        $payments = $request->payments;
 
-        // agregar la hora extra si es mayor a 10 las horas compradas
-        $payments = $request->payments; // Hacemos una copia del arreglo
-        $uniform = null;
-
-        foreach ($payments as &$payment) { // Usamos referencia para modificar la copia
+        foreach ($payments as &$payment) {
             $payment['hasExtraHour'] = false;
 
+            // SOLO marcar si tiene hora extra, NO sumar aquí
             if ($payment['concept'] == "Horas simulador" && $payment['quantity'] >= 10) {
-                $student->simulator_credit = $student->simulator_credit + 1;
                 $payment['hasExtraHour'] = true;
                 $extraHour = true;
             }
 
             if (($payment['concept'] == "Horas de vuelo" || $payment['concept'] == "Horas de vuelo 2025") && $payment['quantity'] >= 10) {
-                $student->flight_credit = $student->flight_credit + 1;
                 $payment['hasExtraHour'] = true;
                 $extraHour = true;
             }
 
             if (isset($payment['uniforms']) && is_array($payment['uniforms'])) {
-
-                // agregar los uniformes encontrados en el arreglo
                 $allUniforms = array_merge($allUniforms, $payment["uniforms"]);
-
-                // transaction para restar el stock del producto
                 DB::transaction(function () use ($payment) {
                     foreach ($payment['uniforms'] as $uniform) {
                         $product = Product::find($uniform['id']);
-
                         if ($product) {
-                            $product->stock = max(0, $product->stock - 1); // Restar 1 siempre
+                            $product->stock = max(0, $product->stock - 1);
                             $product->save();
                         }
                     }
@@ -198,16 +187,12 @@ class IncomesController extends Controller
             }
         }
 
-        $student->save();
+        // NO guardar $student aquí, se guarda en updateStudentCredits()
+
         $employee = $this->getAuthenticatedEmployee();
-
-
         $voucherPath = $this->handleFileUpload($request, $employee->id_base, $request->input('student_id'));
-
         $paymentDetails = $this->extractPaymentDetails($request, $voucherPath);
         $incomeDetailsId = $this->saveIncomeDetails($paymentDetails, $employee->id);
-
-
         $this->saveIncomeEntries($payments, $incomeDetailsId, $request->input('student_id'));
 
         $ticketUrl = $this->generateTicket(
@@ -300,18 +285,20 @@ class IncomesController extends Controller
 
     private function updateStudentCredits($studentId, $credit, $type){
         $student = Student::find($studentId);
+
+        // Calcular si aplica hora extra (cuando compran 10 o más horas)
+        $extraHour = ($credit >= 10) ? 1 : 0;
+
         switch ($type) {
-            case "Horas de vuelo";
-                $student->flight_credit += $credit;
-                break;
+            case "Horas de vuelo":
+            case "Horas de vuelo 2025":
             case "Horas de vuelo (VIEJO)":
-                $student->flight_credit += $credit;
+                $student->flight_credit += $credit + $extraHour;
                 break;
+
             case "Horas simulador":
-                $student->simulator_credit += $credit;
-                break;
             case "Horas simulador (VIEJO)":
-                $student->simulator_credit += $credit;
+                $student->simulator_credit += $credit + $extraHour;
                 break;
         }
 
