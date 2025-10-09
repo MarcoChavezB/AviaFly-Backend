@@ -574,7 +574,6 @@ public function getInfoVueloAlumno(int $id = null)
             'hours' => 'required|numeric',
             'flight_type' => 'required|string|in:simulador,vuelo',
             'flight_category' => 'required|string|in:VFR,IFR,IFR_nocturno',
-            'maneuver' => 'required|string|in:local,ruta',
             'total' => 'required|numeric',
             'hour_instructor_cost' => 'required|numeric',
 /*             'id_pay_method' => 'required|exists:payment_methods,id', */
@@ -608,8 +607,6 @@ public function getInfoVueloAlumno(int $id = null)
             'equipo.in' => 'El equipo no es válido',
             'flight_category.required' => 'campo requerido',
             'flight_category.in' => 'La categoría de vuelo no es válida',
-            'maneuver.required' => 'campo requerido',
-            'maneuver.in' => 'campo no válido',
             'hour_instructor_cost.numeric' => 'El costo de la hora de instructor no es válido',
             'flight_airplane.required' => 'campo requerido',
         ]);
@@ -654,6 +651,8 @@ public function getInfoVueloAlumno(int $id = null)
             return response()->json(["errors" => ["No hay horas disponibles en el avión"]], 402);
         }*/
 
+        $maneuver = $request->maneuver ?? 'local';
+
         DB::statement('CALL storeAcademicFlight(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $request->id_student,             // id_student: INT
             $user->id,                        // id_employee: INT
@@ -668,7 +667,7 @@ public function getInfoVueloAlumno(int $id = null)
             $request->due_week,               // due_week: INT
             floatval($request->installment_value), // installment_value: DECIMAL(8, 2)
             $request->flight_category,        // flight_category: ENUM('VFR', 'IFR', 'IFR_nocturno')
-            $request->maneuver,               // maneuver: ENUM('local', 'ruta')
+            $maneuver,               // maneuver: ENUM('local', 'ruta')
             floatval($request->hour_instructor_cost), // hour_instructor_cost: DECIMAL(8, 2)
             $request->equipo,                 // equipo: ENUM('XBPDY', 'simulador', 'vuelo')
             $request->flight_session,         // session_id: INT
