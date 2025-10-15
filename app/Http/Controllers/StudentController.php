@@ -520,7 +520,7 @@ public function getInfoVueloAlumno(int $id = null)
                 'simulator_hours' => $flightCategoryHours->simulator_hours,
                 'vuelo_hours' => $flightCategoryHours->vuelo_hours,
             ],
-            'is_debt' => $has_debt
+            'is_debt' => false
         ];
     }
 
