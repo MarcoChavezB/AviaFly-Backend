@@ -32,6 +32,8 @@ class Student extends Model
         'simulator_credit',
         'afac_user',
         'afac_password',
+        'afac_emission',
+        'afac_expiration'
     ];
 
     public function career()

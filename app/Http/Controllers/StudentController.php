@@ -93,6 +93,46 @@ class StudentController extends Controller
 
         return response()->json(['resp' => 'Datos actualizados'], 200);
     }
+
+
+    function afacDateChange(Request $request){
+        $validator = Validator::make($request->all(), [
+            'user_identification' => 'required|string|exists:students,user_identification',
+        ], [
+            'required_without' => 'El campo :attribute es obligatorio cuando :values no está presente.',
+        ]);
+
+        $validator->sometimes('afac_emission', 'required_without:afac_expiration', function ($input) {
+            return empty($input->afac_expiration);
+        });
+
+        $validator->sometimes('afac_expiration', 'required_without:afac_emission', function ($input) {
+            return empty($input->afac_emission);
+        });
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $student = Student::where('user_identification', $request->user_identification)->first();
+
+        if (!$student) {
+            return response()->json(['errors' => ['El estudiante no existe']], 404);
+        }
+
+        if ($request->afac_emission) {
+            $student->afac_emission = $request->afac_emission;
+        }
+
+        if ($request->afac_expiration) {
+            $student->afac_expiration = $request->afac_expiration;
+        }
+
+        $student->save();
+
+        return response()->json(['resp' => 'Datos actualizados'], 200);
+    }
+
     function afacDelete($id_student){
 
     }
