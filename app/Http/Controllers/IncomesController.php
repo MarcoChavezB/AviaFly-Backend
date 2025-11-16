@@ -158,6 +158,7 @@ class IncomesController extends Controller
         $extraHour = false;
         $allUniforms = [];
         $payments = $request->payments;
+        $total = $request->total;
 
         foreach ($payments as &$payment) {
             $payment['hasExtraHour'] = false;
@@ -205,6 +206,14 @@ class IncomesController extends Controller
             $request->input('student_id'),
             $extraHour,
             $allUniforms
+        );
+
+        $notify = new NotifyAdmin();
+
+        $notify->notifySale(
+            $student->name ?? "Cliente externo",
+            $employee->name,
+            $total,
         );
 
         return response()->json(['message' => 'ok', 'ticketUrl' => $ticketUrl], 201);

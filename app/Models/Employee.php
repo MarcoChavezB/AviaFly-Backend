@@ -20,6 +20,7 @@ class Employee extends Model
         'user_identification',
         'user_type',
         'id_base',
+        'notify_sale'
     ];
 
     public function base()

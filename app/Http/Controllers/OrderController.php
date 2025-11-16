@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\UserController;
+use App\Models\Employee;
 use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\ProductPayment;
@@ -201,6 +202,7 @@ class OrderController extends Controller
     {
         $clientData = Auth::user();
         $id_client = $this->userController->getIdEmploye($clientData->user_identification);
+        $employee = Employee::find($id_client);
 
         $data = $request->all();
         $validator = Validator::make($data, [
@@ -238,8 +240,8 @@ class OrderController extends Controller
 
        // descontar el credito del alumno si el metodo
        // de pago es credito
+        $student = Student::find($data['id_student']);
         if($data['id_student'] != 0 && $data['id_payment_method'] == 3){
-            $student = Student::find($data['id_student']);
             if($student->credit < $data['total_price']){
                 return response()->json(['message' => 'El estudiante no tiene suficiente credito'], 400);
             }
@@ -286,6 +288,14 @@ class OrderController extends Controller
 
         $product_payment->payment_ticket = $urlTicket;
         $product_payment->save();
+
+        $notifyController = new NotifyAdmin();
+
+        $notifyController->notifySale(
+            $student->name ?? "Cliente externo",
+            $employee->name,
+            $data['total_price'],
+        );
 
         $data = $this->index($id_order);
         return response()->json($data, 200);
