@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AcademicFileController;
+use App\Http\Controllers\InstructorLocationController;
 use App\Http\Controllers\SystemIncomeController;
 use App\Http\Controllers\AirPlaneController;
 use App\Http\Controllers\AnalyticController;
@@ -461,5 +462,10 @@ Route::prefix('/mobile')->middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard/instructor/teacher/data', [MobileController::class, 'getTeacherData']);
 });
 
-Route::get('/shops/debug/{id_order}', [PDFController::class, 'getProductOrderTicket']);
+Route::prefix('/map')->middleware(['auth:sanctum'])->group(function () {
+    Route::post('/instructors/location/store', [InstructorLocationController::class, 'storeCurrentLocation']);
+    Route::get('/instructors/location/get', [InstructorLocationController::class, 'getInstructorsLocation']);
+});
 
+
+Route::get('/shops/debug/{id_order}', [PDFController::class, 'getProductOrderTicket']);
