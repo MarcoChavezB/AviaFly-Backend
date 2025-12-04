@@ -128,5 +128,26 @@ class FileController extends Controller
         return $this->generateManualUrl($filePath);
     }
 
-}
+    public function saveBase64File(string $base64, string $fileName): string
+    {
+        // Decodificar el Base64
+        $fileData = base64_decode($base64);
 
+        if ($fileData === false) {
+            throw new \Exception('El contenido proporcionado no es un Base64 válido.');
+        }
+
+        $directory = public_path('reports');
+
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $filePath = 'reports/' . $fileName;
+
+        File::put(public_path($filePath), $fileData);
+
+        return $this->generateManualUrl($filePath);
+    }
+
+}

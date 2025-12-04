@@ -468,7 +468,8 @@ function resetFlightData($id_flight)
     "tacometro": "101",
     "comments": "ksoakosk",
     "flight_alone": true,
-    "total_horometro": 4.5
+    "total_horometro": 4.5,
+    "imagen" : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAYAAAC0..."
     }
 
     */
@@ -484,7 +485,21 @@ function resetFlightData($id_flight)
             'horometroFinal' => 'required|numeric',
             'flight_alone' => 'required|boolean',
             'total_horometro' => 'required|numeric',
-            'tacometro' => 'nullable|numeric', // Añadido
+            'tacometro' => 'nullable|numeric',
+            'imagen' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    if (str_starts_with($value, 'data:image')) {
+                        $value = substr($value, strpos($value, ',') + 1);
+                    }
+
+                    if (!preg_match('%^[a-zA-Z0-9/+]*={0,2}$%', $value)) {
+                        $fail("El campo $attribute no contiene un Base64 válido.");
+                    }
+                }
+            ],
+
         ], [
             'horometroInicial.required' => 'Campo requerido',
             'horometroFinal.required' => 'Campo requerido',
@@ -492,7 +507,7 @@ function resetFlightData($id_flight)
             'horometroFinal.numeric' => 'Dato incorrecto',
             'flight_alone.required' => 'Campo requerido',
             'total_horometro.required' => 'Campo requerido',
-            'tacometro.numeric' => 'El tacómetro debe ser un número válido', // Mensaje personalizado
+            'tacometro.numeric' => 'El tacómetro debe ser un número válido',
         ]);
 
         if ($validator->fails()) {
@@ -509,6 +524,21 @@ function resetFlightData($id_flight)
         $airplane = AirPlane::find($flight->id_airplane);
         if (!$airplane) {
             return response()->json(['msg' => 'Avión no encontrado'], 405);
+        }
+        if ($request->hasFile('file')) {
+            $url = $this->fileController->saveFile($request->file('file'), $data['base_id'], $data['direct_to'], $this->fileController->getBasePath());
+        }
+
+        if (isset($data['imagen'])) {
+            $fileController = new FileController();
+
+            $base64Image = $data['imagen'];
+            if (str_starts_with($base64Image, 'data:image')) {
+                $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+            }
+
+            $imageUrl = $fileController->saveBase64File($base64Image, 'flight_report_' . $data['id_flight'] . '_' . time() . '.png');
+            $flight->image_url = $imageUrl;
         }
 
         $flight->flight_alone = $data['flight_alone'];
@@ -1289,4 +1319,3 @@ function getAllInfoReport(int $id_flight)
     }
 
 }
-

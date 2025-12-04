@@ -28,6 +28,7 @@ class flightHistory extends Model
         'final_horometer',
         'total_horometer',
         'final_tacometer',
+        'image_url',
         'comment',
         'create_at',
         'update_at'
