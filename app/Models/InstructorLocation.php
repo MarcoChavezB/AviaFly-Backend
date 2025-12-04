@@ -9,7 +9,7 @@ class InstructorLocation extends Model
 {
     use HasFactory;
 
-    public $table = 'instructor_locations';
+    public $table = 'instructor_location';
     protected $fillable = [
         'instructor_id',
         'latitude',
