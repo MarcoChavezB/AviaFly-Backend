@@ -11,8 +11,6 @@ class InstructorLocationController extends Controller
     public function storeCurrentLocation(Request $request){
         $data = $request->validate([
             'instructor_id' => 'required|integer|exists:employees,id',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
         ]);
 
         $location = InstructorLocation::create([
